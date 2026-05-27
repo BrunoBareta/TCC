@@ -1,4 +1,4 @@
-const propriedadeModel = require('../models/propriedadeModel')
+const propriedadeModel = require('../models/propriedadeModels')
 
 const listar = async (req, res) => {
   try {
