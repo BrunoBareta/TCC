@@ -3,6 +3,7 @@ const cors = require('cors')
 require('dotenv').config()
 
 const db = require('./database/db')
+const usuariosRoutes = require('./routes/usuarios.routes')
 
 const app = express()
 
@@ -21,12 +22,13 @@ app.get('/teste-banco', async (req, res) => {
       data: resultado.rows[0]
     })
   } catch (error) {
-    console.error(error)
     res.status(500).json({
       message: 'Erro ao conectar no banco',
       erro: error.message
     })
   }
 })
+
+app.use(usuariosRoutes)
 
 module.exports = app
