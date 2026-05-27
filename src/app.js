@@ -4,6 +4,7 @@ require('dotenv').config()
 
 const db = require('./database/db')
 const usuariosRoutes = require('./routes/usuarios.routes')
+const propriedadeRoutes = require('./routes/propriedadeRoutes')
 
 const app = express()
 
@@ -30,5 +31,6 @@ app.get('/teste-banco', async (req, res) => {
 })
 
 app.use(usuariosRoutes)
+app.use('/propriedades', propriedadeRoutes)
 
 module.exports = app
