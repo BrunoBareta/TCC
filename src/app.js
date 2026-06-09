@@ -7,6 +7,7 @@ const usuariosRoutes = require('./routes/usuariosRoutes')
 const propriedadeRoutes = require('./routes/propriedadeRoutes')
 const chamadoRoutes = require('./routes/chamadoRoutes')
 const materialRoutes = require('./routes/materialRoutes')
+const historicoRoutes = require('./routes/historicoRoutes')
 
 const app = express()
 
@@ -36,5 +37,6 @@ app.use(usuariosRoutes)
 app.use('/propriedades', propriedadeRoutes)
 app.use('/chamados', chamadoRoutes)
 app.use('/materiais', materialRoutes)
+app.use('/historicos', historicoRoutes)
 
 module.exports = app
