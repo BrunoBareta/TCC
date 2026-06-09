@@ -6,6 +6,7 @@ const db = require('./database/db')
 const usuariosRoutes = require('./routes/usuarios.routes')
 const propriedadeRoutes = require('./routes/propriedadeRoutes')
 const chamadoRoutes = require('./routes/chamadoRoutes')
+const materialRoutes = require('./routes/materialRoutes')
 
 const app = express()
 
@@ -34,5 +35,6 @@ app.get('/teste-banco', async (req, res) => {
 app.use(usuariosRoutes)
 app.use('/propriedades', propriedadeRoutes)
 app.use('/chamados', chamadoRoutes)
+app.use('/materiais', materialRoutes)
 
 module.exports = app
