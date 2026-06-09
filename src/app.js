@@ -3,7 +3,7 @@ const cors = require('cors')
 require('dotenv').config()
 
 const db = require('./database/db')
-const usuariosRoutes = require('./routes/usuarios.routes')
+const usuariosRoutes = require('./routes/usuariosRoutes')
 const propriedadeRoutes = require('./routes/propriedadeRoutes')
 const chamadoRoutes = require('./routes/chamadoRoutes')
 const materialRoutes = require('./routes/materialRoutes')
