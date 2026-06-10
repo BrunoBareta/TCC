@@ -11,9 +11,12 @@
   "author": "Bruno Felipe Bareta",
   "license": "ISC",
   "dependencies": {
+    "@vue-leaflet/vue-leaflet": "^0.10.1",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "leaflet": "^1.9.4",
+    "leaflet-defaulticon-compatibility": "^0.1.2",
     "pg": "^8.21.0"
   },
   "devDependencies": {

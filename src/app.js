@@ -1,5 +1,6 @@
 const express = require('express')
 const cors = require('cors')
+const deslocamentoRoutes = require('./routes/deslocamentoRoutes')
 require('dotenv').config()
 
 const db = require('./database/db')
@@ -38,5 +39,6 @@ app.use('/propriedades', propriedadeRoutes)
 app.use('/chamados', chamadoRoutes)
 app.use('/materiais', materialRoutes)
 app.use('/historicos', historicoRoutes)
+app.use('/deslocamentos', deslocamentoRoutes)
 
 module.exports = app
