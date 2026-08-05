@@ -38,6 +38,11 @@ const routes = [
         path: 'perfil',
         name: 'produtor-perfil',
         component: () => import('pages/produtor/PerfilPage.vue')
+      },
+      {
+        path: 'novo-chamado',
+        name: 'produtor-novo-chamado',
+        component: () => import('pages/produtor/NovoChamadoPage.vue')
       }
     ]
   },
