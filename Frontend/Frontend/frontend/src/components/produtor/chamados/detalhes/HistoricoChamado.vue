@@ -4,75 +4,93 @@
       Andamento do chamado
     </div>
 
-    <div class="linha-tempo">
-      <div class="evento">
-        <div class="evento-marcador ativo">
-          <q-icon name="add_task" size="18px" />
-        </div>
+    <div
+      v-if="carregando"
+      class="estado-central"
+    >
+      <q-spinner
+        color="orange"
+        size="36px"
+      />
 
-        <div>
-          <div class="evento-titulo">
-            Chamado aberto
-          </div>
+      <div class="estado-texto">
+        Carregando histórico...
+      </div>
+    </div>
 
-          <div class="evento-data">
-            {{ formatarData(chamado.data_abertura) }}
-          </div>
-        </div>
+    <div
+      v-else-if="eventos.length === 0"
+      class="estado-vazio"
+    >
+      <q-icon
+        name="history"
+        size="34px"
+        color="grey-5"
+      />
+
+      <div class="estado-vazio-titulo">
+        Nenhum histórico registrado
       </div>
 
-      <div class="linha" />
+      <div class="estado-vazio-texto">
+        As alterações deste chamado aparecerão aqui.
+      </div>
+    </div>
 
-      <div class="evento">
+    <div
+      v-else
+      class="linha-tempo"
+    >
+      <template
+        v-for="(evento, index) in eventos"
+        :key="evento.id_historico || index"
+      >
+        <div class="evento">
+          <div
+            class="evento-marcador"
+            :class="classeMarcador(evento.status_novo)"
+          >
+            <q-icon
+              :name="iconeStatus(evento.status_novo)"
+              size="18px"
+            />
+          </div>
+
+          <div class="evento-conteudo">
+            <div class="evento-titulo">
+              {{ tituloEvento(evento) }}
+            </div>
+
+            <div class="evento-data">
+              {{ formatarData(evento.data_alteracao) }}
+            </div>
+
+            <div
+              v-if="evento.observacao"
+              class="evento-observacao"
+            >
+              {{ evento.observacao }}
+            </div>
+
+            <div
+              v-if="evento.status_anterior"
+              class="evento-transicao"
+            >
+              {{ formatarTexto(evento.status_anterior) }}
+              <q-icon
+                name="arrow_forward"
+                size="14px"
+              />
+              {{ formatarTexto(evento.status_novo) }}
+            </div>
+          </div>
+        </div>
+
         <div
-          class="evento-marcador"
-          :class="{ ativo: statusAvancado }"
-        >
-          <q-icon name="engineering" size="18px" />
-        </div>
-
-        <div>
-          <div class="evento-titulo">
-            Atendimento técnico
-          </div>
-
-          <div class="evento-data">
-            {{
-              statusAvancado
-                ? 'Chamado em atendimento'
-                : 'Aguardando atendimento'
-            }}
-          </div>
-        </div>
-      </div>
-
-      <div class="linha" />
-
-      <div class="evento">
-        <div
-          class="evento-marcador"
-          :class="{ ativo: chamadoFinalizado }"
-        >
-          <q-icon name="check_circle" size="18px" />
-        </div>
-
-        <div>
-          <div class="evento-titulo">
-            Finalização
-          </div>
-
-          <div class="evento-data">
-            {{
-              chamadoFinalizado
-                ? formatarData(
-                    chamado.data_finalizacao ||
-                    chamado.data_fechamento
-                  )
-                : 'Ainda não finalizado'
-            }}
-          </div>
-        </div>
-      </div>
+          v-if="index < eventos.length - 1"
+          class="linha"
+        />
+      </template>
     </div>
   </div>
 </template>
@@ -84,26 +102,54 @@ const props = defineProps({
   chamado: {
     type: Object,
     required: true
+  },
+
+  historicos: {
+    type: Array,
+    default: () => []
+  },
+
+  carregando: {
+    type: Boolean,
+    default: false
   }
 })
 
-const statusAtual = computed(() =>
-  String(props.chamado.status || '').toUpperCase()
-)
+const eventos = computed(() => {
+  const lista = Array.isArray(props.historicos)
+    ? [...props.historicos]
+    : []
 
-const statusAvancado = computed(() =>
-  [
-    'ACEITO',
-    'EM_ROTA',
-    'EM_ATENDIMENTO',
-    'CONCLUIDO',
-    'FINALIZADO'
-  ].includes(statusAtual.value)
-)
+  if (lista.length === 0 && props.chamado) {
+    return [
+      {
+        id_historico: `abertura-${props.chamado.id_chamado}`,
+        status_anterior: null,
+        status_novo: 'PENDENTE',
+        observacao: 'Chamado aberto pelo produtor.',
+        data_alteracao: props.chamado.data_abertura
+      }
+    ]
+  }
 
-const chamadoFinalizado = computed(() =>
-  ['CONCLUIDO', 'FINALIZADO'].includes(statusAtual.value)
-)
+  return lista.sort((a, b) => {
+    const dataA = new Date(a.data_alteracao).getTime()
+    const dataB = new Date(b.data_alteracao).getTime()
+
+    return dataA - dataB
+  })
+})
+
+function formatarTexto(valor) {
+  if (!valor) {
+    return 'Não informado'
+  }
+
+  return String(valor)
+    .replaceAll('_', ' ')
+    .toLowerCase()
+    .replace(/^\w/, (letra) => letra.toUpperCase())
+}
 
 function formatarData(valor) {
   if (!valor) {
@@ -120,6 +166,58 @@ function formatarData(valor) {
     dateStyle: 'short',
     timeStyle: 'short'
   })
+}
+
+function tituloEvento(evento) {
+  const status = String(evento.status_novo || '').toUpperCase()
+
+  const titulos = {
+    PENDENTE: 'Chamado aberto',
+    AGUARDANDO_CONFIRMACAO: 'Aguardando confirmação',
+    ACEITO: 'Chamado aceito',
+    EM_ROTA: 'Técnico em deslocamento',
+    EM_ATENDIMENTO: 'Atendimento iniciado',
+    CONCLUIDO: 'Chamado concluído',
+    FINALIZADO: 'Chamado finalizado',
+    CANCELADO: 'Chamado cancelado'
+  }
+
+  return titulos[status] || formatarTexto(status)
+}
+
+function iconeStatus(status) {
+  const valor = String(status || '').toUpperCase()
+
+  const icones = {
+    PENDENTE: 'add_task',
+    AGUARDANDO_CONFIRMACAO: 'schedule',
+    ACEITO: 'thumb_up_alt',
+    EM_ROTA: 'local_shipping',
+    EM_ATENDIMENTO: 'engineering',
+    CONCLUIDO: 'check_circle',
+    FINALIZADO: 'task_alt',
+    CANCELADO: 'cancel'
+  }
+
+  return icones[valor] || 'history'
+}
+
+function classeMarcador(status) {
+  const valor = String(status || '').toUpperCase()
+
+  if (['CONCLUIDO', 'FINALIZADO'].includes(valor)) {
+    return 'marcador-concluido'
+  }
+
+  if (['ACEITO', 'EM_ROTA', 'EM_ATENDIMENTO'].includes(valor)) {
+    return 'marcador-atendimento'
+  }
+
+  if (valor === 'CANCELADO') {
+    return 'marcador-cancelado'
+  }
+
+  return 'marcador-pendente'
 }
 </script>
 
@@ -140,27 +238,66 @@ function formatarData(valor) {
   font-weight: 800;
 }
 
+.estado-central,
+.estado-vazio {
+  padding: 36px 16px;
+  text-align: center;
+}
+
+.estado-texto,
+.estado-vazio-texto {
+  margin-top: 10px;
+  color: #98a2b3;
+  font-size: 13px;
+}
+
+.estado-vazio-titulo {
+  margin-top: 12px;
+  color: #475467;
+  font-size: 14px;
+  font-weight: 700;
+}
+
 .evento {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 13px;
 }
 
 .evento-marcador {
-  width: 38px;
-  height: 38px;
+  width: 40px;
+  height: 40px;
   display: flex;
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background: #f2f4f7;
-  color: #98a2b3;
 }
 
-.evento-marcador.ativo {
+.marcador-pendente {
   background: #fff1e6;
   color: #f97316;
+}
+
+.marcador-atendimento {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.marcador-concluido {
+  background: #d1fae5;
+  color: #059669;
+}
+
+.marcador-cancelado {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.evento-conteudo {
+  min-width: 0;
+  flex: 1;
+  padding-top: 2px;
 }
 
 .evento-titulo {
@@ -175,10 +312,27 @@ function formatarData(valor) {
   font-size: 12px;
 }
 
+.evento-observacao {
+  margin-top: 9px;
+  color: #667085;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.evento-transicao {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 9px;
+  color: #98a2b3;
+  font-size: 11px;
+  font-weight: 600;
+}
+
 .linha {
   width: 2px;
   height: 38px;
-  margin: 5px 0 5px 18px;
+  margin: 5px 0 5px 19px;
   background: #eaecf0;
 }
 </style>

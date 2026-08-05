@@ -1,4 +1,5 @@
 const chamadoModel = require('../models/chamadoModels')
+const historicoModel = require('../models/historicoModels')
 
 const listar = async (req, res) => {
   try {
@@ -26,9 +27,21 @@ const buscarPorId = async (req, res) => {
 const criar = async (req, res) => {
   try {
     const chamado = await chamadoModel.criar(req.body)
+
+    await historicoModel.criar({
+      id_chamado: chamado.id_chamado,
+      status_anterior: null,
+      status_novo: 'PENDENTE',
+      observacao: 'Chamado aberto pelo produtor.',
+      id_usuario_responsavel: chamado.id_usuario
+    })
+
     res.status(201).json(chamado)
+
   } catch (error) {
-    res.status(500).json({ erro: error.message })
+    res.status(500).json({
+      erro: error.message
+    })
   }
 }
 

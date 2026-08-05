@@ -41,7 +41,7 @@
           flat
           color="negative"
           label="Tentar novamente"
-          @click="carregarChamado"
+          @click="carregarDados"
         />
       </template>
     </q-banner>
@@ -55,7 +55,11 @@
         </div>
       </div>
 
-      <HistoricoChamado :chamado="chamado" />
+      <HistoricoChamado
+        :chamado="chamado"
+        :historicos="historicos"
+        :carregando="carregandoHistorico"
+      />
     </div>
   </q-page>
 </template>
@@ -64,6 +68,7 @@
 import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import chamadoService from 'src/services/chamadoService'
+import historicoService from 'src/services/historicoService'
 import ResumoChamado from 'src/components/produtor/chamados/detalhes/ResumoChamado.vue'
 import InformacoesChamado from 'src/components/produtor/chamados/detalhes/InformacoesChamado.vue'
 import HistoricoChamado from 'src/components/produtor/chamados/detalhes/HistoricoChamado.vue'
@@ -71,20 +76,47 @@ import HistoricoChamado from 'src/components/produtor/chamados/detalhes/Historic
 const route = useRoute()
 
 const chamado = ref(null)
+const historicos = ref([])
+
 const carregando = ref(false)
+const carregandoHistorico = ref(false)
 const erro = ref('')
 
-async function carregarChamado() {
+async function carregarHistorico() {
+  carregandoHistorico.value = true
+
+  try {
+    const resposta = await historicoService.listarPorChamado(
+      route.params.id
+    )
+
+    historicos.value = Array.isArray(resposta)
+      ? resposta
+      : resposta?.historicos || resposta?.data || []
+  } catch (error) {
+    console.error('Erro ao buscar histórico:', error)
+    historicos.value = []
+  } finally {
+    carregandoHistorico.value = false
+  }
+}
+
+async function carregarDados() {
   carregando.value = true
   erro.value = ''
 
   try {
-    chamado.value = await chamadoService.buscarPorId(route.params.id)
+    chamado.value = await chamadoService.buscarPorId(
+      route.params.id
+    )
+
+    await carregarHistorico()
   } catch (error) {
     console.error('Erro ao buscar chamado:', error)
 
     erro.value =
       error.response?.data?.message ||
+      error.response?.data?.mensagem ||
       error.response?.data?.erro ||
       'Não foi possível carregar os detalhes do chamado.'
   } finally {
@@ -92,7 +124,7 @@ async function carregarChamado() {
   }
 }
 
-onMounted(carregarChamado)
+onMounted(carregarDados)
 </script>
 
 <style scoped>
@@ -141,6 +173,10 @@ onMounted(carregarChamado)
   .pagina-cabecalho {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .pagina-titulo {
+    font-size: 25px;
   }
 }
 </style>

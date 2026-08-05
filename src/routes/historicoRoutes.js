@@ -5,9 +5,12 @@ const historicoController = require('../controllers/historicoController')
 
 router.get('/', historicoController.listar)
 
-router.get('/:id', historicoController.buscarPorId)
+router.get(
+  '/chamado/:idChamado',
+  historicoController.buscarPorChamado
+)
 
-router.get('/chamado/:idChamado', historicoController.buscarPorChamado)
+router.get('/:id', historicoController.buscarPorId)
 
 router.post('/', historicoController.criar)
 
