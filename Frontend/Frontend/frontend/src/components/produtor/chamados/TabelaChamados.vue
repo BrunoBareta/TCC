@@ -59,8 +59,11 @@
 import { onMounted, ref } from 'vue'
 import { useQuasar } from 'quasar'
 import chamadoService from 'src/services/chamadoService'
+import { useRouter } from 'vue-router'
+
 
 const $q = useQuasar()
+const router = useRouter()
 
 const chamados = ref([])
 const carregando = ref(false)
@@ -155,10 +158,12 @@ function classeStatus(status) {
   return 'status-pendente'
 }
 
-function verDetalhes(chamado) {
-  $q.notify({
-    type: 'info',
-    message: `Detalhes do chamado #${chamado.id_chamado}`
+async function verDetalhes(chamado) {
+  await router.push({
+    name: 'produtor-detalhes-chamado',
+    params: {
+      id: chamado.id_chamado
+    }
   })
 }
 

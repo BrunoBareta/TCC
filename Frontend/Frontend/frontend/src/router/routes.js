@@ -30,6 +30,11 @@ const routes = [
         component: () => import('pages/produtor/ChamadosPage.vue')
       },
       {
+        path: 'chamados/:id',
+        name: 'produtor-detalhes-chamado',
+        component: () => import('pages/produtor/DetalhesChamadoPage.vue')
+   },
+      {
         path: 'relatorios',
         name: 'produtor-relatorios',
         component: () => import('pages/produtor/RelatoriosPage.vue')
