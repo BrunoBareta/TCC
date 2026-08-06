@@ -33,7 +33,9 @@ export function configurarProtecaoDeRotas(router) {
 }
 
 export function redirecionarPorPerfil(tipoUsuario) {
-  switch (tipoUsuario) {
+  const tipo = String(tipoUsuario || '').toUpperCase()
+
+  switch (tipo) {
     case 'PRODUTOR':
       return '/produtor/dashboard'
 
@@ -43,7 +45,10 @@ export function redirecionarPorPerfil(tipoUsuario) {
 
     case 'ADMINISTRADOR':
     case 'ADMIN':
-      return '/tecnico/dashboard'
+      return '/'
+
+    case 'VENDEDOR':
+      return '/'
 
     default:
       return '/'

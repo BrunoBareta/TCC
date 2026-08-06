@@ -1,7 +1,7 @@
 <template>
   <q-page class="q-pa-lg">
     <div class="text-h4 text-weight-bold">
-      Atendimento Técnico
+      Detalhes do Chamado
     </div>
   </q-page>
 </template>

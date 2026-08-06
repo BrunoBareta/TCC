@@ -6,7 +6,7 @@
       </div>
 
       <div class="text-grey-7">
-        Bem-vindo de volta, João da Silva.
+        Bem-vindo de volta, {{ auth.nomeUsuario }}.
       </div>
     </div>
 
@@ -34,22 +34,93 @@
         </div>
       </div>
 
-      <q-avatar color="grey-3" text-color="dark">
-        JD
-      </q-avatar>
+      <q-btn
+        flat
+        round
+        class="q-pa-none"
+      >
+        <q-avatar color="grey-3" text-color="dark">
+          {{ iniciais }}
+        </q-avatar>
 
-      <div>
-        <div class="text-weight-bold">
-          João da Silva
-        </div>
+        <q-menu>
+          <q-list style="min-width:220px">
 
-        <div class="text-caption text-grey">
-          PRODUTOR
-        </div>
-      </div>
+            <q-item>
+              <q-item-section>
+                <div class="text-weight-bold">
+                  {{ auth.nomeUsuario }}
+                </div>
+
+                <div class="text-caption text-grey">
+                  {{ auth.tipoUsuario }}
+                </div>
+              </q-item-section>
+            </q-item>
+
+            <q-separator />
+
+            <q-item
+              clickable
+              :to="{ name: 'produtor-perfil' }"
+            >
+              <q-item-section avatar>
+                <q-icon name="person" />
+              </q-item-section>
+
+              <q-item-section>
+                Perfil
+              </q-item-section>
+            </q-item>
+
+            <q-item
+              clickable
+              @click="sair"
+            >
+              <q-item-section avatar>
+                <q-icon
+                  name="logout"
+                  color="negative"
+                />
+              </q-item-section>
+
+              <q-item-section class="text-negative">
+                Sair
+              </q-item-section>
+            </q-item>
+
+          </q-list>
+        </q-menu>
+      </q-btn>
     </div>
   </div>
 </template>
+
+<script setup>
+import { computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from 'src/stores/auth'
+
+const router = useRouter()
+const auth = useAuthStore()
+
+const iniciais = computed(() => {
+  if (!auth.nomeUsuario) return '?'
+
+  return auth.nomeUsuario
+    .split(' ')
+    .map(nome => nome[0])
+    .join('')
+    .substring(0, 2)
+    .toUpperCase()
+})
+
+function sair () {
+  auth.logout()
+
+  router.replace('/')
+}
+</script>
 
 <style scoped>
 .header-produtor {

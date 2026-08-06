@@ -11,6 +11,9 @@ const routes = [
     ]
   },
 
+  // ==========================
+  // PRODUTOR
+  // ==========================
   {
     path: '/produtor',
     component: () => import('layouts/ProdutorLayout.vue'),
@@ -33,7 +36,7 @@ const routes = [
         path: 'chamados/:id',
         name: 'produtor-detalhes-chamado',
         component: () => import('pages/produtor/DetalhesChamadoPage.vue')
-   },
+      },
       {
         path: 'relatorios',
         name: 'produtor-relatorios',
@@ -52,42 +55,63 @@ const routes = [
     ]
   },
 
+  // ==========================
+  // TÉCNICO
+  // ==========================
   {
     path: '/tecnico',
     component: () => import('layouts/TecnicoLayout.vue'),
     meta: {
       requiresAuth: true,
-      roles: ['FUNCIONARIO', 'TECNICO']
+      roles: ['FUNCIONARIO']
     },
     children: [
       {
-        path: 'dashboard',
-        name: 'tecnico-dashboard',
-        component: () => import('pages/tecnico/DashboardPage.vue')
+        path: '',
+        redirect: '/tecnico/dashboard'
       },
       {
-        path: 'fila',
-        name: 'tecnico-fila',
-        component: () => import('pages/tecnico/FilaChamadosPage.vue')
+        path: 'dashboard',
+        name: 'tecnico-dashboard',
+        component: () =>
+          import('pages/tecnico/DashboardTecnicoPage.vue')
+      },
+      {
+        path: 'chamados-pendentes',
+        name: 'tecnico-pendentes',
+        component: () =>
+          import('pages/tecnico/ChamadosPendentesPage.vue')
+      },
+      {
+        path: 'meus-chamados',
+        name: 'tecnico-meus-chamados',
+        component: () =>
+          import('pages/tecnico/MeusChamadosPage.vue')
+      },
+      {
+        path: 'chamados/:id',
+        name: 'tecnico-detalhes-chamado',
+        component: () =>
+          import('pages/tecnico/DetalhesChamadoTecnicoPage.vue')
       },
       {
         path: 'atendimento',
         name: 'tecnico-atendimento',
-        component: () => import('pages/tecnico/AtendimentoPage.vue')
+        component: () =>
+          import('pages/tecnico/AtendimentoPage.vue')
       },
       {
-        path: 'produtores',
-        name: 'tecnico-produtores',
-        component: () => import('pages/tecnico/ProdutoresPage.vue')
-      },
-      {
-        path: 'relatorios',
-        name: 'tecnico-relatorios',
-        component: () => import('pages/tecnico/RelatoriosPage.vue')
+        path: 'atendimento/:id',
+        name: 'tecnico-atendimento-detalhes',
+        component: () =>
+          import('pages/tecnico/AtendimentoPage.vue')
       }
     ]
   },
 
+  // ==========================
+  // 404
+  // ==========================
   {
     path: '/:catchAll(.*)*',
     component: () => import('pages/ErrorNotFound.vue')
