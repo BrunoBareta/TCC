@@ -10,8 +10,13 @@ const chamadoRoutes = require('./routes/chamadoRoutes')
 const materialRoutes = require('./routes/materialRoutes')
 const historicoRoutes = require('./routes/historicoRoutes')
 const deslocamentoRoutes = require('./routes/deslocamentoRoutes')
+
 const chamadoFuncionarioRoutes = require(
   './routes/chamadoFuncionarioRoutes'
+)
+
+const unidadePropriedadeRoutes = require(
+  './routes/unidadePropriedadeRoutes'
 )
 
 const app = express()
@@ -27,7 +32,9 @@ app.get('/', (req, res) => {
 
 app.get('/teste-banco', async (req, res) => {
   try {
-    const resultado = await db.query('SELECT NOW()')
+    const resultado = await db.query(
+      'SELECT NOW()'
+    )
 
     res.json({
       message: 'Banco conectado com sucesso',
@@ -42,14 +49,40 @@ app.get('/teste-banco', async (req, res) => {
 })
 
 app.use(usuariosRoutes)
-app.use('/propriedades', propriedadeRoutes)
-app.use('/chamados', chamadoRoutes)
-app.use('/materiais', materialRoutes)
-app.use('/historicos', historicoRoutes)
-app.use('/deslocamentos', deslocamentoRoutes)
+
+app.use(
+  '/propriedades',
+  propriedadeRoutes
+)
+
+app.use(
+  '/chamados',
+  chamadoRoutes
+)
+
+app.use(
+  '/materiais',
+  materialRoutes
+)
+
+app.use(
+  '/historicos',
+  historicoRoutes
+)
+
+app.use(
+  '/deslocamentos',
+  deslocamentoRoutes
+)
+
 app.use(
   '/chamado-funcionarios',
   chamadoFuncionarioRoutes
+)
+
+app.use(
+  '/unidades-propriedade',
+  unidadePropriedadeRoutes
 )
 
 module.exports = app

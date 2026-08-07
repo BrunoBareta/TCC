@@ -1,75 +1,152 @@
 ﻿<template>
-  <div class="tabela-container">
-    <q-table
-      title="Meus chamados"
-      :rows="chamados"
-      :columns="columns"
-      row-key="id_chamado"
-      flat
-      :loading="carregando"
-      :pagination="paginacao"
-      no-data-label="Nenhum chamado vinculado a você"
-      loading-label="Carregando seus chamados..."
+  <div class="tabela-wrapper">
+    <!-- FILTRO ATIVO -->
+    <div
+      v-if="filtroAtivo"
+      class="filtro-ativo"
     >
-      <template #body-cell-numero="props">
-        <q-td :props="props">
-          #{{ props.row.id_chamado }}
-        </q-td>
-      </template>
+      <div class="filtro-info">
+        <q-icon
+          name="filter_alt"
+          size="20px"
+          color="orange"
+        />
 
-      <template #body-cell-cultura="props">
-        <q-td :props="props">
-          {{ formatarTexto(props.row.tipo_cultura) }}
-        </q-td>
-      </template>
-
-      <template #body-cell-urgencia="props">
-        <q-td :props="props">
-          <q-badge
-            rounded
-            :class="classeUrgencia(props.row.urgencia)"
-          >
-            {{ formatarTexto(props.row.urgencia) }}
-          </q-badge>
-        </q-td>
-      </template>
-
-      <template #body-cell-status="props">
-        <q-td :props="props">
-          <q-badge
-            rounded
-            :class="classeStatus(props.row.status)"
-          >
-            {{ formatarTexto(props.row.status) }}
-          </q-badge>
-        </q-td>
-      </template>
-
-      <template #body-cell-acoes="props">
-        <q-td :props="props">
-          <div class="acoes">
-            <q-btn
-              outline
-              no-caps
-              color="grey-8"
-              label="Detalhes"
-              size="sm"
-              @click="verDetalhes(props.row)"
-            />
-
-            <q-btn
-              unelevated
-              no-caps
-              color="orange"
-              icon="engineering"
-              label="Atender"
-              size="sm"
-              @click="abrirAtendimento(props.row)"
-            />
+        <div>
+          <div class="filtro-titulo">
+            {{ tituloFiltro }}
           </div>
-        </q-td>
-      </template>
-    </q-table>
+
+          <div class="filtro-subtitulo">
+            {{ descricaoFiltro }}
+          </div>
+        </div>
+      </div>
+
+      <q-btn
+        flat
+        no-caps
+        color="grey-7"
+        icon="close"
+        label="Limpar filtro"
+        @click="limparFiltro"
+      />
+    </div>
+
+    <div class="tabela-container">
+      <q-table
+        :title="tituloTabela"
+        :rows="chamadosFiltrados"
+        :columns="columns"
+        row-key="id_chamado"
+        flat
+        :loading="carregando"
+        :pagination="paginacao"
+        no-data-label="Nenhum chamado encontrado"
+        loading-label="Carregando seus chamados..."
+      >
+        <template #body-cell-numero="props">
+          <q-td :props="props">
+            #{{ props.row.id_chamado }}
+          </q-td>
+        </template>
+
+        <template #body-cell-cultura="props">
+          <q-td :props="props">
+            {{ formatarTexto(props.row.tipo_cultura) }}
+          </q-td>
+        </template>
+
+        <template #body-cell-urgencia="props">
+          <q-td :props="props">
+            <q-badge
+              rounded
+              :class="classeUrgencia(props.row.urgencia)"
+            >
+              {{ formatarTexto(props.row.urgencia) }}
+            </q-badge>
+          </q-td>
+        </template>
+
+        <template #body-cell-status="props">
+          <q-td :props="props">
+            <q-badge
+              rounded
+              :class="classeStatus(props.row.status)"
+            >
+              {{ formatarTexto(props.row.status) }}
+            </q-badge>
+          </q-td>
+        </template>
+
+        <template #body-cell-acoes="props">
+          <q-td :props="props">
+            <div class="acoes">
+              <q-btn
+                outline
+                no-caps
+                color="grey-8"
+                label="Detalhes"
+                size="sm"
+                @click="verDetalhes(props.row)"
+              />
+
+              <q-btn
+                v-if="!chamadoFinalizado(props.row)"
+                unelevated
+                no-caps
+                color="orange"
+                icon="engineering"
+                label="Atender"
+                size="sm"
+                @click="abrirAtendimento(props.row)"
+              />
+
+              <q-btn
+                v-else
+                outline
+                no-caps
+                color="positive"
+                icon="visibility"
+                label="Visualizar"
+                size="sm"
+                @click="abrirAtendimento(props.row)"
+              />
+            </div>
+          </q-td>
+        </template>
+
+        <template #no-data>
+          <div class="estado-vazio">
+            <q-icon
+              :name="
+                filtroAtivo
+                  ? 'filter_alt_off'
+                  : 'assignment'
+              "
+              size="42px"
+              color="grey-5"
+            />
+
+            <div class="estado-vazio-titulo">
+              {{
+                filtroAtivo
+                  ? 'Nenhum chamado neste filtro'
+                  : 'Nenhum chamado vinculado a você'
+              }}
+            </div>
+
+            <div class="estado-vazio-texto">
+              {{
+                filtroAtivo
+                  ? 'Não existem chamados que correspondam ao filtro selecionado.'
+                  : 'Seus atendimentos aparecerão aqui.'
+              }}
+            </div>
+          </div>
+        </template>
+      </q-table>
+    </div>
 
     <q-banner
       v-if="erro"
@@ -91,12 +168,27 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { useAuthStore } from 'src/stores/auth'
-import chamadoFuncionarioService from 'src/services/chamadoFuncionarioService'
+import {
+  computed,
+  onMounted,
+  ref,
+  watch
+} from 'vue'
+
+import {
+  useRoute,
+  useRouter
+} from 'vue-router'
+
+import {
+  useAuthStore
+} from 'src/stores/auth'
+
+import chamadoFuncionarioService from
+  'src/services/chamadoFuncionarioService'
 
 const router = useRouter()
+const route = useRoute()
 const authStore = useAuthStore()
 
 const chamados = ref([])
@@ -105,6 +197,85 @@ const erro = ref('')
 
 const paginacao = ref({
   rowsPerPage: 10
+})
+
+const filtro = computed(() =>
+  String(
+    route.query.filtro || ''
+  ).toLowerCase()
+)
+
+const filtroAtivo = computed(() =>
+  ['andamento', 'finalizados'].includes(
+    filtro.value
+  )
+)
+
+const tituloFiltro = computed(() => {
+  if (filtro.value === 'andamento') {
+    return 'Em andamento'
+  }
+
+  if (filtro.value === 'finalizados') {
+    return 'Finalizados'
+  }
+
+  return ''
+})
+
+const descricaoFiltro = computed(() => {
+  if (filtro.value === 'andamento') {
+    return 'Chamados aceitos, em deslocamento ou em atendimento.'
+  }
+
+  if (filtro.value === 'finalizados') {
+    return 'Atendimentos que já foram concluídos.'
+  }
+
+  return ''
+})
+
+const tituloTabela = computed(() => {
+  if (filtro.value === 'andamento') {
+    return 'Chamados em andamento'
+  }
+
+  if (filtro.value === 'finalizados') {
+    return 'Chamados finalizados'
+  }
+
+  return 'Meus chamados'
+})
+
+const chamadosFiltrados = computed(() => {
+  if (filtro.value === 'andamento') {
+    return chamados.value.filter((item) =>
+      [
+        'ACEITO',
+        'EM_ROTA',
+        'EM_ATENDIMENTO'
+      ].includes(
+        String(
+          item.status || ''
+        ).toUpperCase()
+      )
+    )
+  }
+
+  if (filtro.value === 'finalizados') {
+    return chamados.value.filter((item) =>
+      [
+        'FINALIZADO',
+        'CONCLUIDO'
+      ].includes(
+        String(
+          item.status || ''
+        ).toUpperCase()
+      )
+    )
+  }
+
+  return chamados.value
 })
 
 const columns = [
@@ -163,11 +334,17 @@ function formatarData(valor) {
 
   const data = new Date(valor)
 
-  if (Number.isNaN(data.getTime())) {
+  if (
+    Number.isNaN(
+      data.getTime()
+    )
+  ) {
     return valor
   }
 
-  return data.toLocaleDateString('pt-BR')
+  return data.toLocaleDateString(
+    'pt-BR'
+  )
 }
 
 function formatarTexto(valor) {
@@ -178,11 +355,18 @@ function formatarTexto(valor) {
   return String(valor)
     .replaceAll('_', ' ')
     .toLowerCase()
-    .replace(/^\w/, (letra) => letra.toUpperCase())
+    .replace(
+      /^\w/,
+      (letra) =>
+        letra.toUpperCase()
+    )
 }
 
 function classeUrgencia(urgencia) {
-  const valor = String(urgencia || '').toUpperCase()
+  const valor =
+    String(
+      urgencia || ''
+    ).toUpperCase()
 
   if (valor === 'ALTA') {
     return 'urgencia-alta'
@@ -196,7 +380,10 @@ function classeUrgencia(urgencia) {
 }
 
 function classeStatus(status) {
-  const valor = String(status || '').toUpperCase()
+  const valor =
+    String(
+      status || ''
+    ).toUpperCase()
 
   if (valor === 'ACEITO') {
     return 'status-aceito'
@@ -206,18 +393,34 @@ function classeStatus(status) {
     return 'status-rota'
   }
 
-  if (valor === 'EM_ATENDIMENTO') {
+  if (
+    valor ===
+    'EM_ATENDIMENTO'
+  ) {
     return 'status-atendimento'
   }
 
   if (
-    valor === 'FINALIZADO' ||
-    valor === 'CONCLUIDO'
+    [
+      'FINALIZADO',
+      'CONCLUIDO'
+    ].includes(valor)
   ) {
     return 'status-finalizado'
   }
 
   return 'status-pendente'
+}
+
+function chamadoFinalizado(chamado) {
+  return [
+    'FINALIZADO',
+    'CONCLUIDO'
+  ].includes(
+    String(
+      chamado.status || ''
+    ).toUpperCase()
+  )
 }
 
 async function verDetalhes(chamado) {
@@ -231,10 +434,18 @@ async function verDetalhes(chamado) {
 
 async function abrirAtendimento(chamado) {
   await router.push({
-    name: 'tecnico-atendimento-detalhes',
+    name:
+      'tecnico-atendimento-detalhes',
+
     params: {
       id: chamado.id_chamado
     }
+  })
+}
+
+async function limparFiltro() {
+  await router.replace({
+    name: 'tecnico-meus-chamados'
   })
 }
 
@@ -257,15 +468,17 @@ async function carregarChamados() {
     }
 
     const resposta =
-      await chamadoFuncionarioService.listarPorFuncionario(
-        idFuncionario
-      )
+      await chamadoFuncionarioService
+        .listarPorFuncionario(
+          idFuncionario
+        )
 
-    chamados.value = Array.isArray(resposta)
-      ? resposta
-      : resposta?.chamados ||
-        resposta?.data ||
-        []
+    chamados.value =
+      Array.isArray(resposta)
+        ? resposta
+        : resposta?.chamados ||
+          resposta?.data ||
+          []
   } catch (error) {
     console.error(
       'Erro ao carregar meus chamados:',
@@ -282,10 +495,53 @@ async function carregarChamados() {
   }
 }
 
-onMounted(carregarChamados)
+watch(
+  () => route.query.filtro,
+  () => {
+    paginacao.value.page = 1
+  }
+)
+
+onMounted(
+  carregarChamados
+)
 </script>
 
 <style scoped>
+.tabela-wrapper {
+  width: 100%;
+}
+
+.filtro-ativo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 14px;
+  padding: 14px 18px;
+  border: 1px solid #fed7aa;
+  border-radius: 14px;
+  background: #fff7ed;
+}
+
+.filtro-info {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.filtro-titulo {
+  color: #9a3412;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.filtro-subtitulo {
+  margin-top: 2px;
+  color: #c2410c;
+  font-size: 11px;
+}
+
 .tabela-container {
   overflow: hidden;
   border: 1px solid #eaecf0;
@@ -298,6 +554,25 @@ onMounted(carregarChamados)
   justify-content: flex-end;
   flex-wrap: wrap;
   gap: 8px;
+}
+
+.estado-vazio {
+  width: 100%;
+  padding: 35px 15px;
+  text-align: center;
+}
+
+.estado-vazio-titulo {
+  margin-top: 10px;
+  color: #475467;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.estado-vazio-texto {
+  margin-top: 5px;
+  color: #98a2b3;
+  font-size: 11px;
 }
 
 .status-pendente,
@@ -351,9 +626,40 @@ onMounted(carregarChamados)
   background: #fee2e2;
 }
 
+/* DARK */
+
+.body--dark .tabela-container {
+  border-color: #2b2f36;
+  background: #16191f;
+}
+
+.body--dark .filtro-ativo {
+  border-color: #7c2d12;
+  background: #24160f;
+}
+
+.body--dark .filtro-titulo {
+  color: #fdba74;
+}
+
+.body--dark .filtro-subtitulo {
+  color: #fb923c;
+}
+
+.body--dark .estado-vazio-titulo {
+  color: #d0d5dd;
+}
+
 @media (max-width: 900px) {
   .acoes {
     justify-content: flex-start;
+  }
+}
+
+@media (max-width: 700px) {
+  .filtro-ativo {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }
 </style>

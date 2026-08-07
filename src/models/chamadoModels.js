@@ -2,7 +2,27 @@ const db = require('../database/db')
 
 const listar = async () => {
   const resultado = await db.query(
-    'SELECT * FROM chamados ORDER BY id_chamado ASC'
+    `SELECT
+      c.*,
+      p.nome_propriedade,
+      p.endereco AS endereco_propriedade,
+      p.cidade AS cidade_propriedade,
+      p.estado AS estado_propriedade,
+
+      up.nome_unidade,
+      up.tipo_unidade,
+      up.descricao AS descricao_unidade,
+      up.referencia AS referencia_unidade
+
+    FROM chamados c
+
+    LEFT JOIN propriedades p
+      ON p.id_propriedade = c.id_propriedade
+
+    LEFT JOIN unidades_propriedade up
+      ON up.id_unidade = c.id_unidade
+
+    ORDER BY c.id_chamado ASC`
   )
 
   return resultado.rows
@@ -10,10 +30,58 @@ const listar = async () => {
 
 const buscarPorId = async (id) => {
   const resultado = await db.query(
-    `SELECT *
-     FROM chamados
-     WHERE id_chamado = $1`,
+    `SELECT
+      c.*,
+
+      p.nome_propriedade,
+      p.endereco AS endereco_propriedade,
+      p.cidade AS cidade_propriedade,
+      p.estado AS estado_propriedade,
+      p.cep AS cep_propriedade,
+      p.latitude AS latitude_propriedade,
+      p.longitude AS longitude_propriedade,
+
+      up.nome_unidade,
+      up.tipo_unidade,
+      up.descricao AS descricao_unidade,
+      up.referencia AS referencia_unidade
+
+    FROM chamados c
+
+    LEFT JOIN propriedades p
+      ON p.id_propriedade = c.id_propriedade
+
+    LEFT JOIN unidades_propriedade up
+      ON up.id_unidade = c.id_unidade
+
+    WHERE c.id_chamado = $1`,
     [id]
+  )
+
+  return resultado.rows[0]
+}
+
+const validarUnidade = async (
+  idPropriedade,
+  idUnidade
+) => {
+  const resultado = await db.query(
+    `SELECT
+      id_unidade,
+      id_propriedade,
+      nome_unidade,
+      tipo_unidade,
+      descricao,
+      referencia,
+      ativo
+    FROM unidades_propriedade
+    WHERE id_unidade = $1
+      AND id_propriedade = $2
+      AND ativo = TRUE`,
+    [
+      idUnidade,
+      idPropriedade
+    ]
   )
 
   return resultado.rows[0]
@@ -23,6 +91,7 @@ const criar = async (dados) => {
   const {
     id_usuario,
     id_propriedade,
+    id_unidade,
     tipo_cultura,
     tipo_chamado,
     problema,
@@ -35,6 +104,7 @@ const criar = async (dados) => {
     (
       id_usuario,
       id_propriedade,
+      id_unidade,
       tipo_cultura,
       tipo_chamado,
       problema,
@@ -44,11 +114,23 @@ const criar = async (dados) => {
       data_abertura
     )
     VALUES
-    ($1, $2, $3, $4, $5, $6, $7, 'PENDENTE', NOW())
+    (
+      $1,
+      $2,
+      $3,
+      $4,
+      $5,
+      $6,
+      $7,
+      $8,
+      'PENDENTE',
+      NOW()
+    )
     RETURNING *`,
     [
       id_usuario,
       id_propriedade,
+      id_unidade,
       tipo_cultura,
       tipo_chamado,
       problema,
@@ -62,6 +144,8 @@ const criar = async (dados) => {
 
 const atualizar = async (id, dados) => {
   const {
+    id_propriedade,
+    id_unidade,
     tipo_cultura,
     tipo_chamado,
     problema,
@@ -72,24 +156,32 @@ const atualizar = async (id, dados) => {
   } = dados
 
   const resultado = await db.query(
-    `UPDATE chamados SET
-      tipo_cultura = $1,
-      tipo_chamado = $2,
-      problema = $3,
-      descricao = $4,
-      urgencia = $5,
-      status = $6,
-      resposta_tecnico = $7
-    WHERE id_chamado = $8
-    RETURNING *`,
+    `UPDATE chamados
+     SET
+       id_propriedade = $1,
+       id_unidade = $2,
+       tipo_cultura = $3,
+       tipo_chamado = $4,
+       problema = $5,
+       descricao = $6,
+       urgencia = $7,
+       status = COALESCE($8, status),
+       resposta_tecnico =
+         COALESCE($9, resposta_tecnico)
+
+     WHERE id_chamado = $10
+
+     RETURNING *`,
     [
+      id_propriedade,
+      id_unidade,
       tipo_cultura,
       tipo_chamado,
       problema,
       descricao,
       urgencia,
-      status,
-      resposta_tecnico,
+      status || null,
+      resposta_tecnico || null,
       id
     ]
   )
@@ -127,6 +219,7 @@ const atualizarStatus = async (
        END
 
      WHERE id_chamado = $1::bigint
+
      RETURNING *`,
     [
       id,
@@ -153,6 +246,7 @@ const deletar = async (id) => {
 module.exports = {
   listar,
   buscarPorId,
+  validarUnidade,
   criar,
   atualizar,
   atualizarStatus,

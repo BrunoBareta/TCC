@@ -21,8 +21,14 @@
       />
     </div>
 
-    <div v-if="carregando" class="estado-central">
-      <q-spinner color="orange" size="48px" />
+    <div
+      v-if="carregando"
+      class="estado-central"
+    >
+      <q-spinner
+        color="orange"
+        size="48px"
+      />
 
       <div class="text-grey-7 q-mt-md">
         Carregando atendimento...
@@ -50,7 +56,12 @@
       v-else-if="chamado"
       class="atendimento-grid"
     >
+      <!-- =============================== -->
+      <!-- COLUNA PRINCIPAL -->
+      <!-- =============================== -->
+
       <div class="coluna-principal">
+        <!-- RESUMO -->
         <div class="card">
           <div class="card-topo">
             <div>
@@ -129,6 +140,62 @@
           </div>
         </div>
 
+        <!-- ETAPA -->
+        <div class="card q-mt-lg">
+          <div class="card-titulo">
+            Andamento do atendimento
+          </div>
+
+          <div class="etapas">
+            <div
+              v-for="(etapa, index) in etapas"
+              :key="etapa.status"
+              class="etapa"
+            >
+              <div class="etapa-superior">
+                <div
+                  class="etapa-circulo"
+                  :class="{
+                    'etapa-concluida':
+                      indiceEtapaAtual >= index,
+                    'etapa-atual':
+                      indiceEtapaAtual === index
+                  }"
+                >
+                  <q-icon
+                    :name="
+                      indiceEtapaAtual > index
+                        ? 'check'
+                        : etapa.icone
+                    "
+                    size="18px"
+                  />
+                </div>
+
+                <div
+                  v-if="index < etapas.length - 1"
+                  class="etapa-linha"
+                  :class="{
+                    'linha-concluida':
+                      indiceEtapaAtual > index
+                  }"
+                />
+              </div>
+
+              <div
+                class="etapa-label"
+                :class="{
+                  'etapa-label-ativa':
+                    indiceEtapaAtual >= index
+                }"
+              >
+                {{ etapa.label }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- DESCRIÇÃO -->
         <div class="card q-mt-lg">
           <div class="card-titulo">
             Descrição do problema
@@ -142,46 +209,99 @@
           </div>
         </div>
 
-        <div class="q-mt-lg">
-          <MateriaisAtendimento
-            :id-chamado="chamado.id_chamado"
-            :somente-leitura="atendimentoFinalizado"
-          />
-        </div>
-
-        <div class="card q-mt-lg">
-          <div class="card-titulo">
-            Observações do atendimento
-          </div>
-
-          <q-input
-            v-model="observacao"
-            type="textarea"
-            outlined
-            autogrow
-            label="Digite as observações do atendimento"
-            :disable="atendimentoFinalizado"
-            maxlength="1000"
-            counter
-          />
-
-          <div
-            v-if="
-              atendimentoFinalizado &&
-              chamado.resposta_tecnico
-            "
-            class="observacao-finalizada"
-          >
-            <div class="observacao-finalizada-label">
-              Resposta registrada
+        <!-- AVISO ANTES DE INICIAR -->
+        <div
+          v-if="!podeRegistrarServico && !atendimentoFinalizado"
+          class="card q-mt-lg aguardando-card"
+        >
+          <div class="aguardando-conteudo">
+            <div class="aguardando-icone">
+              <q-icon
+                :name="
+                  statusAtual === 'EM_ROTA'
+                    ? 'local_shipping'
+                    : 'schedule'
+                "
+                size="28px"
+              />
             </div>
 
-            <div class="observacao-finalizada-texto">
-              {{ chamado.resposta_tecnico }}
+            <div>
+              <div class="aguardando-titulo">
+                {{
+                  statusAtual === 'EM_ROTA'
+                    ? 'Atendimento ainda não iniciado'
+                    : 'Aguardando início do deslocamento'
+                }}
+              </div>
+
+              <div class="aguardando-texto">
+                {{
+                  statusAtual === 'EM_ROTA'
+                    ? 'Quando chegar à propriedade, inicie o atendimento para liberar o registro de materiais e observações.'
+                    : 'Os materiais e as observações serão liberados após o técnico chegar ao local e iniciar o atendimento.'
+                }}
+              </div>
             </div>
           </div>
         </div>
+
+        <!-- =============================== -->
+        <!-- SERVIÇO -->
+        <!-- Só EM_ATENDIMENTO ou FINALIZADO -->
+        <!-- =============================== -->
+
+        <template v-if="podeRegistrarServico || atendimentoFinalizado">
+          <div class="q-mt-lg">
+            <MateriaisAtendimento
+              :id-chamado="chamado.id_chamado"
+              :somente-leitura="atendimentoFinalizado"
+            />
+          </div>
+
+          <div class="card q-mt-lg">
+            <div class="card-titulo">
+              Observações do atendimento
+            </div>
+
+            <q-input
+              v-if="!atendimentoFinalizado"
+              v-model="observacao"
+              type="textarea"
+              outlined
+              autogrow
+              label="Descreva o serviço realizado"
+              maxlength="1000"
+              counter
+              hint="Informe o que foi identificado e o que foi realizado no atendimento."
+            />
+
+            <div
+              v-else-if="chamado.resposta_tecnico"
+              class="observacao-finalizada"
+            >
+              <div class="observacao-finalizada-label">
+                Resposta registrada
+              </div>
+
+              <div class="observacao-finalizada-texto">
+                {{ chamado.resposta_tecnico }}
+              </div>
+            </div>
+
+            <div
+              v-else
+              class="sem-observacao"
+            >
+              Nenhuma observação foi registrada neste atendimento.
+            </div>
+          </div>
+        </template>
       </div>
+
+      <!-- =============================== -->
+      <!-- COLUNA LATERAL -->
+      <!-- =============================== -->
 
       <div class="coluna-lateral">
         <DeslocamentoAtendimento
@@ -244,15 +364,27 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import {
+  computed,
+  onMounted,
+  ref
+} from 'vue'
+
 import {
   useRoute,
   useRouter
 } from 'vue-router'
+
 import chamadoService from 'src/services/chamadoService'
-import chamadoFuncionarioService from 'src/services/chamadoFuncionarioService'
-import MateriaisAtendimento from 'src/components/tecnico/materiais/MateriaisAtendimento.vue'
-import DeslocamentoAtendimento from 'src/components/tecnico/atendimento/DeslocamentoAtendimento.vue'
+
+import chamadoFuncionarioService from
+  'src/services/chamadoFuncionarioService'
+
+import MateriaisAtendimento from
+  'src/components/tecnico/materiais/MateriaisAtendimento.vue'
+
+import DeslocamentoAtendimento from
+  'src/components/tecnico/atendimento/DeslocamentoAtendimento.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -263,44 +395,101 @@ const observacao = ref('')
 const carregando = ref(false)
 const erro = ref('')
 
+const etapas = [
+  {
+    status: 'ACEITO',
+    label: 'Aceito',
+    icone: 'thumb_up'
+  },
+  {
+    status: 'EM_ROTA',
+    label: 'Em deslocamento',
+    icone: 'local_shipping'
+  },
+  {
+    status: 'EM_ATENDIMENTO',
+    label: 'Em atendimento',
+    icone: 'engineering'
+  },
+  {
+    status: 'FINALIZADO',
+    label: 'Finalizado',
+    icone: 'check_circle'
+  }
+]
+
 const statusAtual = computed(() =>
-  String(chamado.value?.status || '').toUpperCase()
+  String(
+    chamado.value?.status || ''
+  ).toUpperCase()
 )
 
 const atendimentoFinalizado = computed(() =>
-  ['FINALIZADO', 'CONCLUIDO'].includes(
-    statusAtual.value
-  )
+  [
+    'FINALIZADO',
+    'CONCLUIDO'
+  ].includes(statusAtual.value)
 )
+
+const podeRegistrarServico = computed(() =>
+  statusAtual.value === 'EM_ATENDIMENTO'
+)
+
+const indiceEtapaAtual = computed(() => {
+  const status = statusAtual.value
+
+  if (
+    status === 'FINALIZADO' ||
+    status === 'CONCLUIDO'
+  ) {
+    return 3
+  }
+
+  const indice = etapas.findIndex(
+    (etapa) => etapa.status === status
+  )
+
+  return indice >= 0
+    ? indice
+    : 0
+})
 
 async function carregarChamado() {
   carregando.value = true
   erro.value = ''
 
   try {
-    const idChamado = Number(route.params.id)
+    const idChamado =
+      Number(route.params.id)
 
     if (
       !Number.isInteger(idChamado) ||
       idChamado <= 0
     ) {
-      throw new Error('ID do chamado inválido.')
+      throw new Error(
+        'ID do chamado inválido.'
+      )
     }
 
     chamado.value =
-      await chamadoService.buscarPorId(idChamado)
-
-    observacao.value =
-      chamado.value?.resposta_tecnico || ''
-
-    const respostaEquipe =
-      await chamadoFuncionarioService.listarPorChamado(
+      await chamadoService.buscarPorId(
         idChamado
       )
 
-    equipe.value = Array.isArray(respostaEquipe)
-      ? respostaEquipe
-      : respostaEquipe?.data || []
+    observacao.value =
+      chamado.value?.resposta_tecnico ||
+      ''
+
+    const respostaEquipe =
+      await chamadoFuncionarioService
+        .listarPorChamado(
+          idChamado
+        )
+
+    equipe.value =
+      Array.isArray(respostaEquipe)
+        ? respostaEquipe
+        : respostaEquipe?.data || []
   } catch (error) {
     console.error(
       'Erro ao carregar atendimento:',
@@ -318,14 +507,6 @@ async function carregarChamado() {
 }
 
 function voltar() {
-  const rotaAnterior =
-    window.history.state?.back
-
-  if (rotaAnterior) {
-    router.back()
-    return
-  }
-
   router.push({
     name: 'tecnico-meus-chamados'
   })
@@ -334,17 +515,22 @@ function voltar() {
 function atualizarChamadoLocal(
   chamadoAtualizado
 ) {
-  chamado.value = chamadoAtualizado
+  chamado.value =
+    chamadoAtualizado
 
   if (
-    ['FINALIZADO', 'CONCLUIDO'].includes(
+    [
+      'FINALIZADO',
+      'CONCLUIDO'
+    ].includes(
       String(
         chamadoAtualizado?.status || ''
       ).toUpperCase()
     )
   ) {
     observacao.value =
-      chamadoAtualizado.resposta_tecnico ||
+      chamadoAtualizado
+        .resposta_tecnico ||
       observacao.value
   }
 }
@@ -359,7 +545,8 @@ function formatarTexto(valor) {
     .toLowerCase()
     .replace(
       /^\w/,
-      (letra) => letra.toUpperCase()
+      (letra) =>
+        letra.toUpperCase()
     )
 }
 
@@ -368,22 +555,31 @@ function formatarData(valor) {
     return 'Não informada'
   }
 
-  const data = new Date(valor)
+  const data =
+    new Date(valor)
 
-  if (Number.isNaN(data.getTime())) {
+  if (
+    Number.isNaN(
+      data.getTime()
+    )
+  ) {
     return valor
   }
 
-  return data.toLocaleString('pt-BR', {
-    dateStyle: 'short',
-    timeStyle: 'short'
-  })
+  return data.toLocaleString(
+    'pt-BR',
+    {
+      dateStyle: 'short',
+      timeStyle: 'short'
+    }
+  )
 }
 
 function classeStatus(status) {
-  const valor = String(
-    status || ''
-  ).toUpperCase()
+  const valor =
+    String(
+      status || ''
+    ).toUpperCase()
 
   if (valor === 'ACEITO') {
     return 'status-aceito'
@@ -393,12 +589,18 @@ function classeStatus(status) {
     return 'status-rota'
   }
 
-  if (valor === 'EM_ATENDIMENTO') {
+  if (
+    valor ===
+    'EM_ATENDIMENTO'
+  ) {
     return 'status-atendimento'
   }
 
   if (
-    ['FINALIZADO', 'CONCLUIDO'].includes(valor)
+    [
+      'FINALIZADO',
+      'CONCLUIDO'
+    ].includes(valor)
   ) {
     return 'status-finalizado'
   }
@@ -407,17 +609,24 @@ function classeStatus(status) {
 }
 
 function iniciais(nome) {
-  return String(nome || '?')
+  return String(
+    nome || '?'
+  )
     .trim()
     .split(' ')
     .filter(Boolean)
     .slice(0, 2)
-    .map((parte) => parte.charAt(0))
+    .map(
+      (parte) =>
+        parte.charAt(0)
+    )
     .join('')
     .toUpperCase()
 }
 
-onMounted(carregarChamado)
+onMounted(
+  carregarChamado
+)
 </script>
 
 <style scoped>
@@ -466,7 +675,12 @@ onMounted(carregarChamado)
   border-radius: 22px;
   background: #ffffff;
   box-shadow:
-    0 3px 10px rgba(16, 24, 40, 0.05);
+    0 3px 10px rgba(
+      16,
+      24,
+      40,
+      0.05
+    );
 }
 
 .card-topo {
@@ -499,7 +713,8 @@ onMounted(carregarChamado)
 
 .informacoes-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns:
+    repeat(2, 1fr);
   gap: 22px;
 }
 
@@ -524,12 +739,117 @@ onMounted(carregarChamado)
   white-space: pre-line;
 }
 
+/* ETAPAS */
+
+.etapas {
+  display: grid;
+  grid-template-columns:
+    repeat(4, 1fr);
+}
+
+.etapa {
+  min-width: 0;
+}
+
+.etapa-superior {
+  display: flex;
+  align-items: center;
+}
+
+.etapa-circulo {
+  width: 38px;
+  height: 38px;
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #eaecf0;
+  border-radius: 50%;
+  color: #98a2b3;
+  background: #ffffff;
+}
+
+.etapa-concluida {
+  border-color: #f97316;
+  color: #f97316;
+  background: #fff7ed;
+}
+
+.etapa-atual {
+  color: #ffffff;
+  background: #f97316;
+}
+
+.etapa-linha {
+  height: 2px;
+  flex: 1;
+  margin: 0 8px;
+  background: #eaecf0;
+}
+
+.linha-concluida {
+  background: #f97316;
+}
+
+.etapa-label {
+  margin-top: 9px;
+  color: #98a2b3;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.etapa-label-ativa {
+  color: #475467;
+}
+
+/* AVISO */
+
+.aguardando-card {
+  border-color: #fed7aa;
+  background: #fffaf5;
+}
+
+.aguardando-conteudo {
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+}
+
+.aguardando-icone {
+  width: 50px;
+  height: 50px;
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  color: #f97316;
+  background: #ffedd5;
+}
+
+.aguardando-titulo {
+  color: #9a3412;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.aguardando-texto {
+  margin-top: 5px;
+  max-width: 700px;
+  color: #c2410c;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* EQUIPE */
+
 .funcionario-item {
   display: flex;
   align-items: center;
   gap: 12px;
   padding: 12px 0;
-  border-bottom: 1px solid #f2f4f7;
+  border-bottom:
+    1px solid #f2f4f7;
 }
 
 .funcionario-item:last-of-type {
@@ -551,13 +871,15 @@ onMounted(carregarChamado)
 .total-equipe {
   margin-top: 14px;
   padding-top: 14px;
-  border-top: 1px solid #eaecf0;
+  border-top:
+    1px solid #eaecf0;
   color: #667085;
   font-size: 13px;
 }
 
+/* OBSERVAÇÃO */
+
 .observacao-finalizada {
-  margin-top: 18px;
   padding: 16px;
   border-radius: 14px;
   background: #ecfdf3;
@@ -577,6 +899,16 @@ onMounted(carregarChamado)
   line-height: 1.5;
   white-space: pre-line;
 }
+
+.sem-observacao {
+  padding: 16px;
+  border-radius: 12px;
+  color: #667085;
+  background: #f9fafb;
+  font-size: 13px;
+}
+
+/* STATUS */
 
 .status-pendente,
 .status-aceito,
@@ -611,6 +943,81 @@ onMounted(carregarChamado)
   background: #d1fae5;
 }
 
+/* DARK MODE */
+
+.body--dark .atendimento-page {
+  background: #0d0f12;
+}
+
+.body--dark .card {
+  border-color: #2b2f36;
+  background: #16191f;
+}
+
+.body--dark .pagina-titulo,
+.body--dark .chamado-problema,
+.body--dark .card-titulo {
+  color: #f9fafb;
+}
+
+.body--dark .pagina-subtitulo,
+.body--dark .descricao,
+.body--dark .informacao-valor,
+.body--dark .funcionario-nome {
+  color: #d0d5dd;
+}
+
+.body--dark .etapa-circulo {
+  border-color: #3a3f47;
+  background: #16191f;
+}
+
+.body--dark .etapa-linha {
+  background: #3a3f47;
+}
+
+.body--dark .linha-concluida {
+  background: #f97316;
+}
+
+.body--dark .etapa-concluida {
+  border-color: #f97316;
+  color: #f97316;
+  background: #292018;
+}
+
+.body--dark .etapa-atual {
+  color: #ffffff;
+  background: #f97316;
+}
+
+.body--dark .aguardando-card {
+  border-color: #7c2d12;
+  background: #24160f;
+}
+
+.body--dark .aguardando-icone {
+  background: #431407;
+}
+
+.body--dark .aguardando-titulo {
+  color: #fdba74;
+}
+
+.body--dark .aguardando-texto {
+  color: #fb923c;
+}
+
+.body--dark .funcionario-item,
+.body--dark .total-equipe {
+  border-color: #2b2f36;
+}
+
+.body--dark .sem-observacao {
+  color: #98a2b3;
+  background: #1b1f25;
+}
+
 @media (max-width: 1100px) {
   .atendimento-grid {
     grid-template-columns: 1fr;
@@ -641,6 +1048,12 @@ onMounted(carregarChamado)
 
   .card-topo {
     flex-direction: column;
+  }
+
+  .etapas {
+    grid-template-columns:
+      repeat(2, 1fr);
+    gap: 20px;
   }
 }
 </style>

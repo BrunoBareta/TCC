@@ -1,12 +1,23 @@
-const chamadoModel = require('../models/chamadoModels')
-const historicoModel = require('../models/historicoModels')
+const chamadoModel = require(
+  '../models/chamadoModels'
+)
+
+const historicoModel = require(
+  '../models/historicoModels'
+)
 
 const listar = async (req, res) => {
   try {
-    const chamados = await chamadoModel.listar()
+    const chamados =
+      await chamadoModel.listar()
 
     res.json(chamados)
   } catch (error) {
+    console.error(
+      'Erro ao listar chamados:',
+      error
+    )
+
     res.status(500).json({
       erro: error.message
     })
@@ -15,18 +26,25 @@ const listar = async (req, res) => {
 
 const buscarPorId = async (req, res) => {
   try {
-    const chamado = await chamadoModel.buscarPorId(
-      req.params.id
-    )
+    const chamado =
+      await chamadoModel.buscarPorId(
+        req.params.id
+      )
 
     if (!chamado) {
       return res.status(404).json({
-        message: 'Chamado não encontrado'
+        message:
+          'Chamado não encontrado.'
       })
     }
 
     res.json(chamado)
   } catch (error) {
+    console.error(
+      'Erro ao buscar chamado:',
+      error
+    )
+
     res.status(500).json({
       erro: error.message
     })
@@ -35,19 +53,138 @@ const buscarPorId = async (req, res) => {
 
 const criar = async (req, res) => {
   try {
-    const chamado = await chamadoModel.criar(
-      req.body
+    const idUsuario = Number(
+      req.body.id_usuario
     )
 
+    const idPropriedade = Number(
+      req.body.id_propriedade
+    )
+
+    const idUnidade = Number(
+      req.body.id_unidade
+    )
+
+    if (
+      !Number.isInteger(idUsuario) ||
+      idUsuario <= 0
+    ) {
+      return res.status(400).json({
+        message:
+          'Produtor não identificado.'
+      })
+    }
+
+    if (
+      !Number.isInteger(idPropriedade) ||
+      idPropriedade <= 0
+    ) {
+      return res.status(400).json({
+        message:
+          'Propriedade inválida.'
+      })
+    }
+
+    if (
+      !Number.isInteger(idUnidade) ||
+      idUnidade <= 0
+    ) {
+      return res.status(400).json({
+        message:
+          'Selecione o local do atendimento.'
+      })
+    }
+
+    if (
+      !req.body.problema ||
+      !String(req.body.problema).trim()
+    ) {
+      return res.status(400).json({
+        message:
+          'Informe o problema.'
+      })
+    }
+
+    if (
+      !req.body.descricao ||
+      !String(req.body.descricao).trim()
+    ) {
+      return res.status(400).json({
+        message:
+          'Informe a descrição do problema.'
+      })
+    }
+
+    /*
+      Confere se o local realmente pertence
+      à propriedade selecionada.
+    */
+    const unidade =
+      await chamadoModel.validarUnidade(
+        idPropriedade,
+        idUnidade
+      )
+
+    if (!unidade) {
+      return res.status(400).json({
+        message:
+          'O local selecionado não pertence à propriedade informada ou está desativado.'
+      })
+    }
+
+    const chamado =
+      await chamadoModel.criar({
+        ...req.body,
+
+        id_usuario:
+          idUsuario,
+
+        id_propriedade:
+          idPropriedade,
+
+        id_unidade:
+          idUnidade,
+
+        problema:
+          String(
+            req.body.problema
+          ).trim(),
+
+        descricao:
+          String(
+            req.body.descricao
+          ).trim()
+      })
+
     await historicoModel.criar({
-      id_chamado: chamado.id_chamado,
-      status_anterior: null,
-      status_novo: 'PENDENTE',
-      observacao: 'Chamado aberto pelo produtor.',
-      id_usuario_responsavel: chamado.id_usuario
+      id_chamado:
+        chamado.id_chamado,
+
+      status_anterior:
+        null,
+
+      status_novo:
+        'PENDENTE',
+
+      observacao:
+        `Chamado aberto pelo produtor para atendimento em ${unidade.nome_unidade}.`,
+
+      id_usuario_responsavel:
+        chamado.id_usuario
     })
 
-    res.status(201).json(chamado)
+    const chamadoCompleto =
+      await chamadoModel.buscarPorId(
+        chamado.id_chamado
+      )
+
+    res.status(201).json({
+      message:
+        'Chamado aberto com sucesso.',
+
+      chamado:
+        chamadoCompleto
+    })
   } catch (error) {
     console.error(
       'Erro ao criar chamado:',
@@ -69,7 +206,8 @@ const atualizar = async (req, res) => {
 
     if (!chamadoAnterior) {
       return res.status(404).json({
-        message: 'Chamado não encontrado'
+        message:
+          'Chamado não encontrado.'
       })
     }
 
@@ -84,18 +222,88 @@ const atualizar = async (req, res) => {
       })
     }
 
-    const chamado = await chamadoModel.atualizar(
-      req.params.id,
-      req.body
+    const idPropriedade = Number(
+      req.body.id_propriedade ||
+      chamadoAnterior.id_propriedade
     )
 
-    if (!chamado) {
-      return res.status(404).json({
-        message: 'Chamado não encontrado'
+    const idUnidade = Number(
+      req.body.id_unidade ||
+      chamadoAnterior.id_unidade
+    )
+
+    if (
+      !Number.isInteger(idPropriedade) ||
+      idPropriedade <= 0
+    ) {
+      return res.status(400).json({
+        message:
+          'Propriedade inválida.'
       })
     }
 
-    res.json(chamado)
+    if (
+      !Number.isInteger(idUnidade) ||
+      idUnidade <= 0
+    ) {
+      return res.status(400).json({
+        message:
+          'Selecione o local do atendimento.'
+      })
+    }
+
+    const unidade =
+      await chamadoModel.validarUnidade(
+        idPropriedade,
+        idUnidade
+      )
+
+    if (!unidade) {
+      return res.status(400).json({
+        message:
+          'O local informado não pertence à propriedade selecionada ou está desativado.'
+      })
+    }
+
+    const chamado =
+      await chamadoModel.atualizar(
+        req.params.id,
+        {
+          ...req.body,
+
+          id_propriedade:
+            idPropriedade,
+
+          id_unidade:
+            idUnidade,
+
+          status:
+            chamadoAnterior.status,
+
+          resposta_tecnico:
+            chamadoAnterior.resposta_tecnico
+        }
+      )
+
+    if (!chamado) {
+      return res.status(404).json({
+        message:
+          'Chamado não encontrado.'
+      })
+    }
+
+    const chamadoCompleto =
+      await chamadoModel.buscarPorId(
+        chamado.id_chamado
+      )
+
+    res.json({
+      message:
+        'Chamado atualizado com sucesso.',
+
+      chamado:
+        chamadoCompleto
+    })
   } catch (error) {
     console.error(
       'Erro ao atualizar chamado:',
@@ -108,7 +316,10 @@ const atualizar = async (req, res) => {
   }
 }
 
-const atualizarStatus = async (req, res) => {
+const atualizarStatus = async (
+  req,
+  res
+) => {
   try {
     const idChamado = Number(
       req.params.id
@@ -118,33 +329,41 @@ const atualizarStatus = async (req, res) => {
       req.body.status || ''
     ).toUpperCase()
 
-    const idUsuarioResponsavel = Number(
-      req.body.id_usuario_responsavel
-    )
+    const idUsuarioResponsavel =
+      Number(
+        req.body
+          .id_usuario_responsavel
+      )
 
     const observacao =
-      req.body.observacao || null
+      req.body.observacao ||
+      null
 
     const respostaTecnico =
-      req.body.resposta_tecnico || null
+      req.body.resposta_tecnico ||
+      null
 
     if (
       !Number.isInteger(idChamado) ||
       idChamado <= 0
     ) {
       return res.status(400).json({
-        message: 'ID do chamado inválido.'
+        message:
+          'ID do chamado inválido.'
       })
     }
 
     if (!novoStatus) {
       return res.status(400).json({
-        message: 'Informe o novo status.'
+        message:
+          'Informe o novo status.'
       })
     }
 
     if (
-      !Number.isInteger(idUsuarioResponsavel) ||
+      !Number.isInteger(
+        idUsuarioResponsavel
+      ) ||
       idUsuarioResponsavel <= 0
     ) {
       return res.status(400).json({
@@ -160,7 +379,8 @@ const atualizarStatus = async (req, res) => {
 
     if (!chamadoAnterior) {
       return res.status(404).json({
-        message: 'Chamado não encontrado.'
+        message:
+          'Chamado não encontrado.'
       })
     }
 
@@ -173,24 +393,38 @@ const atualizarStatus = async (req, res) => {
 
     if (!chamado) {
       return res.status(404).json({
-        message: 'Chamado não encontrado.'
+        message:
+          'Chamado não encontrado.'
       })
     }
 
     await historicoModel.criar({
-      id_chamado: idChamado,
+      id_chamado:
+        idChamado,
+
       status_anterior:
         chamadoAnterior.status,
-      status_novo: novoStatus,
+
+      status_novo:
+        novoStatus,
+
       observacao,
+
       id_usuario_responsavel:
         idUsuarioResponsavel
     })
 
+    const chamadoCompleto =
+      await chamadoModel.buscarPorId(
+        idChamado
+      )
+
     res.json({
       message:
         'Status atualizado com sucesso.',
-      chamado
+
+      chamado:
+        chamadoCompleto
     })
   } catch (error) {
     console.error(
@@ -213,7 +447,8 @@ const deletar = async (req, res) => {
 
     if (!chamadoAnterior) {
       return res.status(404).json({
-        message: 'Chamado não encontrado'
+        message:
+          'Chamado não encontrado.'
       })
     }
 
@@ -235,17 +470,24 @@ const deletar = async (req, res) => {
 
     if (!chamado) {
       return res.status(404).json({
-        message: 'Chamado não encontrado'
+        message:
+          'Chamado não encontrado.'
       })
     }
 
     await historicoModel.criar({
-      id_chamado: chamado.id_chamado,
+      id_chamado:
+        chamado.id_chamado,
+
       status_anterior:
         chamadoAnterior.status,
-      status_novo: 'CANCELADO',
+
+      status_novo:
+        'CANCELADO',
+
       observacao:
         'Chamado cancelado pelo produtor.',
+
       id_usuario_responsavel:
         chamadoAnterior.id_usuario
     })
@@ -253,6 +495,7 @@ const deletar = async (req, res) => {
     res.json({
       message:
         'Chamado cancelado com sucesso.',
+
       chamado
     })
   } catch (error) {

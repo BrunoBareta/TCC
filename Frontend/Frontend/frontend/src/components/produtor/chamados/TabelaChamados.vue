@@ -1,16 +1,22 @@
 <template>
   <div class="tabela-container">
     <q-table
+      v-model:pagination="paginacao"
       title="Chamados"
-      :rows="chamados"
+      :rows="chamadosFiltrados"
       :columns="columns"
       row-key="id_chamado"
       flat
       :loading="carregando"
-      :pagination="paginacao"
       no-data-label="Nenhum chamado encontrado"
       loading-label="Carregando chamados..."
     >
+      <template #body-cell-id_chamado="props">
+        <q-td :props="props">
+          #{{ props.row.id_chamado }}
+        </q-td>
+      </template>
+
       <template #body-cell-status="props">
         <q-td :props="props">
           <q-badge
@@ -34,7 +40,47 @@
           />
         </q-td>
       </template>
+
+      <template #no-data>
+        <div class="estado-vazio">
+          <q-icon
+            :name="possuiFiltro ? 'search_off' : 'inbox'"
+            size="42px"
+            color="grey-5"
+          />
+
+          <div class="estado-vazio-titulo">
+            {{
+              possuiFiltro
+                ? 'Nenhum chamado corresponde aos filtros'
+                : 'Nenhum chamado encontrado'
+            }}
+          </div>
+
+          <div class="estado-vazio-texto">
+            {{
+              possuiFiltro
+                ? 'Tente alterar a pesquisa ou o status selecionado.'
+                : 'Seus chamados aparecerão aqui.'
+            }}
+          </div>
+        </div>
+      </template>
     </q-table>
+
+    <div
+      v-if="!carregando && possuiFiltro"
+      class="resultado-filtro"
+    >
+      <q-icon
+        name="filter_alt"
+        size="18px"
+      />
+
+      <span>
+        {{ textoResultado }}
+      </span>
+    </div>
 
     <q-banner
       v-if="erro"
@@ -56,13 +102,29 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
-import { useQuasar } from 'quasar'
-import chamadoService from 'src/services/chamadoService'
+import {
+  computed,
+  onMounted,
+  ref,
+  watch
+} from 'vue'
+
 import { useRouter } from 'vue-router'
 
+import chamadoService from 'src/services/chamadoService'
 
-const $q = useQuasar()
+const props = defineProps({
+  pesquisa: {
+    type: String,
+    default: ''
+  },
+
+  status: {
+    type: String,
+    default: null
+  }
+})
+
 const router = useRouter()
 
 const chamados = ref([])
@@ -70,6 +132,7 @@ const carregando = ref(false)
 const erro = ref('')
 
 const paginacao = ref({
+  page: 1,
   rowsPerPage: 10
 })
 
@@ -79,8 +142,7 @@ const columns = [
     label: 'Número',
     field: 'id_chamado',
     align: 'left',
-    sortable: true,
-    format: (valor) => `#${valor}`
+    sortable: true
   },
   {
     name: 'problema',
@@ -91,7 +153,8 @@ const columns = [
       row.motivo ||
       row.descricao ||
       'Não informado',
-    align: 'left'
+    align: 'left',
+    sortable: true
   },
   {
     name: 'data_abertura',
@@ -105,7 +168,8 @@ const columns = [
     name: 'status',
     label: 'Status',
     field: 'status',
-    align: 'left'
+    align: 'left',
+    sortable: true
   },
   {
     name: 'acoes',
@@ -114,6 +178,112 @@ const columns = [
     align: 'right'
   }
 ]
+
+const possuiFiltro = computed(() => {
+  return Boolean(
+    String(props.pesquisa || '').trim() ||
+    props.status
+  )
+})
+
+const chamadosFiltrados = computed(() => {
+  const pesquisaNormalizada =
+    normalizarTexto(props.pesquisa)
+
+  const statusSelecionado =
+    String(props.status || '').toUpperCase()
+
+  return chamados.value.filter((chamado) => {
+    const statusChamado =
+      String(chamado.status || '').toUpperCase()
+
+    let correspondeStatus = true
+
+    if (statusSelecionado === 'EM_ANDAMENTO') {
+      correspondeStatus = [
+        'ACEITO',
+        'EM_ROTA',
+        'EM_ATENDIMENTO',
+        'AGUARDANDO_CONFIRMACAO'
+      ].includes(statusChamado)
+    } else if (statusSelecionado) {
+      correspondeStatus =
+        statusChamado === statusSelecionado
+    }
+
+    if (!correspondeStatus) {
+      return false
+    }
+
+    if (!pesquisaNormalizada) {
+      return true
+    }
+
+    const id =
+      String(chamado.id_chamado || '')
+
+    const numeroComHash =
+      `#${id}`
+
+    const problema =
+      normalizarTexto(chamado.problema)
+
+    const descricao =
+      normalizarTexto(chamado.descricao)
+
+    const cultura =
+      normalizarTexto(chamado.tipo_cultura)
+
+    const tipoChamado =
+      normalizarTexto(chamado.tipo_chamado)
+
+    const urgencia =
+      normalizarTexto(chamado.urgencia)
+
+    return (
+      id.includes(pesquisaNormalizada) ||
+      numeroComHash.includes(pesquisaNormalizada) ||
+      problema.includes(pesquisaNormalizada) ||
+      descricao.includes(pesquisaNormalizada) ||
+      cultura.includes(pesquisaNormalizada) ||
+      tipoChamado.includes(pesquisaNormalizada) ||
+      urgencia.includes(pesquisaNormalizada)
+    )
+  })
+})
+
+const textoResultado = computed(() => {
+  const total =
+    chamadosFiltrados.value.length
+
+  if (total === 0) {
+    return 'Nenhum chamado encontrado com estes filtros.'
+  }
+
+  if (total === 1) {
+    return '1 chamado encontrado.'
+  }
+
+  return `${total} chamados encontrados.`
+})
+
+function normalizarTexto(valor) {
+  if (
+    valor === null ||
+    valor === undefined
+  ) {
+    return ''
+  }
+
+  return String(valor)
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(
+      /[\u0300-\u036f]/g,
+      ''
+    )
+}
 
 function formatarData(valor) {
   if (!valor) {
@@ -126,7 +296,9 @@ function formatarData(valor) {
     return valor
   }
 
-  return data.toLocaleDateString('pt-BR')
+  return data.toLocaleDateString(
+    'pt-BR'
+  )
 }
 
 function formatarStatus(status) {
@@ -134,28 +306,69 @@ function formatarStatus(status) {
     return 'Não informado'
   }
 
-  return String(status)
-    .replaceAll('_', ' ')
-    .toLowerCase()
-    .replace(/^\w/, (letra) => letra.toUpperCase())
+  const valor =
+    String(status).toUpperCase()
+
+  const nomes = {
+    PENDENTE: 'Pendente',
+    AGUARDANDO_CONFIRMACAO:
+      'Aguardando confirmação',
+    ACEITO: 'Aceito',
+    EM_ROTA: 'Em rota',
+    EM_ATENDIMENTO:
+      'Em atendimento',
+    CONCLUIDO: 'Concluído',
+    FINALIZADO: 'Finalizado',
+    CANCELADO: 'Cancelado'
+  }
+
+  return (
+    nomes[valor] ||
+    String(status)
+      .replaceAll('_', ' ')
+      .toLowerCase()
+      .replace(
+        /^\w/,
+        (letra) => letra.toUpperCase()
+      )
+  )
 }
 
 function classeStatus(status) {
-  const valor = String(status || '').toUpperCase()
+  const valor =
+    String(status || '').toUpperCase()
 
-  if (['CONCLUIDO', 'FINALIZADO'].includes(valor)) {
-    return 'status-concluido'
+  if (valor === 'PENDENTE') {
+    return 'status-pendente'
   }
 
-  if (['EM_ATENDIMENTO', 'EM ANDAMENTO', 'EM_ROTA'].includes(valor)) {
+  if (valor === 'ACEITO') {
+    return 'status-aceito'
+  }
+
+  if (valor === 'EM_ROTA') {
+    return 'status-rota'
+  }
+
+  if (
+    valor === 'EM_ATENDIMENTO' ||
+    valor === 'AGUARDANDO_CONFIRMACAO'
+  ) {
     return 'status-atendimento'
   }
 
-  if (['CANCELADO'].includes(valor)) {
+  if (
+    ['CONCLUIDO', 'FINALIZADO']
+      .includes(valor)
+  ) {
+    return 'status-concluido'
+  }
+
+  if (valor === 'CANCELADO') {
     return 'status-cancelado'
   }
 
-  return 'status-pendente'
+  return 'status-padrao'
 }
 
 async function verDetalhes(chamado) {
@@ -172,13 +385,20 @@ async function carregarChamados() {
   erro.value = ''
 
   try {
-    const resposta = await chamadoService.listar()
+    const resposta =
+      await chamadoService.listar()
 
-    chamados.value = Array.isArray(resposta)
-      ? resposta
-      : resposta.chamados || resposta.data || []
+    chamados.value =
+      Array.isArray(resposta)
+        ? resposta
+        : resposta?.chamados ||
+          resposta?.data ||
+          []
   } catch (error) {
-    console.error('Erro ao carregar chamados:', error)
+    console.error(
+      'Erro ao carregar chamados:',
+      error
+    )
 
     erro.value =
       error.response?.data?.message ||
@@ -188,6 +408,16 @@ async function carregarChamados() {
     carregando.value = false
   }
 }
+
+watch(
+  () => [
+    props.pesquisa,
+    props.status
+  ],
+  () => {
+    paginacao.value.page = 1
+  }
+)
 
 onMounted(carregarChamados)
 </script>
@@ -200,27 +430,78 @@ onMounted(carregarChamados)
   background: #ffffff;
 }
 
-.status-pendente {
+.status-pendente,
+.status-aceito,
+.status-rota,
+.status-atendimento,
+.status-concluido,
+.status-cancelado,
+.status-padrao {
   padding: 7px 12px;
+}
+
+.status-pendente {
   color: #f97316;
   background: #fff1df;
 }
 
-.status-atendimento {
-  padding: 7px 12px;
+.status-aceito {
   color: #2563eb;
   background: #dbeafe;
 }
 
+.status-rota {
+  color: #7c3aed;
+  background: #ede9fe;
+}
+
+.status-atendimento {
+  color: #d97706;
+  background: #fef3c7;
+}
+
 .status-concluido {
-  padding: 7px 12px;
   color: #059669;
   background: #d1fae5;
 }
 
 .status-cancelado {
-  padding: 7px 12px;
   color: #dc2626;
   background: #fee2e2;
+}
+
+.status-padrao {
+  color: #475467;
+  background: #f2f4f7;
+}
+
+.resultado-filtro {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 12px 18px;
+  border-top: 1px solid #eaecf0;
+  color: #667085;
+  background: #f9fafb;
+  font-size: 13px;
+}
+
+.estado-vazio {
+  width: 100%;
+  padding: 42px 20px;
+  text-align: center;
+}
+
+.estado-vazio-titulo {
+  margin-top: 12px;
+  color: #475467;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.estado-vazio-texto {
+  margin-top: 4px;
+  color: #98a2b3;
+  font-size: 13px;
 }
 </style>

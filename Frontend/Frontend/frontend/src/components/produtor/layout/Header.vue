@@ -1,11 +1,11 @@
 <template>
   <div class="header-produtor">
     <div>
-      <div class="text-h5 text-weight-bold">
+      <div class="header-titulo">
         Painel do Produtor
       </div>
 
-      <div class="text-grey-7">
+      <div class="header-subtitulo">
         Bem-vindo de volta, {{ auth.nomeUsuario }}.
       </div>
     </div>
@@ -13,23 +13,39 @@
     <div class="header-acoes">
       <q-btn
         outline
-        color="dark"
+        no-caps
+        :color="modoEscuro ? 'orange' : 'dark'"
         icon="assessment"
         label="Relatórios"
+        :to="{ name: 'produtor-relatorios' }"
       />
+
+      <!-- MODO ESCURO -->
+      <q-btn
+        flat
+        round
+        :icon="iconeTema"
+        :color="modoEscuro ? 'orange' : 'dark'"
+        @click="alternarTema"
+      >
+        <q-tooltip>
+          {{ textoTema }}
+        </q-tooltip>
+      </q-btn>
 
       <q-btn
         flat
         round
         icon="notifications_none"
+        :color="modoEscuro ? 'orange' : 'dark'"
       />
 
-      <div class="text-right">
-        <div class="text-weight-bold">
+      <div class="propriedade-dados">
+        <div class="propriedade-nome">
           Fazenda Boa Vista
         </div>
 
-        <div class="text-grey-6 text-caption">
+        <div class="propriedade-local">
           Chapecó - SC
         </div>
       </div>
@@ -39,13 +55,15 @@
         round
         class="q-pa-none"
       >
-        <q-avatar color="grey-3" text-color="dark">
+        <q-avatar
+          :color="modoEscuro ? 'grey-9' : 'grey-3'"
+          :text-color="modoEscuro ? 'orange' : 'dark'"
+        >
           {{ iniciais }}
         </q-avatar>
 
         <q-menu>
-          <q-list style="min-width:220px">
-
+          <q-list style="min-width: 220px">
             <q-item>
               <q-item-section>
                 <div class="text-weight-bold">
@@ -62,6 +80,7 @@
 
             <q-item
               clickable
+              v-close-popup
               :to="{ name: 'produtor-perfil' }"
             >
               <q-item-section avatar>
@@ -75,6 +94,26 @@
 
             <q-item
               clickable
+              v-close-popup
+              @click="alternarTema"
+            >
+              <q-item-section avatar>
+                <q-icon
+                  :name="iconeTema"
+                  color="orange"
+                />
+              </q-item-section>
+
+              <q-item-section>
+                {{ textoTema }}
+              </q-item-section>
+            </q-item>
+
+            <q-separator />
+
+            <q-item
+              clickable
+              v-close-popup
               @click="sair"
             >
               <q-item-section avatar>
@@ -88,7 +127,6 @@
                 Sair
               </q-item-section>
             </q-item>
-
           </q-list>
         </q-menu>
       </q-btn>
@@ -100,25 +138,36 @@
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from 'src/stores/auth'
+import { useTheme } from 'src/composables/useTheme'
 
 const router = useRouter()
 const auth = useAuthStore()
 
+const {
+  modoEscuro,
+  iconeTema,
+  textoTema,
+  alternarTema
+} = useTheme()
+
 const iniciais = computed(() => {
-  if (!auth.nomeUsuario) return '?'
+  if (!auth.nomeUsuario) {
+    return '?'
+  }
 
   return auth.nomeUsuario
     .split(' ')
-    .map(nome => nome[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((nome) => nome[0])
     .join('')
-    .substring(0, 2)
     .toUpperCase()
 })
 
-function sair () {
+async function sair() {
   auth.logout()
 
-  router.replace('/')
+  await router.replace('/')
 }
 </script>
 
@@ -132,12 +181,60 @@ function sair () {
   gap: 24px;
   border-bottom: 1px solid #eaecf0;
   background: #ffffff;
+  transition:
+    background 0.25s,
+    border-color 0.25s;
+}
+
+.header-titulo {
+  color: #101828;
+  font-size: 25px;
+  font-weight: 800;
+}
+
+.header-subtitulo {
+  margin-top: 3px;
+  color: #667085;
+  font-size: 14px;
 }
 
 .header-acoes {
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 14px;
+}
+
+.propriedade-dados {
+  text-align: right;
+}
+
+.propriedade-nome {
+  color: #101828;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.propriedade-local {
+  margin-top: 2px;
+  color: #98a2b3;
+  font-size: 12px;
+}
+
+/* MODO ESCURO */
+
+.body--dark .header-produtor {
+  border-bottom-color: #2b2f36;
+  background: #16191f;
+}
+
+.body--dark .header-titulo,
+.body--dark .propriedade-nome {
+  color: #f9fafb;
+}
+
+.body--dark .header-subtitulo,
+.body--dark .propriedade-local {
+  color: #98a2b3;
 }
 
 @media (max-width: 1023px) {

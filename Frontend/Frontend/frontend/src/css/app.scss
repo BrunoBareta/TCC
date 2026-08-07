@@ -1,1 +1,272 @@
-// app global css
+/* =========================================================
+   TEMA GLOBAL
+   ========================================================= */
+
+html,
+body,
+#q-app {
+  min-height: 100%;
+}
+
+body {
+  transition:
+    background-color 0.25s ease,
+    color 0.25s ease;
+}
+
+/* =========================================================
+   MODO ESCURO - FUNDO PRINCIPAL
+   ========================================================= */
+
+body.body--dark {
+  background: #0d0f12;
+  color: #f5f7fa;
+}
+
+body.body--dark .q-layout,
+body.body--dark .q-page-container,
+body.body--dark .page-container,
+body.body--dark .app-layout,
+body.body--dark .dashboard-page,
+body.body--dark .chamados-page,
+body.body--dark .detalhes-page,
+body.body--dark .pendentes-page,
+body.body--dark .meus-chamados-page,
+body.body--dark .atendimento-page {
+  background: #0d0f12 !important;
+}
+
+/* =========================================================
+   CARDS
+   ========================================================= */
+
+body.body--dark .indicador-card,
+body.body--dark .painel-card,
+body.body--dark .tabela-container,
+body.body--dark .informacoes-card,
+body.body--dark .historico-card,
+body.body--dark .deslocamento-card,
+body.body--dark .card,
+body.body--dark .q-card {
+  border-color: #2b2f36 !important;
+  background: #16191f !important;
+  box-shadow:
+    0 3px 12px rgba(0, 0, 0, 0.2) !important;
+}
+
+body.body--dark .indicador-card:hover {
+  border-color: #f97316 !important;
+  box-shadow:
+    0 8px 25px rgba(0, 0, 0, 0.35) !important;
+}
+
+/* =========================================================
+   TEXTOS
+   ========================================================= */
+
+body.body--dark .pagina-titulo,
+body.body--dark .card-titulo,
+body.body--dark .chamado-problema,
+body.body--dark .indicador-numero,
+body.body--dark .indicador-titulo,
+body.body--dark .usuario-nome,
+body.body--dark .propriedade-nome,
+body.body--dark .evento-titulo,
+body.body--dark .funcionario-nome,
+body.body--dark .informacao-valor,
+body.body--dark .numero-chamado,
+body.body--dark .problema-chamado,
+body.body--dark .urgencia-problema,
+body.body--dark .estado-vazio-titulo {
+  color: #f9fafb !important;
+}
+
+body.body--dark .pagina-subtitulo,
+body.body--dark .card-subtitulo,
+body.body--dark .indicador-descricao,
+body.body--dark .informacao-label,
+body.body--dark .descricao,
+body.body--dark .data-chamado,
+body.body--dark .urgencia-data,
+body.body--dark .estado-vazio-texto,
+body.body--dark .evento-data,
+body.body--dark .evento-observacao,
+body.body--dark .funcionario-funcao,
+body.body--dark .propriedade-local {
+  color: #98a2b3 !important;
+}
+
+/* =========================================================
+   TABELAS
+   ========================================================= */
+
+body.body--dark .q-table,
+body.body--dark .q-table__container,
+body.body--dark .q-table__middle,
+body.body--dark .q-table__top,
+body.body--dark .q-table__bottom {
+  background: #16191f !important;
+  color: #f9fafb !important;
+}
+
+body.body--dark .q-table thead tr,
+body.body--dark .q-table thead th {
+  background: #1b1f25 !important;
+  color: #c7cdd5 !important;
+}
+
+body.body--dark .q-table tbody td {
+  border-color: #2b2f36 !important;
+  color: #e5e7eb !important;
+}
+
+body.body--dark .q-table tbody tr:hover {
+  background: #1d2128 !important;
+}
+
+body.body--dark .tabela-cabecalho {
+  border-color: #2b2f36 !important;
+  color: #98a2b3 !important;
+}
+
+body.body--dark .tabela-linha {
+  border-color: #24282f !important;
+}
+
+/* =========================================================
+   INPUTS E SELECTS
+   ========================================================= */
+
+body.body--dark .q-field__control {
+  background: #16191f !important;
+  color: #f9fafb !important;
+}
+
+body.body--dark .q-field--outlined .q-field__control::before {
+  border-color: #3a3f48 !important;
+}
+
+body.body--dark .q-field--outlined:hover .q-field__control::before {
+  border-color: #f97316 !important;
+}
+
+body.body--dark .q-field--focused .q-field__control::before,
+body.body--dark .q-field--focused .q-field__control::after {
+  border-color: #f97316 !important;
+}
+
+body.body--dark .q-field__native,
+body.body--dark .q-field__input,
+body.body--dark .q-field__label,
+body.body--dark .q-field__prepend,
+body.body--dark .q-field__append {
+  color: #e5e7eb !important;
+}
+
+/* =========================================================
+   MENUS / POPUPS
+   ========================================================= */
+
+body.body--dark .q-menu,
+body.body--dark .q-dialog .q-card {
+  border: 1px solid #2b2f36;
+  background: #16191f !important;
+  color: #f9fafb !important;
+}
+
+body.body--dark .q-item {
+  color: #e5e7eb;
+}
+
+body.body--dark .q-item:hover {
+  background: #22262d;
+}
+
+body.body--dark .q-separator {
+  background: #2b2f36 !important;
+}
+
+/* =========================================================
+   SIDEBAR
+   ========================================================= */
+
+body.body--dark .q-drawer {
+  border-color: #2b2f36 !important;
+  background: #12151a !important;
+  color: #e5e7eb;
+}
+
+body.body--dark .q-drawer .q-item {
+  color: #c7cdd5;
+}
+
+body.body--dark .q-drawer .q-item:hover {
+  background: #1d2128;
+}
+
+body.body--dark .q-drawer .q-item.q-router-link--active {
+  color: #f97316 !important;
+}
+
+/* =========================================================
+   HEADER MOBILE
+   ========================================================= */
+
+body.body--dark .mobile-header,
+body.body--dark .bg-white {
+  border-color: #2b2f36 !important;
+  background: #16191f !important;
+  color: #f9fafb !important;
+}
+
+/* =========================================================
+   BARRAS / ÁREAS SECUNDÁRIAS
+   ========================================================= */
+
+body.body--dark .barra-fundo {
+  background: #2b2f36 !important;
+}
+
+body.body--dark .resultado-filtro {
+  border-color: #2b2f36 !important;
+  background: #1b1f25 !important;
+  color: #98a2b3 !important;
+}
+
+body.body--dark .informacao,
+body.body--dark .sem-deslocamento,
+body.body--dark .previsao-km {
+  background: #1b1f25 !important;
+}
+
+/* =========================================================
+   BANNERS
+   ========================================================= */
+
+body.body--dark .banner-bloqueado {
+  background: #1b1f25 !important;
+  color: #c7cdd5 !important;
+}
+
+/* =========================================================
+   SCROLLBAR
+   ========================================================= */
+
+body.body--dark ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+body.body--dark ::-webkit-scrollbar-track {
+  background: #0d0f12;
+}
+
+body.body--dark ::-webkit-scrollbar-thumb {
+  border: 2px solid #0d0f12;
+  border-radius: 10px;
+  background: #3a3f48;
+}
+
+body.body--dark ::-webkit-scrollbar-thumb:hover {
+  background: #f97316;
+}
