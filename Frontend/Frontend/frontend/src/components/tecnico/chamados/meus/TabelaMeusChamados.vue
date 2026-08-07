@@ -1,15 +1,15 @@
-<template>
+﻿<template>
   <div class="tabela-container">
     <q-table
-      title="Chamados pendentes"
-      :rows="chamadosPendentes"
+      title="Meus chamados"
+      :rows="chamados"
       :columns="columns"
       row-key="id_chamado"
       flat
       :loading="carregando"
       :pagination="paginacao"
-      no-data-label="Nenhum chamado pendente"
-      loading-label="Carregando chamados..."
+      no-data-label="Nenhum chamado vinculado a você"
+      loading-label="Carregando seus chamados..."
     >
       <template #body-cell-numero="props">
         <q-td :props="props">
@@ -38,7 +38,7 @@
         <q-td :props="props">
           <q-badge
             rounded
-            class="status-pendente"
+            :class="classeStatus(props.row.status)"
           >
             {{ formatarTexto(props.row.status) }}
           </q-badge>
@@ -54,7 +54,6 @@
               color="grey-8"
               label="Detalhes"
               size="sm"
-              :disable="aceitandoId !== null"
               @click="verDetalhes(props.row)"
             />
 
@@ -62,17 +61,10 @@
               unelevated
               no-caps
               color="orange"
-              icon="check_circle"
-              label="Aceitar"
+              icon="engineering"
+              label="Atender"
               size="sm"
-              :loading="
-                aceitandoId === props.row.id_chamado
-              "
-              :disable="
-                aceitandoId !== null &&
-                aceitandoId !== props.row.id_chamado
-              "
-              @click="aceitarChamado(props.row)"
+              @click="abrirAtendimento(props.row)"
             />
           </div>
         </q-td>
@@ -99,38 +91,21 @@
 </template>
 
 <script setup>
-import {
-  computed,
-  onMounted,
-  ref
-} from 'vue'
+import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useQuasar } from 'quasar'
 import { useAuthStore } from 'src/stores/auth'
-import chamadoService from 'src/services/chamadoService'
 import chamadoFuncionarioService from 'src/services/chamadoFuncionarioService'
 
 const router = useRouter()
-const $q = useQuasar()
 const authStore = useAuthStore()
 
 const chamados = ref([])
 const carregando = ref(false)
 const erro = ref('')
-const aceitandoId = ref(null)
 
 const paginacao = ref({
   rowsPerPage: 10
 })
-
-const chamadosPendentes = computed(() =>
-  chamados.value.filter(
-    (chamado) =>
-      String(
-        chamado.status || ''
-      ).toUpperCase() === 'PENDENTE'
-  )
-)
 
 const columns = [
   {
@@ -203,16 +178,11 @@ function formatarTexto(valor) {
   return String(valor)
     .replaceAll('_', ' ')
     .toLowerCase()
-    .replace(
-      /^\w/,
-      (letra) => letra.toUpperCase()
-    )
+    .replace(/^\w/, (letra) => letra.toUpperCase())
 }
 
 function classeUrgencia(urgencia) {
-  const valor = String(
-    urgencia || ''
-  ).toUpperCase()
+  const valor = String(urgencia || '').toUpperCase()
 
   if (valor === 'ALTA') {
     return 'urgencia-alta'
@@ -225,6 +195,31 @@ function classeUrgencia(urgencia) {
   return 'urgencia-baixa'
 }
 
+function classeStatus(status) {
+  const valor = String(status || '').toUpperCase()
+
+  if (valor === 'ACEITO') {
+    return 'status-aceito'
+  }
+
+  if (valor === 'EM_ROTA') {
+    return 'status-rota'
+  }
+
+  if (valor === 'EM_ATENDIMENTO') {
+    return 'status-atendimento'
+  }
+
+  if (
+    valor === 'FINALIZADO' ||
+    valor === 'CONCLUIDO'
+  ) {
+    return 'status-finalizado'
+  }
+
+  return 'status-pendente'
+}
+
 async function verDetalhes(chamado) {
   await router.push({
     name: 'tecnico-detalhes-chamado',
@@ -234,66 +229,13 @@ async function verDetalhes(chamado) {
   })
 }
 
-async function aceitarChamado(chamado) {
-  const idFuncionario = Number(
-    authStore.usuario?.id_usuario
-  )
-
-  if (
-    !Number.isInteger(idFuncionario) ||
-    idFuncionario <= 0
-  ) {
-    $q.notify({
-      type: 'negative',
-      message:
-        'Não foi possível identificar o técnico logado.'
-    })
-
-    return
-  }
-
-  aceitandoId.value = chamado.id_chamado
-
-  try {
-    const resposta =
-      await chamadoFuncionarioService.aceitar(
-        chamado.id_chamado,
-        idFuncionario
-      )
-
-    chamados.value = chamados.value.filter(
-      (item) =>
-        item.id_chamado !== chamado.id_chamado
-    )
-
-    $q.notify({
-      type: 'positive',
-      message:
-        resposta.message ||
-        `Chamado #${chamado.id_chamado} aceito com sucesso.`
-    })
-
-    await router.push({
-      name: 'tecnico-meus-chamados'
-    })
-  } catch (error) {
-    console.error(
-      'Erro ao aceitar chamado:',
-      error
-    )
-
-    $q.notify({
-      type: 'negative',
-      message:
-        error.response?.data?.message ||
-        error.response?.data?.erro ||
-        'Não foi possível aceitar o chamado.'
-    })
-
-    await carregarChamados()
-  } finally {
-    aceitandoId.value = null
-  }
+async function abrirAtendimento(chamado) {
+  await router.push({
+    name: 'tecnico-atendimento-detalhes',
+    params: {
+      id: chamado.id_chamado
+    }
+  })
 }
 
 async function carregarChamados() {
@@ -301,8 +243,23 @@ async function carregarChamados() {
   erro.value = ''
 
   try {
+    const idFuncionario = Number(
+      authStore.usuario?.id_usuario
+    )
+
+    if (
+      !Number.isInteger(idFuncionario) ||
+      idFuncionario <= 0
+    ) {
+      throw new Error(
+        'Técnico logado não identificado.'
+      )
+    }
+
     const resposta =
-      await chamadoService.listar()
+      await chamadoFuncionarioService.listarPorFuncionario(
+        idFuncionario
+      )
 
     chamados.value = Array.isArray(resposta)
       ? resposta
@@ -311,14 +268,15 @@ async function carregarChamados() {
         []
   } catch (error) {
     console.error(
-      'Erro ao carregar chamados pendentes:',
+      'Erro ao carregar meus chamados:',
       error
     )
 
     erro.value =
       error.response?.data?.message ||
       error.response?.data?.erro ||
-      'Não foi possível carregar os chamados pendentes.'
+      error.message ||
+      'Não foi possível carregar seus chamados.'
   } finally {
     carregando.value = false
   }
@@ -343,6 +301,10 @@ onMounted(carregarChamados)
 }
 
 .status-pendente,
+.status-aceito,
+.status-rota,
+.status-atendimento,
+.status-finalizado,
 .urgencia-baixa,
 .urgencia-media,
 .urgencia-alta {
@@ -352,6 +314,26 @@ onMounted(carregarChamados)
 .status-pendente {
   color: #f97316;
   background: #fff1df;
+}
+
+.status-aceito {
+  color: #2563eb;
+  background: #dbeafe;
+}
+
+.status-rota {
+  color: #7c3aed;
+  background: #ede9fe;
+}
+
+.status-atendimento {
+  color: #d97706;
+  background: #fef3c7;
+}
+
+.status-finalizado {
+  color: #059669;
+  background: #d1fae5;
 }
 
 .urgencia-baixa {

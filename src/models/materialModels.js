@@ -2,7 +2,9 @@ const db = require('../database/db')
 
 const listar = async () => {
   const resultado = await db.query(
-    'SELECT * FROM materiais_utilizados ORDER BY id_material ASC'
+    `SELECT *
+     FROM materiais_utilizados
+     ORDER BY id_material ASC`
   )
 
   return resultado.rows
@@ -10,17 +12,22 @@ const listar = async () => {
 
 const buscarPorId = async (id) => {
   const resultado = await db.query(
-    'SELECT * FROM materiais_utilizados WHERE id_material = $1',
+    `SELECT *
+     FROM materiais_utilizados
+     WHERE id_material = $1`,
     [id]
   )
 
   return resultado.rows[0]
 }
 
-const listarPorChamado = async (id_chamado) => {
+const listarPorChamado = async (idChamado) => {
   const resultado = await db.query(
-    'SELECT * FROM materiais_utilizados WHERE id_chamado = $1 ORDER BY id_material ASC',
-    [id_chamado]
+    `SELECT *
+     FROM materiais_utilizados
+     WHERE id_chamado = $1
+     ORDER BY id_material ASC`,
+    [idChamado]
   )
 
   return resultado.rows
@@ -30,11 +37,8 @@ const criar = async (dados) => {
   const {
     id_chamado,
     descricao_material,
-    quantidade,
-    valor_unitario
+    quantidade
   } = dados
-
-  const valor_total = Number(quantidade) * Number(valor_unitario)
 
   const resultado = await db.query(
     `INSERT INTO materiais_utilizados
@@ -45,14 +49,12 @@ const criar = async (dados) => {
       valor_unitario,
       valor_total
     )
-    VALUES ($1,$2,$3,$4,$5)
+    VALUES ($1, $2, $3, NULL, NULL)
     RETURNING *`,
     [
       id_chamado,
       descricao_material,
-      quantidade,
-      valor_unitario,
-      valor_total
+      quantidade
     ]
   )
 
@@ -61,29 +63,20 @@ const criar = async (dados) => {
 
 const atualizar = async (id, dados) => {
   const {
-    id_chamado,
     descricao_material,
-    quantidade,
-    valor_unitario
+    quantidade
   } = dados
 
-  const valor_total = Number(quantidade) * Number(valor_unitario)
-
   const resultado = await db.query(
-    `UPDATE materiais_utilizados SET
-      id_chamado = $1,
-      descricao_material = $2,
-      quantidade = $3,
-      valor_unitario = $4,
-      valor_total = $5
-    WHERE id_material = $6
-    RETURNING *`,
+    `UPDATE materiais_utilizados
+     SET
+       descricao_material = $1,
+       quantidade = $2
+     WHERE id_material = $3
+     RETURNING *`,
     [
-      id_chamado,
       descricao_material,
       quantidade,
-      valor_unitario,
-      valor_total,
       id
     ]
   )

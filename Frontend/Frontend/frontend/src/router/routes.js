@@ -11,9 +11,6 @@ const routes = [
     ]
   },
 
-  // ==========================
-  // PRODUTOR
-  // ==========================
   {
     path: '/produtor',
     component: () => import('layouts/ProdutorLayout.vue'),
@@ -25,39 +22,42 @@ const routes = [
       {
         path: 'dashboard',
         name: 'produtor-dashboard',
-        component: () => import('pages/produtor/DashboardPage.vue')
+        component: () =>
+          import('pages/produtor/DashboardPage.vue')
       },
       {
         path: 'chamados',
         name: 'produtor-chamados',
-        component: () => import('pages/produtor/ChamadosPage.vue')
+        component: () =>
+          import('pages/produtor/ChamadosPage.vue')
       },
       {
         path: 'chamados/:id',
         name: 'produtor-detalhes-chamado',
-        component: () => import('pages/produtor/DetalhesChamadoPage.vue')
+        component: () =>
+          import('pages/produtor/DetalhesChamadoPage.vue')
       },
       {
         path: 'relatorios',
         name: 'produtor-relatorios',
-        component: () => import('pages/produtor/RelatoriosPage.vue')
+        component: () =>
+          import('pages/produtor/RelatoriosPage.vue')
       },
       {
         path: 'perfil',
         name: 'produtor-perfil',
-        component: () => import('pages/produtor/PerfilPage.vue')
+        component: () =>
+          import('pages/produtor/PerfilPage.vue')
       },
       {
         path: 'novo-chamado',
         name: 'produtor-novo-chamado',
-        component: () => import('pages/produtor/NovoChamadoPage.vue')
+        component: () =>
+          import('pages/produtor/NovoChamadoPage.vue')
       }
     ]
   },
 
-  // ==========================
-  // TÉCNICO
-  // ==========================
   {
     path: '/tecnico',
     component: () => import('layouts/TecnicoLayout.vue'),
@@ -88,12 +88,14 @@ const routes = [
         component: () =>
           import('pages/tecnico/MeusChamadosPage.vue')
       },
+
       {
         path: 'chamados/:id',
         name: 'tecnico-detalhes-chamado',
         component: () =>
-          import('pages/tecnico/DetalhesChamadoTecnicoPage.vue')
+          import('pages/tecnico/AtendimentoPage.vue')
       },
+
       {
         path: 'atendimento',
         name: 'tecnico-atendimento',
@@ -109,12 +111,10 @@ const routes = [
     ]
   },
 
-  // ==========================
-  // 404
-  // ==========================
   {
     path: '/:catchAll(.*)*',
-    component: () => import('pages/ErrorNotFound.vue')
+    component: () =>
+      import('pages/ErrorNotFound.vue')
   }
 ]
 

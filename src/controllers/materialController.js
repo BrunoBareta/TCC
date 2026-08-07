@@ -36,10 +36,53 @@ const listarPorChamado = async (req, res) => {
 
 const criar = async (req, res) => {
   try {
-    const material = await materialModel.criar(req.body)
-    res.status(201).json(material)
+    const idChamado = Number(req.body.id_chamado)
+
+    const descricaoMaterial = String(
+      req.body.descricao_material || ''
+    ).trim()
+
+    const quantidade = Number(
+      req.body.quantidade
+    )
+
+    if (!Number.isInteger(idChamado) || idChamado <= 0) {
+      return res.status(400).json({
+        message: 'ID do chamado inválido.'
+      })
+    }
+
+    if (!descricaoMaterial) {
+      return res.status(400).json({
+        message: 'Informe a descrição do material.'
+      })
+    }
+
+    if (
+      !Number.isFinite(quantidade) ||
+      quantidade <= 0
+    ) {
+      return res.status(400).json({
+        message: 'Informe uma quantidade válida.'
+      })
+    }
+
+    const material = await materialModel.criar({
+      id_chamado: idChamado,
+      descricao_material: descricaoMaterial,
+      quantidade
+    })
+
+    res.status(201).json({
+      message: 'Material adicionado com sucesso.',
+      material
+    })
   } catch (error) {
-    res.status(500).json({ erro: error.message })
+    console.error('Erro ao adicionar material:', error)
+
+    res.status(500).json({
+      erro: error.message
+    })
   }
 }
 

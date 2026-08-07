@@ -10,7 +10,9 @@ const listar = async () => {
 
 const buscarPorId = async (id) => {
   const resultado = await db.query(
-    'SELECT * FROM chamados WHERE id_chamado = $1',
+    `SELECT *
+     FROM chamados
+     WHERE id_chamado = $1`,
     [id]
   )
 
@@ -42,7 +44,7 @@ const criar = async (dados) => {
       data_abertura
     )
     VALUES
-    ($1,$2,$3,$4,$5,$6,$7,'PENDENTE',NOW())
+    ($1, $2, $3, $4, $5, $6, $7, 'PENDENTE', NOW())
     RETURNING *`,
     [
       id_usuario,
@@ -95,6 +97,47 @@ const atualizar = async (id, dados) => {
   return resultado.rows[0]
 }
 
+const atualizarStatus = async (
+  id,
+  novoStatus,
+  respostaTecnico = null
+) => {
+  const resultado = await db.query(
+    `UPDATE chamados
+     SET
+       status = $2::varchar,
+
+       resposta_tecnico = CASE
+         WHEN $2::varchar = 'FINALIZADO'
+              AND $3::text IS NOT NULL
+           THEN $3::text
+         ELSE resposta_tecnico
+       END,
+
+       data_finalizacao = CASE
+         WHEN $2::varchar = 'FINALIZADO'
+           THEN NOW()
+         ELSE data_finalizacao
+       END,
+
+       data_fechamento = CASE
+         WHEN $2::varchar = 'FINALIZADO'
+           THEN NOW()
+         ELSE data_fechamento
+       END
+
+     WHERE id_chamado = $1::bigint
+     RETURNING *`,
+    [
+      id,
+      novoStatus,
+      respostaTecnico
+    ]
+  )
+
+  return resultado.rows[0]
+}
+
 const deletar = async (id) => {
   const resultado = await db.query(
     `UPDATE chamados
@@ -112,5 +155,6 @@ module.exports = {
   buscarPorId,
   criar,
   atualizar,
+  atualizarStatus,
   deletar
 }
