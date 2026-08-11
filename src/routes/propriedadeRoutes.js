@@ -2,16 +2,42 @@ const express = require('express')
 
 const router = express.Router()
 
-const propriedadeController = require('../controllers/propriedadeController')
+const propriedadeController = require(
+  '../controllers/propriedadeController'
+)
 
-router.get('/', propriedadeController.listar)
+router.get(
+  '/',
+  propriedadeController.listar
+)
 
-router.get('/:id', propriedadeController.buscarPorId)
+/*
+  IMPORTANTE:
+  deixa esta rota antes de /:id
+*/
+router.get(
+  '/usuario/:idUsuario',
+  propriedadeController.buscarPorUsuario
+)
 
-router.post('/', propriedadeController.criar)
+router.get(
+  '/:id',
+  propriedadeController.buscarPorId
+)
 
-router.put('/:id', propriedadeController.atualizar)
+router.post(
+  '/',
+  propriedadeController.criar
+)
 
-router.delete('/:id', propriedadeController.deletar)
+router.put(
+  '/:id',
+  propriedadeController.atualizar
+)
+
+router.delete(
+  '/:id',
+  propriedadeController.deletar
+)
 
 module.exports = router

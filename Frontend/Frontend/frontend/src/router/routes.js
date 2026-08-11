@@ -1,13 +1,44 @@
 const routes = [
+  // ==========================
+  // LOGIN / ÁREA PÚBLICA
+  // ==========================
+
   {
     path: '/',
-    component: () => import('layouts/LoginLayout.vue'),
+    component: () =>
+      import(
+        'layouts/LoginLayout.vue'
+      ),
+
     children: [
       {
         path: '',
         name: 'login',
+
         component: () =>
-          import('pages/auth/LoginPage.vue')
+          import(
+            'pages/auth/LoginPage.vue'
+          )
+      },
+
+      {
+        path: 'cadastro',
+        name: 'cadastro',
+
+        component: () =>
+          import(
+            'pages/auth/CadastroPage.vue'
+          )
+      },
+
+      {
+        path: 'recuperar-senha',
+        name: 'recuperar-senha',
+
+        component: () =>
+          import(
+            'pages/auth/RecuperarSenhaPage.vue'
+          )
       }
     ]
   },
@@ -18,8 +49,11 @@ const routes = [
 
   {
     path: '/produtor',
+
     component: () =>
-      import('layouts/ProdutorLayout.vue'),
+      import(
+        'layouts/ProdutorLayout.vue'
+      ),
 
     meta: {
       requiresAuth: true,
@@ -28,8 +62,14 @@ const routes = [
 
     children: [
       {
+        path: '',
+        redirect: '/produtor/dashboard'
+      },
+
+      {
         path: 'dashboard',
         name: 'produtor-dashboard',
+
         component: () =>
           import(
             'pages/produtor/DashboardPage.vue'
@@ -39,6 +79,7 @@ const routes = [
       {
         path: 'chamados',
         name: 'produtor-chamados',
+
         component: () =>
           import(
             'pages/produtor/ChamadosPage.vue'
@@ -48,6 +89,7 @@ const routes = [
       {
         path: 'chamados/:id',
         name: 'produtor-detalhes-chamado',
+
         component: () =>
           import(
             'pages/produtor/DetalhesChamadoPage.vue'
@@ -57,6 +99,7 @@ const routes = [
       {
         path: 'relatorios',
         name: 'produtor-relatorios',
+
         component: () =>
           import(
             'pages/produtor/RelatoriosPage.vue'
@@ -66,6 +109,7 @@ const routes = [
       {
         path: 'perfil',
         name: 'produtor-perfil',
+
         component: () =>
           import(
             'pages/produtor/PerfilPage.vue'
@@ -75,6 +119,7 @@ const routes = [
       {
         path: 'novo-chamado',
         name: 'produtor-novo-chamado',
+
         component: () =>
           import(
             'pages/produtor/NovoChamadoPage.vue'
@@ -89,8 +134,11 @@ const routes = [
 
   {
     path: '/tecnico',
+
     component: () =>
-      import('layouts/TecnicoLayout.vue'),
+      import(
+        'layouts/TecnicoLayout.vue'
+      ),
 
     meta: {
       requiresAuth: true,
@@ -106,6 +154,7 @@ const routes = [
       {
         path: 'dashboard',
         name: 'tecnico-dashboard',
+
         component: () =>
           import(
             'pages/tecnico/DashboardTecnicoPage.vue'
@@ -115,6 +164,7 @@ const routes = [
       {
         path: 'chamados-pendentes',
         name: 'tecnico-pendentes',
+
         component: () =>
           import(
             'pages/tecnico/ChamadosPendentesPage.vue'
@@ -124,6 +174,7 @@ const routes = [
       {
         path: 'meus-chamados',
         name: 'tecnico-meus-chamados',
+
         component: () =>
           import(
             'pages/tecnico/MeusChamadosPage.vue'
@@ -133,6 +184,7 @@ const routes = [
       {
         path: 'chamados/:id',
         name: 'tecnico-detalhes-chamado',
+
         component: () =>
           import(
             'pages/tecnico/AtendimentoPage.vue'
@@ -142,15 +194,20 @@ const routes = [
       {
         path: 'atendimento',
         name: 'tecnico-atendimento',
-        component: () =>
-          import(
-            'pages/tecnico/AtendimentoPage.vue'
-          )
+
+        redirect: {
+          name: 'tecnico-meus-chamados',
+
+          query: {
+            filtro: 'andamento'
+          }
+        }
       },
 
       {
         path: 'atendimento/:id',
         name: 'tecnico-atendimento-detalhes',
+
         component: () =>
           import(
             'pages/tecnico/AtendimentoPage.vue'
@@ -160,6 +217,7 @@ const routes = [
       {
         path: 'perfil',
         name: 'tecnico-perfil',
+
         component: () =>
           import(
             'pages/tecnico/PerfilTecnicoPage.vue'
@@ -174,8 +232,11 @@ const routes = [
 
   {
     path: '/:catchAll(.*)*',
+
     component: () =>
-      import('pages/ErrorNotFound.vue')
+      import(
+        'pages/ErrorNotFound.vue'
+      )
   }
 ]
 

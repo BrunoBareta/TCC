@@ -1,5 +1,11 @@
 <template>
-  <q-page class="perfil-page">
+  <q-page
+    class="perfil-page"
+    :class="{
+      'perfil-page--dark':
+        $q.dark.isActive
+    }"
+  >
     <!-- CABEÇALHO -->
     <div class="pagina-cabecalho">
       <div class="pagina-titulo">
@@ -7,14 +13,14 @@
       </div>
 
       <div class="pagina-subtitulo">
-        Gerencie suas informações, propriedade e locais de atendimento.
+        Gerencie suas informações e os dados da sua propriedade.
       </div>
     </div>
 
     <div class="perfil-grid">
-      <!-- ===================================== -->
-      <!-- PERFIL -->
-      <!-- ===================================== -->
+      <!-- =====================================
+           LATERAL
+      ====================================== -->
 
       <div class="perfil-lateral">
         <div class="perfil-card">
@@ -57,17 +63,22 @@
             />
 
             <span>
-              {{ propriedade.nome }}
+              {{
+                propriedade
+                  ? propriedade.nome_propriedade
+                  : 'Sem propriedade'
+              }}
             </span>
           </div>
         </div>
       </div>
 
-      <!-- ===================================== -->
-      <!-- CONTEÚDO -->
-      <!-- ===================================== -->
+      <!-- =====================================
+           CONTEÚDO
+      ====================================== -->
 
       <div class="perfil-conteudo">
+
         <!-- INFORMAÇÕES PESSOAIS -->
         <div class="conteudo-card">
           <div class="card-cabecalho">
@@ -164,70 +175,36 @@
           </div>
         </div>
 
-        <!-- ===================================== -->
-        <!-- PROPRIEDADE + LOCAIS -->
-        <!-- ===================================== -->
+        <!-- =====================================
+             MINHA PROPRIEDADE
+        ====================================== -->
 
         <div class="conteudo-card">
-          <div class="propriedade-cabecalho">
-            <div class="propriedade-info">
-              <div class="propriedade-icone">
-                <q-icon
-                  name="agriculture"
-                  size="26px"
-                />
-              </div>
-
-              <div>
-                <div class="card-titulo">
-                  {{ propriedade.nome }}
-                </div>
-
-                <div class="propriedade-localizacao">
-                  <q-icon
-                    name="location_on"
-                    size="16px"
-                  />
-
-                  {{ propriedade.cidade }}
-                  -
-                  {{ propriedade.estado }}
-
-                  <span v-if="propriedade.endereco">
-                    • {{ propriedade.endereco }}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <q-separator class="q-my-lg" />
-
-          <div class="locais-cabecalho">
+          <div class="card-cabecalho propriedade-topo">
             <div>
-              <div class="locais-titulo">
-                Locais de atendimento
+              <div class="card-titulo">
+                Minha propriedade
               </div>
 
               <div class="card-subtitulo">
-                Aviários, granjas, galpões e outros locais
-                onde o técnico poderá realizar o atendimento.
+                Estes dados serão utilizados automaticamente nos seus chamados.
               </div>
             </div>
 
             <q-btn
-              unelevated
+              v-if="propriedade"
+              outline
               no-caps
               color="orange"
-              icon="add"
-              label="Adicionar local"
-              @click="abrirNovoLocal"
+              icon="edit"
+              label="Editar propriedade"
+              @click="abrirEditarPropriedade"
             />
           </div>
 
           <!-- CARREGANDO -->
           <div
-            v-if="carregandoUnidades"
+            v-if="carregandoPropriedade"
             class="estado-central"
           >
             <q-spinner
@@ -236,149 +213,107 @@
             />
 
             <div class="estado-texto">
-              Carregando locais...
+              Carregando propriedade...
             </div>
           </div>
 
-          <!-- SEM LOCAIS -->
-          <div
-            v-else-if="unidades.length === 0"
-            class="estado-vazio"
+          <!-- PROPRIEDADE EXISTE -->
+          <template
+            v-else-if="propriedade"
           >
-            <q-icon
-              name="home_work"
-              size="40px"
-              color="grey-5"
-            />
+            <div class="propriedade-resumo">
+              <div class="propriedade-icone">
+                <q-icon
+                  name="agriculture"
+                  size="27px"
+                />
+              </div>
 
-            <div class="estado-vazio-titulo">
-              Nenhum local cadastrado
-            </div>
-
-            <div class="estado-vazio-texto">
-              Cadastre o primeiro local da propriedade.
-            </div>
-
-            <q-btn
-              outline
-              no-caps
-              color="orange"
-              icon="add"
-              label="Adicionar local"
-              class="q-mt-md"
-              @click="abrirNovoLocal"
-            />
-          </div>
-
-          <!-- LISTA -->
-          <div
-            v-else
-            class="unidades-lista"
-          >
-            <div
-              v-for="unidade in unidades"
-              :key="unidade.id_unidade"
-              class="unidade-item"
-            >
-              <div class="unidade-principal">
-                <div class="unidade-icone">
-                  <q-icon
-                    :name="iconeTipoUnidade(unidade.tipo_unidade)"
-                    size="24px"
-                  />
+              <div class="propriedade-dados">
+                <div class="propriedade-nome">
+                  {{
+                    propriedade.nome_propriedade
+                  }}
                 </div>
 
-                <div class="unidade-conteudo">
-                  <div class="unidade-topo">
-                    <div>
-                      <div class="unidade-nome">
-                        {{ unidade.nome_unidade }}
-                      </div>
+                <div
+                  v-if="localizacaoTexto"
+                  class="propriedade-local"
+                >
+                  <q-icon
+                    name="location_on"
+                    size="16px"
+                  />
 
-                      <div class="unidade-tipo">
-                        {{ formatarTipoUnidade(unidade.tipo_unidade) }}
-                      </div>
-                    </div>
+                  {{ localizacaoTexto }}
+                </div>
 
-                    <q-btn
-                      flat
-                      round
-                      dense
-                      icon="more_vert"
-                      color="grey-7"
-                    >
-                      <q-menu
-                        anchor="bottom right"
-                        self="top right"
-                      >
-                        <q-list style="min-width: 170px">
-                          <q-item
-                            clickable
-                            v-close-popup
-                            @click="abrirEditarLocal(unidade)"
-                          >
-                            <q-item-section avatar>
-                              <q-icon
-                                name="edit"
-                                color="primary"
-                              />
-                            </q-item-section>
-
-                            <q-item-section>
-                              Editar
-                            </q-item-section>
-                          </q-item>
-
-                          <q-item
-                            clickable
-                            v-close-popup
-                            @click="confirmarDesativacao(unidade)"
-                          >
-                            <q-item-section avatar>
-                              <q-icon
-                                name="block"
-                                color="negative"
-                              />
-                            </q-item-section>
-
-                            <q-item-section class="text-negative">
-                              Desativar
-                            </q-item-section>
-                          </q-item>
-                        </q-list>
-                      </q-menu>
-                    </q-btn>
-                  </div>
-
-                  <div
-                    v-if="unidade.descricao"
-                    class="unidade-descricao"
-                  >
-                    {{ unidade.descricao }}
-                  </div>
-
-                  <div
-                    v-if="unidade.referencia"
-                    class="unidade-referencia"
-                  >
-                    <q-icon
-                      name="near_me"
-                      size="16px"
-                    />
-
-                    <span>
-                      {{ unidade.referencia }}
-                    </span>
-                  </div>
+                <div
+                  v-if="propriedade.cep"
+                  class="propriedade-cep"
+                >
+                  CEP:
+                  {{ propriedade.cep }}
                 </div>
               </div>
             </div>
+
+            <div class="mapa-perfil">
+              <MapaLocalizacao
+                :latitude="
+                  propriedade.latitude
+                "
+                :longitude="
+                  propriedade.longitude
+                "
+                :nome-local="
+                  propriedade.nome_propriedade
+                "
+                :endereco="
+                  enderecoMapa
+                "
+                titulo="Localização da propriedade"
+                subtitulo="Esta localização será enviada automaticamente para o técnico."
+              />
+            </div>
+          </template>
+
+          <!-- SEM PROPRIEDADE -->
+          <div
+            v-else
+            class="sem-propriedade"
+          >
+            <div class="sem-propriedade-icone">
+              <q-icon
+                name="add_location_alt"
+                size="34px"
+              />
+            </div>
+
+            <div class="sem-propriedade-titulo">
+              Nenhuma propriedade cadastrada
+            </div>
+
+            <div class="sem-propriedade-texto">
+              Cadastre sua propriedade uma única vez.
+              Depois, a localização será utilizada automaticamente nos chamados.
+            </div>
+
+            <q-btn
+              unelevated
+              no-caps
+              color="orange"
+              icon="add"
+              label="Cadastrar propriedade"
+              class="q-mt-lg"
+              @click="abrirCadastrarPropriedade"
+            />
           </div>
         </div>
 
-        <!-- ===================================== -->
-        <!-- SEGURANÇA -->
-        <!-- ===================================== -->
+        <!-- =====================================
+             SEGURANÇA
+        ====================================== -->
 
         <div class="conteudo-card">
           <div class="card-cabecalho seguranca-cabecalho">
@@ -405,27 +340,30 @@
       </div>
     </div>
 
-    <!-- ===================================== -->
-    <!-- DIALOG LOCAL -->
-    <!-- ===================================== -->
+    <!-- =====================================
+         CADASTRAR / EDITAR PROPRIEDADE
+    ====================================== -->
 
-    <q-dialog v-model="dialogLocal">
-      <q-card class="local-dialog">
+    <q-dialog
+      v-model="dialogPropriedade"
+      persistent
+    >
+      <q-card class="propriedade-dialog">
         <q-card-section class="dialog-header">
           <div>
             <div class="dialog-titulo">
               {{
-                editandoUnidade
-                  ? 'Editar local'
-                  : 'Adicionar local'
+                editandoPropriedade
+                  ? 'Editar propriedade'
+                  : 'Cadastrar propriedade'
               }}
             </div>
 
             <div class="dialog-subtitulo">
               {{
-                editandoUnidade
-                  ? 'Atualize as informações do local.'
-                  : 'Cadastre um novo local dentro da propriedade.'
+                editandoPropriedade
+                  ? 'Atualize os dados e a localização da propriedade.'
+                  : 'Cadastre sua propriedade e marque sua localização no mapa.'
               }}
             </div>
           </div>
@@ -435,86 +373,115 @@
             round
             dense
             icon="close"
-            v-close-popup
+            :disable="salvandoPropriedade"
+            @click="
+              dialogPropriedade = false
+            "
           />
         </q-card-section>
 
         <q-separator />
 
-        <q-card-section class="q-pa-lg">
-          <q-select
-            v-model="formUnidade.tipo_unidade"
-            outlined
-            emit-value
-            map-options
-            label="Tipo do local"
-            :options="tiposUnidade"
-          >
-            <template #prepend>
-              <q-icon name="category" />
-            </template>
-          </q-select>
+        <q-card-section class="dialog-conteudo">
+          <div class="propriedade-form-grid">
+            <q-input
+              v-model="
+                formPropriedade.nome_propriedade
+              "
+              outlined
+              label="Nome da propriedade"
+              placeholder="Ex.: Fazenda Boa Vista"
+              class="campo-largo"
+            >
+              <template #prepend>
+                <q-icon name="agriculture" />
+              </template>
+            </q-input>
 
-          <q-input
-            v-model="formUnidade.nome_unidade"
-            outlined
-            class="q-mt-md"
-            label="Nome do local"
-            placeholder="Ex.: Aviário 1"
-            maxlength="100"
-          >
-            <template #prepend>
-              <q-icon name="home_work" />
-            </template>
-          </q-input>
+            <q-input
+              v-model="
+                formPropriedade.cidade
+              "
+              outlined
+              label="Cidade"
+              placeholder="Ex.: Chapecó"
+            >
+              <template #prepend>
+                <q-icon name="location_city" />
+              </template>
+            </q-input>
 
-          <q-input
-            v-model="formUnidade.descricao"
-            outlined
-            class="q-mt-md"
-            label="Descrição"
-            placeholder="Ex.: Aviário principal"
-            maxlength="255"
-          >
-            <template #prepend>
-              <q-icon name="description" />
-            </template>
-          </q-input>
-
-          <q-input
-            v-model="formUnidade.referencia"
-            outlined
-            class="q-mt-md"
-            label="Referência para o técnico"
-            placeholder="Ex.: Primeiro galpão após a entrada"
-            maxlength="255"
-          >
-            <template #prepend>
-              <q-icon name="location_on" />
-            </template>
-          </q-input>
-
-          <div class="dica-local">
-            <q-icon
-              name="info"
-              size="19px"
+            <q-input
+              v-model="
+                formPropriedade.estado
+              "
+              outlined
+              label="UF"
+              maxlength="2"
+              placeholder="SC"
+              @update:model-value="
+                formPropriedade.estado =
+                  String(
+                    formPropriedade.estado || ''
+                  ).toUpperCase()
+              "
             />
 
-            A referência ajudará o técnico a encontrar
-            o local correto dentro da propriedade.
+            <q-input
+              v-model="
+                formPropriedade.endereco
+              "
+              outlined
+              label="Endereço / Linha"
+              placeholder="Ex.: Linha Água Amarela, s/n"
+              class="campo-largo"
+            >
+              <template #prepend>
+                <q-icon name="home" />
+              </template>
+            </q-input>
+
+            <q-input
+              v-model="
+                formPropriedade.cep
+              "
+              outlined
+              label="CEP"
+              mask="#####-###"
+            >
+              <template #prepend>
+                <q-icon name="markunread_mailbox" />
+              </template>
+            </q-input>
+          </div>
+
+          <div class="q-mt-lg">
+            <MapaSeletorLocalizacao
+              v-model:latitude="
+                formPropriedade.latitude
+              "
+              v-model:longitude="
+                formPropriedade.longitude
+              "
+            />
           </div>
         </q-card-section>
 
+        <q-separator />
+
         <q-card-actions
           align="right"
-          class="q-pa-lg q-pt-none"
+          class="dialog-acoes"
         >
           <q-btn
             flat
             no-caps
             color="grey-7"
             label="Cancelar"
-            v-close-popup
+            :disable="salvandoPropriedade"
+            @click="
+              dialogPropriedade = false
+            "
           />
 
           <q-btn
@@ -523,73 +490,24 @@
             color="orange"
             icon="save"
             :label="
-              editandoUnidade
+              editandoPropriedade
                 ? 'Salvar alterações'
-                : 'Adicionar local'
+                : 'Cadastrar propriedade'
             "
-            :loading="salvandoUnidade"
-            @click="salvarUnidade"
+            :loading="salvandoPropriedade"
+            @click="salvarPropriedade"
           />
         </q-card-actions>
       </q-card>
     </q-dialog>
 
-    <!-- ===================================== -->
-    <!-- DESATIVAR -->
-    <!-- ===================================== -->
+    <!-- =====================================
+         ALTERAR SENHA
+    ====================================== -->
 
-    <q-dialog v-model="dialogDesativar">
-      <q-card class="confirmacao-dialog">
-        <q-card-section class="confirmacao-conteudo">
-          <div class="confirmacao-icone">
-            <q-icon
-              name="block"
-              size="32px"
-            />
-          </div>
-
-          <div class="confirmacao-titulo">
-            Desativar local?
-          </div>
-
-          <div class="confirmacao-texto">
-            <strong>
-              {{ unidadeSelecionada?.nome_unidade }}
-            </strong>
-            deixará de aparecer na criação de novos chamados.
-          </div>
-        </q-card-section>
-
-        <q-card-actions
-          align="right"
-          class="q-pa-lg q-pt-none"
-        >
-          <q-btn
-            flat
-            no-caps
-            color="grey-7"
-            label="Cancelar"
-            v-close-popup
-          />
-
-          <q-btn
-            unelevated
-            no-caps
-            color="negative"
-            icon="block"
-            label="Desativar"
-            :loading="desativandoUnidade"
-            @click="desativarUnidade"
-          />
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
-
-    <!-- ===================================== -->
-    <!-- ALTERAR SENHA -->
-    <!-- ===================================== -->
-
-    <q-dialog v-model="dialogSenha">
+    <q-dialog
+      v-model="dialogSenha"
+    >
       <q-card class="senha-dialog">
         <q-card-section class="dialog-header">
           <div>
@@ -618,7 +536,11 @@
             v-model="senhaAtual"
             outlined
             label="Senha atual"
-            :type="mostrarSenhaAtual ? 'text' : 'password'"
+            :type="
+              mostrarSenhaAtual
+                ? 'text'
+                : 'password'
+            "
           >
             <template #prepend>
               <q-icon name="lock" />
@@ -633,7 +555,8 @@
                 "
                 class="cursor-pointer"
                 @click="
-                  mostrarSenhaAtual = !mostrarSenhaAtual
+                  mostrarSenhaAtual =
+                    !mostrarSenhaAtual
                 "
               />
             </template>
@@ -644,7 +567,11 @@
             outlined
             label="Nova senha"
             class="q-mt-md"
-            :type="mostrarNovaSenha ? 'text' : 'password'"
+            :type="
+              mostrarNovaSenha
+                ? 'text'
+                : 'password'
+            "
           >
             <template #prepend>
               <q-icon name="key" />
@@ -659,7 +586,8 @@
                 "
                 class="cursor-pointer"
                 @click="
-                  mostrarNovaSenha = !mostrarNovaSenha
+                  mostrarNovaSenha =
+                    !mostrarNovaSenha
                 "
               />
             </template>
@@ -712,135 +640,88 @@ import {
   ref
 } from 'vue'
 
-import { useQuasar } from 'quasar'
-import { useAuthStore } from 'src/stores/auth'
+import {
+  useQuasar
+} from 'quasar'
 
-import unidadePropriedadeService from
-  'src/services/unidadePropriedadeService'
+import {
+  useAuthStore
+} from 'src/stores/auth'
 
-const $q = useQuasar()
-const auth = useAuthStore()
+import propriedadeService from
+  'src/services/propriedadeService'
 
-/*
-  Temporário.
-  Depois vamos buscar automaticamente a propriedade
-  vinculada ao produtor logado.
-*/
-const ID_PROPRIEDADE = 1
+import MapaLocalizacao from
+  'src/components/shared/MapaLocalizacao.vue'
 
-const editando = ref(false)
-const salvando = ref(false)
+import MapaSeletorLocalizacao from
+  'src/components/shared/MapaSeletorLocalizacao.vue'
 
-const unidades = ref([])
-const carregandoUnidades = ref(false)
+const $q =
+  useQuasar()
 
-const dialogLocal = ref(false)
-const dialogDesativar = ref(false)
-const dialogSenha = ref(false)
+const auth =
+  useAuthStore()
 
-const editandoUnidade = ref(false)
-const unidadeSelecionada = ref(null)
+/* =========================
+   USUÁRIO
+========================= */
 
-const salvandoUnidade = ref(false)
-const desativandoUnidade = ref(false)
+const editando =
+  ref(false)
 
-const senhaAtual = ref('')
-const novaSenha = ref('')
-const confirmarSenha = ref('')
+const salvando =
+  ref(false)
 
-const mostrarSenhaAtual = ref(false)
-const mostrarNovaSenha = ref(false)
-
-const tiposUnidade = [
-  {
-    label: 'Aviário',
-    value: 'AVIARIO'
-  },
-  {
-    label: 'Granja',
-    value: 'GRANJA'
-  },
-  {
-    label: 'Chiqueiro',
-    value: 'CHIQUEIRO'
-  },
-  {
-    label: 'Galpão',
-    value: 'GALPAO'
-  },
-  {
-    label: 'Silo',
-    value: 'SILO'
-  },
-  {
-    label: 'Depósito',
-    value: 'DEPOSITO'
-  },
-  {
-    label: 'Outro',
-    value: 'OUTRO'
-  }
-]
-
-const nomeUsuario = computed(() => {
-  return (
-    auth.usuario?.nome ||
-    auth.nomeUsuario ||
-    'Produtor'
-  )
-})
-
-const iniciais = computed(() => {
-  return nomeUsuario.value
-    .trim()
-    .split(' ')
-    .filter(Boolean)
-    .slice(0, 2)
-    .map(
-      (nome) => nome.charAt(0)
+const nomeUsuario =
+  computed(() => {
+    return (
+      auth.usuario?.nome ||
+      auth.nomeUsuario ||
+      'Produtor'
     )
-    .join('')
-    .toUpperCase()
-})
+  })
 
-const form = reactive({
-  nome:
-    auth.usuario?.nome ||
-    auth.nomeUsuario ||
-    '',
+const iniciais =
+  computed(() => {
+    return nomeUsuario.value
+      .trim()
+      .split(' ')
+      .filter(Boolean)
+      .slice(0, 2)
+      .map(
+        nome =>
+          nome.charAt(0)
+      )
+      .join('')
+      .toUpperCase()
+  })
 
-  email:
-    auth.usuario?.email ||
-    '',
+const form =
+  reactive({
+    nome:
+      auth.usuario?.nome ||
+      auth.nomeUsuario ||
+      '',
 
-  telefone:
-    auth.usuario?.telefone ||
-    '',
+    email:
+      auth.usuario?.email ||
+      '',
 
-  documento:
-    auth.usuario?.cpf ||
-    auth.usuario?.documento ||
-    ''
-})
+    telefone:
+      auth.usuario?.telefone ||
+      '',
 
-const dadosOriginais = reactive({
-  ...form
-})
+    documento:
+      auth.usuario?.cpf ||
+      auth.usuario?.documento ||
+      ''
+  })
 
-const propriedade = reactive({
-  id_propriedade: ID_PROPRIEDADE,
-  nome: 'Fazenda Boa Vista',
-  cidade: 'Chapecó',
-  estado: 'SC',
-  endereco: 'Zona Rural'
-})
-
-const formUnidade = reactive({
-  nome_unidade: '',
-  tipo_unidade: 'AVIARIO',
-  descricao: '',
-  referencia: ''
-})
+const dadosOriginais =
+  reactive({
+    ...form
+  })
 
 function iniciarEdicao() {
   Object.assign(
@@ -848,7 +729,8 @@ function iniciarEdicao() {
     form
   )
 
-  editando.value = true
+  editando.value =
+    true
 }
 
 function cancelarEdicao() {
@@ -857,24 +739,40 @@ function cancelarEdicao() {
     dadosOriginais
   )
 
-  editando.value = false
+  editando.value =
+    false
 }
 
+/*
+  Mantive essa parte do jeito
+  que já estava.
+
+  Depois ligamos com o backend
+  de usuário.
+*/
 async function salvarDados() {
-  if (!form.nome.trim()) {
+  if (
+    !form.nome.trim()
+  ) {
     $q.notify({
       type: 'warning',
-      message: 'Informe o nome do produtor.'
+      message:
+        'Informe o nome do produtor.'
     })
 
     return
   }
 
-  salvando.value = true
+  salvando.value =
+    true
 
   try {
     await new Promise(
-      (resolve) => setTimeout(resolve, 400)
+      resolve =>
+        setTimeout(
+          resolve,
+          400
+        )
     )
 
     Object.assign(
@@ -882,261 +780,531 @@ async function salvarDados() {
       form
     )
 
-    editando.value = false
+    editando.value =
+      false
 
     $q.notify({
       type: 'positive',
+
       message:
         'Dados atualizados com sucesso.'
     })
   } finally {
-    salvando.value = false
+    salvando.value =
+      false
   }
 }
 
-/* ========================================
-   UNIDADES
-======================================== */
+/* =========================
+   PROPRIEDADE
+========================= */
 
-async function carregarUnidades() {
-  carregandoUnidades.value = true
+const propriedade =
+  ref(null)
+
+const carregandoPropriedade =
+  ref(false)
+
+const dialogPropriedade =
+  ref(false)
+
+const editandoPropriedade =
+  ref(false)
+
+const salvandoPropriedade =
+  ref(false)
+
+const formPropriedade =
+  reactive({
+    nome_propriedade: '',
+    endereco: '',
+    cidade: '',
+    estado: '',
+    cep: '',
+    latitude: null,
+    longitude: null,
+
+    cultura_principal:
+      'AVES',
+
+    quantidade_galpoes:
+      0
+  })
+
+const localizacaoTexto =
+  computed(() => {
+    if (!propriedade.value) {
+      return ''
+    }
+
+    return [
+      propriedade.value
+        .endereco,
+
+      propriedade.value
+        .cidade,
+
+      propriedade.value
+        .estado
+    ]
+      .filter(Boolean)
+      .join(' • ')
+  })
+
+const enderecoMapa =
+  computed(() => {
+    if (!propriedade.value) {
+      return ''
+    }
+
+    return [
+      propriedade.value
+        .endereco,
+
+      propriedade.value
+        .cidade,
+
+      propriedade.value
+        .estado
+    ]
+      .filter(Boolean)
+      .join(' - ')
+  })
+
+async function carregarPropriedade() {
+  const idUsuario =
+    Number(
+      auth.usuario
+        ?.id_usuario
+    )
+
+  if (
+    !Number.isInteger(
+      idUsuario
+    ) ||
+    idUsuario <= 0
+  ) {
+    console.error(
+      'Usuário logado sem id_usuario.'
+    )
+
+    return
+  }
+
+  carregandoPropriedade.value =
+    true
 
   try {
-    const resposta =
-      await unidadePropriedadeService
-        .listarPorPropriedade(
-          propriedade.id_propriedade
+    propriedade.value =
+      await propriedadeService
+        .buscarPorUsuario(
+          idUsuario
         )
-
-    unidades.value =
-      Array.isArray(resposta)
-        ? resposta
-        : resposta?.data || []
   } catch (error) {
     console.error(
-      'Erro ao carregar locais:',
+      'Erro ao carregar propriedade:',
       error
     )
 
     $q.notify({
       type: 'negative',
+
       message:
-        error.response?.data?.message ||
-        error.response?.data?.erro ||
-        'Não foi possível carregar os locais.'
+        error.response?.data
+          ?.message ||
+        error.response?.data
+          ?.erro ||
+        'Não foi possível carregar a propriedade.'
     })
   } finally {
-    carregandoUnidades.value = false
+    carregandoPropriedade.value =
+      false
   }
 }
 
-function limparFormUnidade() {
-  formUnidade.nome_unidade = ''
-  formUnidade.tipo_unidade = 'AVIARIO'
-  formUnidade.descricao = ''
-  formUnidade.referencia = ''
+function limparFormPropriedade() {
+  formPropriedade
+    .nome_propriedade = ''
+
+  formPropriedade
+    .endereco = ''
+
+  formPropriedade
+    .cidade = ''
+
+  formPropriedade
+    .estado = ''
+
+  formPropriedade
+    .cep = ''
+
+  formPropriedade
+    .latitude = null
+
+  formPropriedade
+    .longitude = null
+
+  formPropriedade
+    .cultura_principal =
+      'AVES'
+
+  formPropriedade
+    .quantidade_galpoes =
+      0
 }
 
-function abrirNovoLocal() {
-  editandoUnidade.value = false
-  unidadeSelecionada.value = null
+function abrirCadastrarPropriedade() {
+  editandoPropriedade.value =
+    false
 
-  limparFormUnidade()
+  limparFormPropriedade()
 
-  dialogLocal.value = true
+  dialogPropriedade.value =
+    true
 }
 
-function abrirEditarLocal(unidade) {
-  editandoUnidade.value = true
-  unidadeSelecionada.value = unidade
+function abrirEditarPropriedade() {
+  if (!propriedade.value) {
+    return
+  }
 
-  formUnidade.nome_unidade =
-    unidade.nome_unidade || ''
+  editandoPropriedade.value =
+    true
 
-  formUnidade.tipo_unidade =
-    unidade.tipo_unidade || 'OUTRO'
+  formPropriedade
+    .nome_propriedade =
+      propriedade.value
+        .nome_propriedade ||
+      ''
 
-  formUnidade.descricao =
-    unidade.descricao || ''
+  formPropriedade
+    .endereco =
+      propriedade.value
+        .endereco ||
+      ''
 
-  formUnidade.referencia =
-    unidade.referencia || ''
+  formPropriedade
+    .cidade =
+      propriedade.value
+        .cidade ||
+      ''
 
-  dialogLocal.value = true
+  formPropriedade
+    .estado =
+      propriedade.value
+        .estado ||
+      ''
+
+  formPropriedade
+    .cep =
+      propriedade.value
+        .cep ||
+      ''
+
+  formPropriedade
+    .latitude =
+      propriedade.value
+        .latitude ??
+      null
+
+  formPropriedade
+    .longitude =
+      propriedade.value
+        .longitude ??
+      null
+
+  formPropriedade
+    .cultura_principal =
+      propriedade.value
+        .cultura_principal ||
+      'AVES'
+
+  formPropriedade
+    .quantidade_galpoes =
+      Number(
+        propriedade.value
+          .quantidade_galpoes ||
+        0
+      )
+
+  dialogPropriedade.value =
+    true
 }
 
-async function salvarUnidade() {
-  if (!formUnidade.nome_unidade.trim()) {
+function coordenadasFormularioValidas() {
+  const latitude =
+    Number(
+      formPropriedade.latitude
+    )
+
+  const longitude =
+    Number(
+      formPropriedade.longitude
+    )
+
+  return (
+    Number.isFinite(latitude) &&
+    Number.isFinite(longitude) &&
+    latitude >= -90 &&
+    latitude <= 90 &&
+    longitude >= -180 &&
+    longitude <= 180 &&
+    !(
+      latitude === 0 &&
+      longitude === 0
+    )
+  )
+}
+
+function validarPropriedade() {
+  if (
+    !formPropriedade
+      .nome_propriedade
+      .trim()
+  ) {
     $q.notify({
       type: 'warning',
+
       message:
-        'Informe o nome do local.'
+        'Informe o nome da propriedade.'
+    })
+
+    return false
+  }
+
+  if (
+    !formPropriedade
+      .cidade
+      .trim()
+  ) {
+    $q.notify({
+      type: 'warning',
+
+      message:
+        'Informe a cidade.'
+    })
+
+    return false
+  }
+
+  if (
+    !formPropriedade
+      .estado
+      .trim()
+  ) {
+    $q.notify({
+      type: 'warning',
+
+      message:
+        'Informe o estado.'
+    })
+
+    return false
+  }
+
+  if (
+    !coordenadasFormularioValidas()
+  ) {
+    $q.notify({
+      type: 'warning',
+
+      timeout: 4500,
+
+      message:
+        'Marque a localização da propriedade no mapa.'
+    })
+
+    return false
+  }
+
+  return true
+}
+
+async function salvarPropriedade() {
+  if (
+    !validarPropriedade()
+  ) {
+    return
+  }
+
+  const idUsuario =
+    Number(
+      auth.usuario
+        ?.id_usuario
+    )
+
+  if (
+    !Number.isInteger(
+      idUsuario
+    ) ||
+    idUsuario <= 0
+  ) {
+    $q.notify({
+      type: 'negative',
+
+      message:
+        'Não foi possível identificar o produtor logado.'
     })
 
     return
   }
 
-  if (!formUnidade.tipo_unidade) {
-    $q.notify({
-      type: 'warning',
-      message:
-        'Selecione o tipo do local.'
-    })
-
-    return
-  }
-
-  salvandoUnidade.value = true
+  salvandoPropriedade.value =
+    true
 
   try {
     const dados = {
-      id_propriedade:
-        propriedade.id_propriedade,
+      id_usuario:
+        idUsuario,
 
-      nome_unidade:
-        formUnidade.nome_unidade.trim(),
+      nome_propriedade:
+        formPropriedade
+          .nome_propriedade
+          .trim(),
 
-      tipo_unidade:
-        formUnidade.tipo_unidade,
+      endereco:
+        formPropriedade
+          .endereco
+          .trim() ||
+        null,
 
-      descricao:
-        formUnidade.descricao?.trim() || null,
+      cidade:
+        formPropriedade
+          .cidade
+          .trim(),
 
-      referencia:
-        formUnidade.referencia?.trim() || null
+      estado:
+        formPropriedade
+          .estado
+          .trim()
+          .toUpperCase(),
+
+      cep:
+        formPropriedade
+          .cep
+          .trim() ||
+        null,
+
+      latitude:
+        Number(
+          formPropriedade.latitude
+        ),
+
+      longitude:
+        Number(
+          formPropriedade.longitude
+        ),
+
+      cultura_principal:
+        formPropriedade
+          .cultura_principal ||
+        'AVES',
+
+      quantidade_galpoes:
+        Number(
+          formPropriedade
+            .quantidade_galpoes ||
+          0
+        ),
+
+      ativo:
+        true
     }
 
-    if (editandoUnidade.value) {
-      await unidadePropriedadeService.atualizar(
-        unidadeSelecionada.value.id_unidade,
-        {
-          ...dados,
-          ativo: true
-        }
-      )
+    if (
+      editandoPropriedade.value
+    ) {
+      propriedade.value =
+        await propriedadeService
+          .atualizar(
+            propriedade.value
+              .id_propriedade,
+
+            dados
+          )
 
       $q.notify({
         type: 'positive',
+
         message:
-          'Local atualizado com sucesso.'
+          'Propriedade atualizada com sucesso.'
       })
     } else {
-      await unidadePropriedadeService.criar(
-        dados
-      )
+      propriedade.value =
+        await propriedadeService
+          .criar(
+            dados
+          )
 
       $q.notify({
         type: 'positive',
+
         message:
-          'Local adicionado com sucesso.'
+          'Propriedade cadastrada com sucesso.'
       })
     }
 
-    dialogLocal.value = false
+    dialogPropriedade.value =
+      false
 
-    await carregarUnidades()
+    await carregarPropriedade()
   } catch (error) {
     console.error(
-      'Erro ao salvar local:',
+      'Erro ao salvar propriedade:',
       error
     )
 
     $q.notify({
       type: 'negative',
+
       message:
-        error.response?.data?.message ||
-        error.response?.data?.erro ||
-        'Não foi possível salvar o local.'
+        error.response?.data
+          ?.message ||
+        error.response?.data
+          ?.erro ||
+        'Não foi possível salvar a propriedade.'
     })
   } finally {
-    salvandoUnidade.value = false
+    salvandoPropriedade.value =
+      false
   }
 }
 
-function confirmarDesativacao(unidade) {
-  unidadeSelecionada.value = unidade
-  dialogDesativar.value = true
-}
-
-async function desativarUnidade() {
-  if (!unidadeSelecionada.value) {
-    return
-  }
-
-  desativandoUnidade.value = true
-
-  try {
-    await unidadePropriedadeService.desativar(
-      unidadeSelecionada.value.id_unidade
-    )
-
-    dialogDesativar.value = false
-
-    $q.notify({
-      type: 'positive',
-      message:
-        'Local desativado com sucesso.'
-    })
-
-    await carregarUnidades()
-  } catch (error) {
-    console.error(
-      'Erro ao desativar local:',
-      error
-    )
-
-    $q.notify({
-      type: 'negative',
-      message:
-        error.response?.data?.message ||
-        error.response?.data?.erro ||
-        'Não foi possível desativar o local.'
-    })
-  } finally {
-    desativandoUnidade.value = false
-  }
-}
-
-function formatarTipoUnidade(tipo) {
-  const tipos = {
-    AVIARIO: 'Aviário',
-    GRANJA: 'Granja',
-    CHIQUEIRO: 'Chiqueiro',
-    GALPAO: 'Galpão',
-    SILO: 'Silo',
-    DEPOSITO: 'Depósito',
-    OUTRO: 'Outro'
-  }
-
-  return tipos[tipo] || tipo
-}
-
-function iconeTipoUnidade(tipo) {
-  const icones = {
-    AVIARIO: 'egg_alt',
-    GRANJA: 'agriculture',
-    CHIQUEIRO: 'pets',
-    GALPAO: 'warehouse',
-    SILO: 'storage',
-    DEPOSITO: 'inventory_2',
-    OUTRO: 'home_work'
-  }
-
-  return icones[tipo] || 'home_work'
-}
-
-/* ========================================
+/* =========================
    SENHA
-======================================== */
+========================= */
+
+const dialogSenha =
+  ref(false)
+
+const senhaAtual =
+  ref('')
+
+const novaSenha =
+  ref('')
+
+const confirmarSenha =
+  ref('')
+
+const mostrarSenhaAtual =
+  ref(false)
+
+const mostrarNovaSenha =
+  ref(false)
 
 function abrirAlteracaoSenha() {
   senhaAtual.value = ''
   novaSenha.value = ''
   confirmarSenha.value = ''
 
-  dialogSenha.value = true
+  dialogSenha.value =
+    true
 }
 
+/*
+  Mantive a lógica atual.
+  Depois conectamos com backend.
+*/
 function salvarSenha() {
   if (
     !senhaAtual.value ||
@@ -1145,6 +1313,7 @@ function salvarSenha() {
   ) {
     $q.notify({
       type: 'warning',
+
       message:
         'Preencha todos os campos.'
     })
@@ -1158,6 +1327,7 @@ function salvarSenha() {
   ) {
     $q.notify({
       type: 'negative',
+
       message:
         'As novas senhas não coincidem.'
     })
@@ -1165,9 +1335,13 @@ function salvarSenha() {
     return
   }
 
-  if (novaSenha.value.length < 6) {
+  if (
+    novaSenha.value.length <
+    6
+  ) {
     $q.notify({
       type: 'warning',
+
       message:
         'A nova senha deve possuir pelo menos 6 caracteres.'
     })
@@ -1175,22 +1349,28 @@ function salvarSenha() {
     return
   }
 
-  dialogSenha.value = false
+  dialogSenha.value =
+    false
 
   $q.notify({
     type: 'positive',
+
     message:
       'Senha alterada com sucesso.'
   })
 }
 
-onMounted(carregarUnidades)
+onMounted(() => {
+  carregarPropriedade()
+})
 </script>
 
 <style scoped>
 .perfil-page {
   min-height: 100%;
+
   padding: 32px;
+
   background: #f7f8fa;
 }
 
@@ -1200,83 +1380,122 @@ onMounted(carregarUnidades)
 
 .pagina-titulo {
   color: #101828;
+
   font-size: 30px;
+
   font-weight: 800;
 }
 
 .pagina-subtitulo {
   margin-top: 5px;
+
   color: #667085;
+
   font-size: 14px;
 }
 
 .perfil-grid {
   display: grid;
+
   grid-template-columns:
     280px minmax(0, 1fr);
+
   align-items: start;
+
   gap: 24px;
 }
 
 .perfil-card,
 .conteudo-card {
-  border: 1px solid #eaecf0;
+  border:
+    1px solid #eaecf0;
+
   border-radius: 22px;
+
   background: #ffffff;
+
   box-shadow:
-    0 3px 10px rgba(16, 24, 40, 0.05);
+    0 3px 10px
+    rgba(
+      16,
+      24,
+      40,
+      0.05
+    );
 }
 
 .perfil-card {
   padding: 34px 24px;
+
   text-align: center;
 }
 
 .avatar-container {
   position: relative;
+
   display: inline-block;
 }
 
 .avatar-principal {
   font-size: 30px;
+
   font-weight: 800;
 }
 
 .avatar-editar {
   position: absolute;
+
   right: -3px;
+
   bottom: 0;
-  border: 3px solid #ffffff;
+
+  border:
+    3px solid #ffffff;
 }
 
 .perfil-nome {
   margin-top: 18px;
+
   color: #101828;
+
   font-size: 20px;
+
   font-weight: 800;
 }
 
 .perfil-tipo {
   margin-top: 4px;
+
   color: #f97316;
+
   font-size: 11px;
+
   font-weight: 800;
+
   letter-spacing: 1px;
 }
 
 .perfil-propriedade {
   display: flex;
+
   align-items: center;
+
   justify-content: center;
+
   gap: 7px;
+
   margin-top: 16px;
+
   color: #667085;
+
   font-size: 13px;
 }
 
 .perfil-conteudo {
   display: flex;
+
   flex-direction: column;
+
   gap: 22px;
 }
 
@@ -1284,314 +1503,354 @@ onMounted(carregarUnidades)
   padding: 26px;
 }
 
-.card-cabecalho,
-.locais-cabecalho,
-.propriedade-cabecalho {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 20px;
-}
-
 .card-cabecalho {
+  display: flex;
+
+  align-items: flex-start;
+
+  justify-content:
+    space-between;
+
+  gap: 20px;
+
   margin-bottom: 24px;
 }
 
 .card-titulo {
   color: #101828;
+
   font-size: 18px;
+
   font-weight: 800;
 }
 
 .card-subtitulo {
   margin-top: 4px;
+
   color: #667085;
+
   font-size: 12px;
+
   line-height: 1.5;
 }
 
 .form-grid {
   display: grid;
+
   grid-template-columns:
-    repeat(2, minmax(0, 1fr));
+    repeat(
+      2,
+      minmax(0, 1fr)
+    );
+
   gap: 16px;
 }
 
 .acoes-edicao {
   display: flex;
-  justify-content: flex-end;
+
+  justify-content:
+    flex-end;
+
   gap: 10px;
+
   margin-top: 22px;
 }
 
-/* PROPRIEDADE */
+/* =========================
+   PROPRIEDADE
+========================= */
 
-.propriedade-info {
+.propriedade-resumo {
   display: flex;
+
   align-items: center;
+
   gap: 14px;
+
+  padding: 4px 0 20px;
 }
 
 .propriedade-icone {
-  width: 52px;
-  height: 52px;
+  width: 55px;
+
+  height: 55px;
+
   display: flex;
+
   align-items: center;
+
   justify-content: center;
+
   flex-shrink: 0;
+
   border-radius: 15px;
+
   color: #f97316;
+
   background: #fff1e6;
 }
 
-.propriedade-localizacao {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  margin-top: 5px;
-  color: #667085;
-  font-size: 12px;
-}
-
-.locais-cabecalho {
-  align-items: center;
-  margin-bottom: 18px;
-}
-
-.locais-titulo {
-  color: #344054;
-  font-size: 15px;
-  font-weight: 800;
-}
-
-/* LOCAIS */
-
-.unidades-lista {
-  display: flex;
-  flex-direction: column;
-}
-
-.unidade-item {
-  padding: 18px 0;
-  border-top: 1px solid #eaecf0;
-}
-
-.unidade-item:first-child {
-  border-top: none;
-}
-
-.unidade-principal {
-  display: flex;
-  align-items: flex-start;
-  gap: 14px;
-}
-
-.unidade-icone {
-  width: 45px;
-  height: 45px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  border-radius: 13px;
-  color: #f97316;
-  background: #fff1e6;
-}
-
-.unidade-conteudo {
+.propriedade-dados {
   min-width: 0;
-  flex: 1;
 }
 
-.unidade-topo {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-}
-
-.unidade-nome {
+.propriedade-nome {
   color: #101828;
-  font-size: 15px;
+
+  font-size: 17px;
+
   font-weight: 800;
 }
 
-.unidade-tipo {
-  margin-top: 2px;
-  color: #f97316;
-  font-size: 9px;
-  font-weight: 800;
-  letter-spacing: 0.7px;
-  text-transform: uppercase;
-}
+.propriedade-local {
+  display: flex;
 
-.unidade-descricao {
-  margin-top: 7px;
+  align-items: center;
+
+  gap: 4px;
+
+  margin-top: 5px;
+
   color: #667085;
+
   font-size: 12px;
 }
 
-.unidade-referencia {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 8px;
+.propriedade-cep {
+  margin-top: 3px;
+
   color: #98a2b3;
-  font-size: 11px;
+
+  font-size: 10px;
 }
 
-/* ESTADOS */
+.mapa-perfil {
+  margin-top: 2px;
+}
 
-.estado-central,
-.estado-vazio {
-  padding: 34px 18px;
+/* SEM PROPRIEDADE */
+
+.sem-propriedade {
+  padding: 42px 20px;
+
   text-align: center;
 }
 
-.estado-texto,
-.estado-vazio-texto {
+.sem-propriedade-icone {
+  width: 65px;
+
+  height: 65px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  margin: 0 auto;
+
+  border-radius: 18px;
+
+  color: #f97316;
+
+  background: #fff1e6;
+}
+
+.sem-propriedade-titulo {
+  margin-top: 15px;
+
+  color: #344054;
+
+  font-size: 16px;
+
+  font-weight: 800;
+}
+
+.sem-propriedade-texto {
+  max-width: 470px;
+
+  margin:
+    7px auto 0;
+
+  color: #667085;
+
+  font-size: 12px;
+
+  line-height: 1.6;
+}
+
+.estado-central {
+  padding: 45px 20px;
+
+  text-align: center;
+}
+
+.estado-texto {
   margin-top: 9px;
+
   color: #98a2b3;
+
   font-size: 12px;
 }
 
-.estado-vazio-titulo {
-  margin-top: 10px;
-  color: #344054;
-  font-size: 14px;
-  font-weight: 700;
-}
+/* =========================
+   DIALOG
+========================= */
 
-/* DIALOG */
+.propriedade-dialog {
+  width: 820px;
 
-.local-dialog,
-.senha-dialog {
-  width: 540px;
-  max-width: 92vw;
+  max-width: 94vw;
+
   border-radius: 20px;
 }
 
-.confirmacao-dialog {
-  width: 430px;
+.senha-dialog {
+  width: 540px;
+
   max-width: 92vw;
+
   border-radius: 20px;
 }
 
 .dialog-header {
   display: flex;
+
   align-items: flex-start;
-  justify-content: space-between;
+
+  justify-content:
+    space-between;
+
   gap: 20px;
+
   padding: 22px 24px;
 }
 
 .dialog-titulo {
   color: #101828;
+
   font-size: 19px;
+
   font-weight: 800;
 }
 
 .dialog-subtitulo {
   margin-top: 4px;
+
   color: #667085;
+
   font-size: 12px;
 }
 
-.dica-local {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 16px;
-  padding: 12px;
-  border-radius: 10px;
-  color: #9a3412;
-  background: #fff7ed;
-  font-size: 11px;
+.dialog-conteudo {
+  max-height: 72vh;
+
+  overflow-y: auto;
+
+  padding: 22px 24px;
 }
 
-.confirmacao-conteudo {
-  padding: 28px 28px 18px;
-  text-align: center;
+.dialog-acoes {
+  padding:
+    16px 24px 20px;
 }
 
-.confirmacao-icone {
-  width: 60px;
-  height: 60px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto;
-  border-radius: 17px;
-  color: #dc2626;
-  background: #fee2e2;
+.propriedade-form-grid {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    130px;
+
+  gap: 15px;
 }
 
-.confirmacao-titulo {
-  margin-top: 15px;
-  color: #101828;
-  font-size: 18px;
-  font-weight: 800;
+.campo-largo {
+  grid-column:
+    1 / -1;
 }
 
-.confirmacao-texto {
-  margin-top: 8px;
-  color: #667085;
-  font-size: 13px;
-  line-height: 1.5;
-}
+/* =========================
+   DARK
+========================= */
 
-/* DARK MODE */
-
-.body--dark .perfil-page {
+.perfil-page--dark {
   background: #0d0f12;
 }
 
-.body--dark .perfil-card,
-.body--dark .conteudo-card {
+.perfil-page--dark
+.perfil-card,
+.perfil-page--dark
+.conteudo-card {
   border-color: #2b2f36;
+
   background: #16191f;
 }
 
-.body--dark .pagina-titulo,
-.body--dark .perfil-nome,
-.body--dark .card-titulo,
-.body--dark .locais-titulo,
-.body--dark .unidade-nome,
-.body--dark .estado-vazio-titulo,
-.body--dark .dialog-titulo,
-.body--dark .confirmacao-titulo {
+.perfil-page--dark
+.pagina-titulo,
+.perfil-page--dark
+.perfil-nome,
+.perfil-page--dark
+.card-titulo,
+.perfil-page--dark
+.propriedade-nome,
+.perfil-page--dark
+.sem-propriedade-titulo {
   color: #f9fafb;
 }
 
-.body--dark .pagina-subtitulo,
-.body--dark .card-subtitulo,
-.body--dark .perfil-propriedade,
-.body--dark .propriedade-localizacao,
-.body--dark .unidade-descricao {
+.perfil-page--dark
+.pagina-subtitulo,
+.perfil-page--dark
+.card-subtitulo,
+.perfil-page--dark
+.perfil-propriedade,
+.perfil-page--dark
+.propriedade-local,
+.perfil-page--dark
+.sem-propriedade-texto {
   color: #98a2b3;
 }
 
-.body--dark .avatar-editar {
+.perfil-page--dark
+.avatar-editar {
   border-color: #16191f;
 }
 
-.body--dark .unidade-item {
-  border-color: #2b2f36;
-}
+.perfil-page--dark
+.propriedade-icone,
+.perfil-page--dark
+.sem-propriedade-icone {
+  color: #fb923c;
 
-.body--dark .dica-local {
-  color: #fdba74;
   background: #292018;
 }
 
-@media (max-width: 1000px) {
+/* =====================================
+   TABLET
+===================================== */
+
+@media (
+  max-width: 1000px
+) {
   .perfil-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns:
+      1fr;
   }
 }
 
-@media (max-width: 700px) {
+/* =====================================
+   MOBILE
+===================================== */
+
+@media (
+  max-width: 700px
+) {
   .perfil-page {
-    padding: 22px 16px 40px;
+    padding:
+      22px 16px 40px;
   }
 
   .pagina-titulo {
@@ -1599,25 +1858,45 @@ onMounted(carregarUnidades)
   }
 
   .form-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns:
+      1fr;
   }
 
-  .locais-cabecalho {
+  .card-cabecalho,
+  .seguranca-cabecalho,
+  .propriedade-topo {
     align-items: stretch;
+
     flex-direction: column;
   }
 
-  .locais-cabecalho .q-btn {
+  .card-cabecalho
+  .q-btn,
+  .seguranca-cabecalho
+  .q-btn,
+  .propriedade-topo
+  .q-btn {
     width: 100%;
   }
 
-  .seguranca-cabecalho {
-    align-items: stretch;
-    flex-direction: column;
+  .propriedade-form-grid {
+    grid-template-columns:
+      1fr;
   }
 
-  .seguranca-cabecalho .q-btn {
-    width: 100%;
+  .campo-largo {
+    grid-column:
+      auto;
+  }
+
+  .conteudo-card {
+    padding: 20px;
+  }
+
+  .propriedade-dialog {
+    width: 96vw;
+
+    max-width: 96vw;
   }
 }
 </style>

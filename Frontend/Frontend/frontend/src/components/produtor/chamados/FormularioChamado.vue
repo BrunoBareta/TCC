@@ -1,255 +1,316 @@
 <template>
-  <div class="formulario-card">
-    <div class="card-titulo">
-      Informações do chamado
-    </div>
+  <div
+    class="formulario-card"
+    :class="{
+      'formulario-card--dark':
+        $q.dark.isActive
+    }"
+  >
+    <!-- CABEÇALHO -->
+    <div class="card-topo">
+      <div>
+        <div class="card-titulo">
+          {{
+            modoComercial
+              ? 'Solicitar orçamento'
+              : 'Abrir chamado'
+          }}
+        </div>
 
-    <div class="card-subtitulo">
-      Preencha os dados abaixo para solicitar o atendimento.
+        <div class="card-subtitulo">
+          {{
+            modoComercial
+              ? 'Informe rapidamente o que você precisa.'
+              : 'Conte o que está acontecendo e envie sua solicitação.'
+          }}
+        </div>
+      </div>
+
+      <div class="tipo-icone">
+        <q-icon
+          :name="
+            modoComercial
+              ? 'request_quote'
+              : 'support_agent'
+          "
+          size="26px"
+        />
+      </div>
     </div>
 
     <q-form
       class="q-mt-lg"
       @submit.prevent="enviarChamado"
     >
-      <!-- PROPRIEDADE -->
+      <!-- TIPO -->
       <div class="campo-grupo">
         <div class="campo-label">
-          Propriedade
+          Tipo da solicitação
         </div>
 
-        <q-select
-          v-model="propriedadeSelecionada"
-          outlined
-          emit-value
-          map-options
-          :options="opcoesPropriedade"
-          label="Selecione a propriedade"
-          :disable="enviando"
-        >
-          <template #prepend>
-            <q-icon name="agriculture" />
-          </template>
-        </q-select>
-      </div>
-
-      <!-- LOCAL -->
-      <div class="campo-grupo">
-        <div class="campo-label">
-          Local do atendimento
-        </div>
-
-        <q-select
-          v-model="form.id_unidade"
-          outlined
-          emit-value
-          map-options
-          :options="opcoesUnidades"
-          label="Selecione o local"
-          :loading="carregandoUnidades"
-          :disable="
-            enviando ||
-            carregandoUnidades ||
-            !propriedadeSelecionada
-          "
-          clearable
-        >
-          <template #prepend>
-            <q-icon name="location_on" />
-          </template>
-
-          <template #no-option>
-            <q-item>
-              <q-item-section class="text-grey-7">
-                Nenhum local cadastrado nesta propriedade.
-              </q-item-section>
-            </q-item>
-          </template>
-        </q-select>
-
-        <div
-          v-if="unidadeSelecionada"
-          class="local-info"
-        >
-          <div class="local-info-topo">
-            <q-icon
-              name="info"
-              size="18px"
-            />
-
-            <strong>
-              {{ unidadeSelecionada.nome_unidade }}
-            </strong>
-          </div>
-
-          <div
-            v-if="unidadeSelecionada.descricao"
-            class="local-info-texto"
+        <div class="tipo-solicitacao">
+          <button
+            type="button"
+            class="tipo-card"
+            :class="{
+              selecionado:
+                form.tipo_chamado ===
+                'ASSISTENCIA'
+            }"
+            @click="
+              selecionarTipo(
+                'ASSISTENCIA'
+              )
+            "
           >
-            {{ unidadeSelecionada.descricao }}
-          </div>
+            <div class="tipo-card-icone">
+              <q-icon
+                name="engineering"
+                size="23px"
+              />
+            </div>
 
-          <div
-            v-if="unidadeSelecionada.referencia"
-            class="local-referencia"
+            <div>
+              <div class="tipo-card-titulo">
+                Assistência técnica
+              </div>
+
+              <div class="tipo-card-texto">
+                Preciso de atendimento técnico.
+              </div>
+            </div>
+          </button>
+
+          <button
+            type="button"
+            class="tipo-card"
+            :class="{
+              selecionado:
+                form.tipo_chamado ===
+                'VENDEDOR'
+            }"
+            @click="
+              selecionarTipo(
+                'VENDEDOR'
+              )
+            "
           >
-            <q-icon
-              name="near_me"
-              size="16px"
-            />
+            <div class="tipo-card-icone">
+              <q-icon
+                name="request_quote"
+                size="23px"
+              />
+            </div>
 
-            <span>
-              Referência:
-              {{ unidadeSelecionada.referencia }}
-            </span>
-          </div>
+            <div>
+              <div class="tipo-card-titulo">
+                Solicitar orçamento
+              </div>
+
+              <div class="tipo-card-texto">
+                Quero falar com o setor comercial.
+              </div>
+            </div>
+          </button>
         </div>
       </div>
 
-      <!-- PROBLEMA -->
+      <!-- DESCRIÇÃO ÚNICA -->
       <div class="campo-grupo">
         <div class="campo-label">
-          Problema
+          {{
+            modoComercial
+              ? 'O que você deseja orçar?'
+              : 'O que está acontecendo?'
+          }}
         </div>
 
         <q-input
-          v-model="form.problema"
-          outlined
-          label="Informe o problema"
-          maxlength="150"
-          :disable="enviando"
-        >
-          <template #prepend>
-            <q-icon name="build_circle" />
-          </template>
-        </q-input>
-      </div>
-
-      <!-- DESCRIÇÃO -->
-      <div class="campo-grupo">
-        <div class="campo-label">
-          Descrição do problema
-        </div>
-
-        <q-input
-          v-model="form.descricao"
+          v-model="form.solicitacao"
           outlined
           type="textarea"
           autogrow
-          label="Descreva o que está acontecendo"
           maxlength="1000"
           counter
           :disable="enviando"
-        >
-          <template #prepend>
-            <q-icon name="description" />
-          </template>
-        </q-input>
+          :placeholder="
+            modoComercial
+              ? 'Ex.: Preciso de orçamento para novos ventiladores...'
+              : 'Ex.: Os ventiladores pararam de funcionar...'
+          "
+        />
       </div>
 
-      <!-- CULTURA + TIPO -->
-      <div class="form-grid">
-        <div class="campo-grupo">
-          <div class="campo-label">
-            Cultura
-          </div>
-
-          <q-select
-            v-model="form.tipo_cultura"
-            outlined
-            emit-value
-            map-options
-            :options="opcoesCultura"
-            label="Selecione a cultura"
-            :disable="enviando"
-          >
-            <template #prepend>
-              <q-icon name="agriculture" />
-            </template>
-          </q-select>
+      <!-- FOTOS -->
+      <div class="campo-grupo">
+        <div class="campo-label">
+          Fotos ou vídeos
+          <span class="opcional">
+            Opcional
+          </span>
         </div>
 
-        <div class="campo-grupo">
-          <div class="campo-label">
-            Tipo do chamado
-          </div>
+        <q-file
+          v-model="arquivos"
+          outlined
+          multiple
+          clearable
+          accept="image/*,video/*"
+          :max-files="5"
+          :max-file-size="31457280"
+          :disable="enviando"
+          label="Adicionar fotos ou vídeos"
+          @rejected="
+            arquivosRejeitados
+          "
+        >
+          <template #prepend>
+            <q-icon
+              name="add_photo_alternate"
+              color="orange"
+            />
+          </template>
+        </q-file>
 
-          <q-select
-            v-model="form.tipo_chamado"
-            outlined
-            emit-value
-            map-options
-            :options="opcoesTipoChamado"
-            label="Selecione o tipo"
-            :disable="enviando"
+        <div class="anexos-ajuda">
+          Até 5 arquivos.
+        </div>
+
+        <div
+          v-if="
+            arquivosSelecionados.length
+          "
+          class="arquivos-selecionados"
+        >
+          <div
+            v-for="
+              (
+                arquivo,
+                index
+              ) in arquivosSelecionados
+            "
+            :key="
+              `${arquivo.name}-${index}`
+            "
+            class="arquivo-item"
           >
-            <template #prepend>
-              <q-icon name="support_agent" />
-            </template>
-          </q-select>
+            <q-icon
+              :name="
+                arquivo.type
+                  ?.startsWith(
+                    'video/'
+                  )
+                  ? 'videocam'
+                  : 'image'
+              "
+              color="orange"
+              size="22px"
+            />
+
+            <div class="arquivo-dados">
+              <div class="arquivo-nome">
+                {{ arquivo.name }}
+              </div>
+
+              <div class="arquivo-tamanho">
+                {{
+                  formatarTamanhoArquivo(
+                    arquivo.size
+                  )
+                }}
+              </div>
+            </div>
+
+            <q-btn
+              flat
+              round
+              dense
+              icon="close"
+              @click.stop="
+                removerArquivo(index)
+              "
+            />
+          </div>
         </div>
       </div>
 
       <!-- URGÊNCIA -->
       <div class="campo-grupo">
         <div class="campo-label">
-          Urgência
+          {{
+            modoComercial
+              ? 'Prioridade'
+              : 'Urgência'
+          }}
         </div>
 
         <div class="urgencias">
-          <q-btn
-            v-for="opcao in opcoesUrgencia"
+          <button
+            v-for="
+              opcao in
+              opcoesUrgencia
+            "
             :key="opcao.value"
-            no-caps
-            :outline="form.urgencia !== opcao.value"
-            :unelevated="form.urgencia === opcao.value"
-            :color="corUrgencia(opcao.value)"
-            :label="opcao.label"
-            :disable="enviando"
-            @click="form.urgencia = opcao.value"
-          />
+            type="button"
+            class="urgencia"
+            :class="[
+              `urgencia--${opcao.value.toLowerCase()}`,
+              {
+                selecionada:
+                  form.urgencia ===
+                  opcao.value
+              }
+            ]"
+            @click="
+              form.urgencia =
+                opcao.value
+            "
+          >
+            {{ opcao.label }}
+          </button>
         </div>
       </div>
 
-      <!-- RESUMO LOCAL -->
-      <div
-        v-if="unidadeSelecionada"
-        class="resumo-local"
-      >
-        <div class="resumo-local-icone">
-          <q-icon
-            name="place"
-            size="25px"
+      <!-- MAPA -->
+      <div class="campo-grupo">
+        <MapaLocalizacao
+          v-if="propriedade"
+          :latitude="
+            propriedade.latitude
+          "
+          :longitude="
+            propriedade.longitude
+          "
+          :nome-local="
+            propriedade.nome_propriedade
+          "
+          :endereco="
+            enderecoPropriedade
+          "
+          titulo="Localização"
+          subtitulo="A localização da propriedade será enviada automaticamente."
+        />
+
+        <div
+          v-else-if="carregandoPropriedade"
+          class="carregando-localizacao"
+        >
+          <q-spinner
+            color="orange"
+            size="26px"
           />
-        </div>
 
-        <div>
-          <div class="resumo-local-label">
-            Atendimento será realizado em
-          </div>
-
-          <div class="resumo-local-titulo">
-            {{ propriedadeNome }}
-            •
-            {{ unidadeSelecionada.nome_unidade }}
-          </div>
-
-          <div
-            v-if="unidadeSelecionada.referencia"
-            class="resumo-local-texto"
-          >
-            {{ unidadeSelecionada.referencia }}
-          </div>
+          Carregando localização...
         </div>
       </div>
 
       <!-- AÇÕES -->
-      <div class="acoes-formulario">
+      <div class="acoes">
         <q-btn
           flat
           no-caps
-          color="grey-7"
           label="Cancelar"
+          color="grey-7"
           :disable="enviando"
           @click="cancelar"
         />
@@ -258,8 +319,16 @@
           unelevated
           no-caps
           color="orange"
-          icon="send"
-          label="Abrir chamado"
+          :icon="
+            modoComercial
+              ? 'request_quote'
+              : 'send'
+          "
+          :label="
+            modoComercial
+              ? 'Enviar solicitação'
+              : 'Abrir chamado'
+          "
           type="submit"
           :loading="enviando"
         />
@@ -273,8 +342,7 @@ import {
   computed,
   onMounted,
   reactive,
-  ref,
-  watch
+  ref
 } from 'vue'
 
 import {
@@ -292,83 +360,92 @@ import {
 import chamadoService from
   'src/services/chamadoService'
 
-import unidadePropriedadeService from
-  'src/services/unidadePropriedadeService'
+import anexoService from
+  'src/services/anexoService'
 
-const router = useRouter()
-const $q = useQuasar()
-const authStore = useAuthStore()
+import propriedadeService from
+  'src/services/propriedadeService'
+
+import MapaLocalizacao from
+  'src/components/shared/MapaLocalizacao.vue'
+
+const router =
+  useRouter()
+
+const $q =
+  useQuasar()
+
+const authStore =
+  useAuthStore()
 
 /*
-  Temporário.
-  Depois vamos buscar as propriedades
-  diretamente pelo usuário logado.
+  Temporário enquanto existe
+  apenas uma propriedade vinculada
+  neste protótipo.
 */
 const ID_PROPRIEDADE = 1
 
-const enviando = ref(false)
-const carregandoUnidades = ref(false)
+const propriedade =
+  ref(null)
 
-const unidades = ref([])
+const carregandoPropriedade =
+  ref(false)
 
-const propriedadeSelecionada = ref(
-  ID_PROPRIEDADE
-)
+const enviando =
+  ref(false)
 
-const opcoesPropriedade = [
-  {
-    label: 'Fazenda Boa Vista',
-    value: ID_PROPRIEDADE
-  }
-]
+const arquivos =
+  ref([])
 
-const form = reactive({
-  id_usuario: null,
-  id_unidade: null,
-  problema: '',
-  descricao: '',
-  tipo_cultura: 'AVES',
-  tipo_chamado: 'ASSISTENCIA',
-  urgencia: 'MEDIA'
-})
+const form =
+  reactive({
+    solicitacao: '',
+    tipo_chamado:
+      'ASSISTENCIA',
+    urgencia:
+      'MEDIA'
+  })
 
-const opcoesCultura = [
-  {
-    label: 'Aves',
-    value: 'AVES'
-  },
-  {
-    label: 'Suínos',
-    value: 'SUINOS'
-  },
-  {
-    label: 'Bovinos',
-    value: 'BOVINOS'
-  },
-  {
-    label: 'Outros',
-    value: 'OUTROS'
-  }
-]
+const modoComercial =
+  computed(
+    () =>
+      form.tipo_chamado ===
+      'VENDEDOR'
+  )
 
-const opcoesTipoChamado = [
-  {
-    label: 'Assistência',
-    value: 'ASSISTENCIA'
-  },
-  {
-    label: 'Manutenção',
-    value: 'MANUTENCAO'
-  },
-  {
-    label: 'Instalação',
-    value: 'INSTALACAO'
-  },
-  {
-    label: 'Outro',
-    value: 'OUTRO'
-  }
-]
+const arquivosSelecionados =
+  computed(() => {
+    if (
+      Array.isArray(
+        arquivos.value
+      )
+    ) {
+      return arquivos.value
+    }
+
+    if (arquivos.value) {
+      return [
+        arquivos.value
+      ]
+    }
+
+    return []
+  })
+
+const enderecoPropriedade =
+  computed(() => {
+    if (!propriedade.value) {
+      return ''
+    }
+
+    return [
+      propriedade.value.endereco,
+      propriedade.value.cidade,
+      propriedade.value.estado
+    ]
+      .filter(Boolean)
+      .join(' - ')
+  })
 
 const opcoesUrgencia = [
   {
@@ -385,140 +462,86 @@ const opcoesUrgencia = [
   }
 ]
 
-const opcoesUnidades = computed(() =>
-  unidades.value.map((unidade) => ({
-    label: unidade.nome_unidade,
-    value: Number(unidade.id_unidade)
-  }))
-)
-
-const unidadeSelecionada = computed(() =>
-  unidades.value.find(
-    (unidade) =>
-      Number(unidade.id_unidade) ===
-      Number(form.id_unidade)
-  ) || null
-)
-
-const propriedadeNome = computed(() => {
-  const propriedade =
-    opcoesPropriedade.find(
-      (item) =>
-        Number(item.value) ===
-        Number(propriedadeSelecionada.value)
-    )
-
-  return propriedade?.label || 'Propriedade'
-})
-
-async function carregarUnidades() {
-  if (!propriedadeSelecionada.value) {
-    unidades.value = []
-    form.id_unidade = null
-    return
-  }
-
-  carregandoUnidades.value = true
-  form.id_unidade = null
+async function carregarPropriedade() {
+  carregandoPropriedade.value =
+    true
 
   try {
-    const resposta =
-      await unidadePropriedadeService
-        .listarPorPropriedade(
-          propriedadeSelecionada.value
+    propriedade.value =
+      await propriedadeService
+        .buscarPorId(
+          ID_PROPRIEDADE
         )
 
-    unidades.value =
-      Array.isArray(resposta)
-        ? resposta
-        : resposta?.data || []
-
-    /*
-      Se existir apenas um local,
-      já seleciona automaticamente.
-    */
-    if (unidades.value.length === 1) {
-      form.id_unidade =
-        Number(
-          unidades.value[0].id_unidade
-        )
+    if (!propriedade.value) {
+      $q.notify({
+        type: 'negative',
+        message:
+          'Não foi possível localizar a propriedade do produtor.'
+      })
     }
   } catch (error) {
     console.error(
-      'Erro ao carregar locais:',
+      'Erro ao carregar propriedade:',
       error
     )
-
-    unidades.value = []
 
     $q.notify({
       type: 'negative',
       message:
-        error.response?.data?.message ||
-        error.response?.data?.erro ||
-        'Não foi possível carregar os locais da propriedade.'
+        'Não foi possível carregar a propriedade.'
     })
   } finally {
-    carregandoUnidades.value = false
+    carregandoPropriedade.value =
+      false
   }
 }
 
+function selecionarTipo(tipo) {
+  if (enviando.value) {
+    return
+  }
+
+  form.tipo_chamado =
+    tipo
+}
+
+function criarResumo(texto) {
+  const normalizado =
+    texto.trim()
+
+  if (
+    normalizado.length <= 150
+  ) {
+    return normalizado
+  }
+
+  return `${normalizado.substring(
+    0,
+    147
+  )}...`
+}
+
 function validarFormulario() {
-  if (!propriedadeSelecionada.value) {
+  if (!propriedade.value) {
     $q.notify({
       type: 'warning',
       message:
-        'Selecione a propriedade.'
+        'A propriedade não foi carregada.'
     })
 
     return false
   }
 
-  if (!form.id_unidade) {
+  if (
+    !form.solicitacao.trim()
+  ) {
     $q.notify({
       type: 'warning',
       message:
-        'Selecione o local do atendimento.'
-    })
-
-    return false
-  }
-
-  if (!form.problema.trim()) {
-    $q.notify({
-      type: 'warning',
-      message:
-        'Informe o problema.'
-    })
-
-    return false
-  }
-
-  if (!form.descricao.trim()) {
-    $q.notify({
-      type: 'warning',
-      message:
-        'Descreva o problema.'
-    })
-
-    return false
-  }
-
-  if (!form.tipo_cultura) {
-    $q.notify({
-      type: 'warning',
-      message:
-        'Selecione a cultura.'
-    })
-
-    return false
-  }
-
-  if (!form.tipo_chamado) {
-    $q.notify({
-      type: 'warning',
-      message:
-        'Selecione o tipo do chamado.'
+        modoComercial.value
+          ? 'Informe o que você deseja orçar.'
+          : 'Informe o que está acontecendo.'
     })
 
     return false
@@ -537,23 +560,75 @@ function validarFormulario() {
   return true
 }
 
-async function enviarChamado() {
-  if (!validarFormulario()) {
+function arquivosRejeitados(
+  rejeitados
+) {
+  if (!rejeitados?.length) {
     return
   }
 
-  const idUsuario = Number(
-    authStore.usuario?.id_usuario
+  $q.notify({
+    type: 'warning',
+    message:
+      'Verifique o formato, quantidade ou tamanho dos arquivos.'
+  })
+}
+
+function removerArquivo(index) {
+  const lista = [
+    ...arquivosSelecionados.value
+  ]
+
+  lista.splice(
+    index,
+    1
   )
 
+  arquivos.value =
+    lista
+}
+
+function formatarTamanhoArquivo(
+  bytes
+) {
+  const mb =
+    Number(bytes) /
+    1024 /
+    1024
+
+  if (mb >= 1) {
+    return `${mb.toFixed(1)} MB`
+  }
+
+  return `${(
+    Number(bytes) /
+    1024
+  ).toFixed(0)} KB`
+}
+
+async function enviarChamado() {
   if (
-    !Number.isInteger(idUsuario) ||
+    !validarFormulario()
+  ) {
+    return
+  }
+
+  const idUsuario =
+    Number(
+      authStore.usuario
+        ?.id_usuario
+    )
+
+  if (
+    !Number.isInteger(
+      idUsuario
+    ) ||
     idUsuario <= 0
   ) {
     $q.notify({
       type: 'negative',
       message:
-        'Não foi possível identificar o produtor logado.'
+        'Não foi possível identificar o produtor.'
     })
 
     return
@@ -562,22 +637,49 @@ async function enviarChamado() {
   enviando.value = true
 
   try {
+    const texto =
+      form.solicitacao.trim()
+
     const dados = {
-      id_usuario: idUsuario,
+      id_usuario:
+        idUsuario,
+
       id_propriedade:
         Number(
-          propriedadeSelecionada.value
+          propriedade.value
+            .id_propriedade
         ),
+
+      /*
+        Não há mais seleção
+        obrigatória de Aviário.
+      */
       id_unidade:
-        Number(form.id_unidade),
+        null,
+
+      /*
+        O usuário digita uma vez.
+
+        problema recebe um resumo
+        porque a coluna é curta.
+
+        descrição recebe o texto
+        completo.
+      */
       problema:
-        form.problema.trim(),
+        criarResumo(texto),
+
       descricao:
-        form.descricao.trim(),
+        texto,
+
       tipo_cultura:
-        form.tipo_cultura,
+        propriedade.value
+          .cultura_principal ||
+        'AVES',
+
       tipo_chamado:
         form.tipo_chamado,
+
       urgencia:
         form.urgencia
     }
@@ -587,22 +689,59 @@ async function enviarChamado() {
         dados
       )
 
-    $q.notify({
-      type: 'positive',
-      message:
-        resposta?.message ||
-        'Chamado aberto com sucesso.'
-    })
-
     const idChamado =
-      resposta?.chamado?.id_chamado ||
+      resposta?.chamado
+        ?.id_chamado ||
       resposta?.id_chamado
+
+    let erroAnexo =
+      false
+
+    if (
+      idChamado &&
+      arquivosSelecionados.value
+        .length
+    ) {
+      try {
+        await anexoService.enviar(
+          idChamado,
+          arquivosSelecionados.value
+        )
+      } catch (error) {
+        erroAnexo = true
+
+        console.error(
+          'Erro ao enviar anexos:',
+          error
+        )
+      }
+    }
+
+    if (erroAnexo) {
+      $q.notify({
+        type: 'warning',
+        timeout: 5000,
+        message:
+          'A solicitação foi criada, mas algum anexo não pôde ser enviado.'
+      })
+    } else {
+      $q.notify({
+        type: 'positive',
+        message:
+          modoComercial.value
+            ? 'Solicitação enviada com sucesso.'
+            : 'Chamado aberto com sucesso.'
+      })
+    }
 
     if (idChamado) {
       await router.replace({
-        name: 'produtor-detalhes-chamado',
+        name:
+          'produtor-detalhes-chamado',
+
         params: {
-          id: idChamado
+          id:
+            idChamado
         }
       })
 
@@ -610,83 +749,94 @@ async function enviarChamado() {
     }
 
     await router.replace({
-      name: 'produtor-chamados'
+      name:
+        'produtor-chamados'
     })
   } catch (error) {
     console.error(
-      'Erro ao abrir chamado:',
+      'Erro ao criar solicitação:',
       error
     )
 
     $q.notify({
       type: 'negative',
       message:
-        error.response?.data?.message ||
-        error.response?.data?.erro ||
-        'Não foi possível abrir o chamado.'
+        error.response?.data
+          ?.message ||
+        error.response?.data
+          ?.erro ||
+        'Não foi possível criar a solicitação.'
     })
   } finally {
-    enviando.value = false
+    enviando.value =
+      false
   }
 }
 
 function cancelar() {
   router.push({
-    name: 'produtor-chamados'
+    name:
+      'produtor-chamados'
   })
 }
 
-function corUrgencia(valor) {
-  if (valor === 'ALTA') {
-    return 'negative'
-  }
-
-  if (valor === 'MEDIA') {
-    return 'orange'
-  }
-
-  return 'primary'
-}
-
-watch(
-  propriedadeSelecionada,
-  carregarUnidades
+onMounted(
+  carregarPropriedade
 )
-
-onMounted(() => {
-  form.id_usuario =
-    authStore.usuario?.id_usuario ||
-    null
-
-  carregarUnidades()
-})
 </script>
 
 <style scoped>
 .formulario-card {
-  padding: 28px;
-  border: 1px solid #eaecf0;
+  padding: 26px;
+
+  border:
+    1px solid #eaecf0;
+
   border-radius: 22px;
+
   background: #ffffff;
+
   box-shadow:
-    0 3px 10px rgba(
-      16,
-      24,
-      40,
-      0.05
-    );
+    0 3px 10px
+    rgba(16, 24, 40, 0.05);
+}
+
+.card-topo {
+  display: flex;
+  justify-content:
+    space-between;
+  gap: 20px;
 }
 
 .card-titulo {
   color: #101828;
-  font-size: 20px;
+  font-size: 21px;
   font-weight: 800;
 }
 
 .card-subtitulo {
-  margin-top: 5px;
+  margin-top: 4px;
+
   color: #667085;
-  font-size: 13px;
+
+  font-size: 12px;
+}
+
+.tipo-icone {
+  width: 46px;
+  height: 46px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  border-radius: 13px;
+
+  color: #f97316;
+
+  background: #fff1e6;
 }
 
 .campo-grupo {
@@ -695,151 +845,364 @@ onMounted(() => {
 
 .campo-label {
   margin-bottom: 8px;
+
   color: #344054;
+
   font-size: 13px;
+
   font-weight: 700;
 }
 
-.form-grid {
+.opcional {
+  margin-left: 5px;
+
+  color: #98a2b3;
+
+  font-size: 10px;
+
+  font-weight: 500;
+}
+
+/* TIPOS */
+
+.tipo-solicitacao {
   display: grid;
+
   grid-template-columns:
-    repeat(2, minmax(0, 1fr));
-  gap: 18px;
+    repeat(
+      2,
+      minmax(0, 1fr)
+    );
+
+  gap: 12px;
 }
 
-.urgencias {
+.tipo-card {
   display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+  align-items: center;
+
+  gap: 12px;
+
+  padding: 15px;
+
+  border:
+    2px solid #eaecf0;
+
+  border-radius: 14px;
+
+  color: inherit;
+
+  background: transparent;
+
+  cursor: pointer;
+
+  text-align: left;
 }
 
-.local-info {
-  margin-top: 10px;
-  padding: 14px;
-  border: 1px solid #fed7aa;
-  border-radius: 12px;
-  color: #9a3412;
+.tipo-card.selecionado {
+  border-color: #f97316;
+
   background: #fff7ed;
 }
 
-.local-info-topo {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 13px;
-}
+.tipo-card-icone {
+  width: 42px;
+  height: 42px;
 
-.local-info-texto {
-  margin-top: 6px;
-  color: #c2410c;
-  font-size: 12px;
-}
-
-.local-referencia {
   display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 8px;
-  color: #c2410c;
-  font-size: 11px;
-}
-
-.resumo-local {
-  display: flex;
-  align-items: flex-start;
-  gap: 13px;
-  margin-top: 6px;
-  padding: 17px;
-  border-radius: 14px;
-  background: #f9fafb;
-}
-
-.resumo-local-icone {
-  width: 46px;
-  height: 46px;
-  display: flex;
-  flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  border-radius: 13px;
+
+  flex-shrink: 0;
+
+  border-radius: 11px;
+
+  color: #667085;
+
+  background: #f2f4f7;
+}
+
+.tipo-card.selecionado
+.tipo-card-icone {
   color: #f97316;
-  background: #fff1e6;
+
+  background: #ffedd5;
 }
 
-.resumo-local-label {
-  color: #98a2b3;
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-}
-
-.resumo-local-titulo {
-  margin-top: 3px;
+.tipo-card-titulo {
   color: #344054;
-  font-size: 14px;
+
+  font-size: 13px;
+
   font-weight: 800;
 }
 
-.resumo-local-texto {
-  margin-top: 4px;
-  color: #667085;
-  font-size: 11px;
+.tipo-card-texto {
+  margin-top: 2px;
+
+  color: #98a2b3;
+
+  font-size: 10px;
 }
 
-.acoes-formulario {
+/* URGÊNCIA */
+
+.urgencias {
   display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 28px;
+  gap: 10px;
+
+  flex-wrap: wrap;
 }
 
-/* DARK MODE */
+.urgencia {
+  min-width: 90px;
 
-.body--dark .formulario-card {
+  padding: 10px 18px;
+
+  border:
+    1px solid #d0d5dd;
+
+  border-radius: 10px;
+
+  color: #475467;
+
+  background: transparent;
+
+  cursor: pointer;
+
+  font-weight: 700;
+}
+
+.urgencia--baixa.selecionada {
+  border-color: #1570ef;
+
+  color: #1570ef;
+
+  background: #eff8ff;
+}
+
+.urgencia--media.selecionada {
+  border-color: #f97316;
+
+  color: #c2410c;
+
+  background: #fff7ed;
+}
+
+.urgencia--alta.selecionada {
+  border-color: #d92d20;
+
+  color: #b42318;
+
+  background: #fef3f2;
+}
+
+/* ANEXOS */
+
+.anexos-ajuda {
+  margin-top: 6px;
+
+  color: #98a2b3;
+
+  font-size: 10px;
+}
+
+.arquivos-selecionados {
+  margin-top: 12px;
+
+  padding: 12px;
+
+  border:
+    1px solid #eaecf0;
+
+  border-radius: 12px;
+
+  background: #f9fafb;
+}
+
+.arquivo-item {
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+
+  padding: 8px 0;
+
+  border-bottom:
+    1px solid #eaecf0;
+}
+
+.arquivo-item:last-child {
+  border-bottom: none;
+}
+
+.arquivo-dados {
+  flex: 1;
+
+  min-width: 0;
+}
+
+.arquivo-nome {
+  overflow: hidden;
+
+  color: #344054;
+
+  font-size: 11px;
+
+  font-weight: 700;
+
+  text-overflow:
+    ellipsis;
+
+  white-space: nowrap;
+}
+
+.arquivo-tamanho {
+  color: #98a2b3;
+
+  font-size: 9px;
+}
+
+/* LOCAL */
+
+.carregando-localizacao {
+  min-height: 120px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 10px;
+
+  color: #667085;
+}
+
+/* AÇÕES */
+
+.acoes {
+  display: flex;
+
+  justify-content:
+    flex-end;
+
+  gap: 10px;
+
+  margin-top: 25px;
+}
+
+/* DARK */
+
+.formulario-card--dark {
   border-color: #2b2f36;
+
   background: #16191f;
 }
 
-.body--dark .card-titulo,
-.body--dark .campo-label,
-.body--dark .resumo-local-titulo {
+.formulario-card--dark
+.card-titulo,
+.formulario-card--dark
+.campo-label,
+.formulario-card--dark
+.tipo-card-titulo,
+.formulario-card--dark
+.arquivo-nome {
   color: #f9fafb;
 }
 
-.body--dark .card-subtitulo,
-.body--dark .resumo-local-texto {
+.formulario-card--dark
+.card-subtitulo,
+.formulario-card--dark
+.tipo-card-texto {
   color: #98a2b3;
 }
 
-.body--dark .local-info {
-  border-color: #7c2d12;
-  color: #fdba74;
-  background: #24160f;
+.formulario-card--dark
+.tipo-card {
+  border-color: #353a43;
 }
 
-.body--dark .local-info-texto,
-.body--dark .local-referencia {
-  color: #fb923c;
+.formulario-card--dark
+.tipo-card.selecionado {
+  border-color: #f97316;
+
+  background: #292018;
 }
 
-.body--dark .resumo-local {
+.formulario-card--dark
+.tipo-card-icone {
+  background: #22262d;
+}
+
+.formulario-card--dark
+.arquivos-selecionados {
+  border-color: #2b2f36;
+
   background: #1b1f25;
 }
 
-@media (max-width: 700px) {
+.formulario-card--dark
+.arquivo-item {
+  border-color: #2b2f36;
+}
+
+/* TABLET */
+
+@media (max-width: 900px) {
   .formulario-card {
-    padding: 20px;
+    padding: 22px;
+  }
+}
+
+/* CELULAR */
+
+@media (max-width: 600px) {
+  .formulario-card {
+    padding: 17px;
+
+    border-radius: 18px;
   }
 
-  .form-grid {
-    grid-template-columns: 1fr;
+  .tipo-solicitacao {
+    grid-template-columns:
+      1fr;
   }
 
-  .acoes-formulario {
-    flex-direction: column-reverse;
+  .card-titulo {
+    font-size: 18px;
   }
 
-  .acoes-formulario .q-btn {
+  .tipo-icone {
+    width: 40px;
+    height: 40px;
+  }
+
+  .urgencias {
+    display: grid;
+
+    grid-template-columns:
+      repeat(
+        3,
+        minmax(0, 1fr)
+      );
+  }
+
+  .urgencia {
+    min-width: 0;
+
+    width: 100%;
+
+    padding:
+      10px 4px;
+  }
+
+  .acoes {
+    flex-direction:
+      column-reverse;
+  }
+
+  .acoes .q-btn {
     width: 100%;
   }
 }

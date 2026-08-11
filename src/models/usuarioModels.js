@@ -2,22 +2,44 @@ const db = require('../database/db')
 
 const listar = async () => {
   const resultado = await db.query(
-    'SELECT * FROM usuarios ORDER BY id_usuario ASC'
+    `SELECT *
+     FROM usuarios
+     ORDER BY id_usuario ASC`
   )
 
   return resultado.rows
 }
 
-const buscarPorId = async (id) => {
+const buscarPorId = async (
+  id
+) => {
   const resultado = await db.query(
-    'SELECT * FROM usuarios WHERE id_usuario = $1',
+    `SELECT *
+     FROM usuarios
+     WHERE id_usuario = $1`,
     [id]
   )
 
   return resultado.rows[0]
 }
 
-const criar = async (dados) => {
+const buscarPorEmail = async (
+  email
+) => {
+  const resultado = await db.query(
+    `SELECT *
+     FROM usuarios
+     WHERE LOWER(email) = LOWER($1)
+     LIMIT 1`,
+    [email]
+  )
+
+  return resultado.rows[0]
+}
+
+const criar = async (
+  dados
+) => {
   const {
     nome,
     telefone,
@@ -41,7 +63,18 @@ const criar = async (dados) => {
       ativo,
       data_cadastro
     )
-    VALUES ($1,$2,$3,$4,$5,$6,$7,true,NOW())
+    VALUES
+    (
+      $1,
+      $2,
+      $3,
+      $4,
+      $5,
+      $6,
+      $7,
+      TRUE,
+      NOW()
+    )
     RETURNING *`,
     [
       nome,
@@ -57,7 +90,10 @@ const criar = async (dados) => {
   return resultado.rows[0]
 }
 
-const atualizar = async (id, dados) => {
+const atualizar = async (
+  id,
+  dados
+) => {
   const {
     nome,
     telefone,
@@ -70,17 +106,21 @@ const atualizar = async (id, dados) => {
   } = dados
 
   const resultado = await db.query(
-    `UPDATE usuarios SET
-      nome = $1,
-      telefone = $2,
-      email = $3,
-      cpf_cnpj = $4,
-      senha = $5,
-      tipo_usuario = $6,
-      foto_perfil = $7,
-      ativo = $8
-    WHERE id_usuario = $9
-    RETURNING *`,
+    `UPDATE usuarios
+
+     SET
+       nome = $1,
+       telefone = $2,
+       email = $3,
+       cpf_cnpj = $4,
+       senha = $5,
+       tipo_usuario = $6,
+       foto_perfil = $7,
+       ativo = $8
+
+     WHERE id_usuario = $9
+
+     RETURNING *`,
     [
       nome,
       telefone,
@@ -97,10 +137,12 @@ const atualizar = async (id, dados) => {
   return resultado.rows[0]
 }
 
-const deletar = async (id) => {
+const deletar = async (
+  id
+) => {
   const resultado = await db.query(
     `UPDATE usuarios
-     SET ativo = false
+     SET ativo = FALSE
      WHERE id_usuario = $1
      RETURNING *`,
     [id]
@@ -109,14 +151,20 @@ const deletar = async (id) => {
   return resultado.rows[0]
 }
 
-const login = async (email, senha) => {
+const login = async (
+  email,
+  senha
+) => {
   const resultado = await db.query(
     `SELECT *
      FROM usuarios
-     WHERE email = $1
-     AND senha = $2
-     AND ativo = true`,
-    [email, senha]
+     WHERE LOWER(email) = LOWER($1)
+       AND senha = $2
+       AND ativo = TRUE`,
+    [
+      email,
+      senha
+    ]
   )
 
   return resultado.rows[0]
@@ -125,6 +173,7 @@ const login = async (email, senha) => {
 module.exports = {
   listar,
   buscarPorId,
+  buscarPorEmail,
   criar,
   atualizar,
   deletar,

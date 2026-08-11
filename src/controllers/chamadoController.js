@@ -6,7 +6,14 @@ const historicoModel = require(
   '../models/historicoModels'
 )
 
-const listar = async (req, res) => {
+/* =========================
+   LISTAR
+========================= */
+
+const listar = async (
+  req,
+  res
+) => {
   try {
     const chamados =
       await chamadoModel.listar()
@@ -24,7 +31,14 @@ const listar = async (req, res) => {
   }
 }
 
-const buscarPorId = async (req, res) => {
+/* =========================
+   BUSCAR POR ID
+========================= */
+
+const buscarPorId = async (
+  req,
+  res
+) => {
   try {
     const chamado =
       await chamadoModel.buscarPorId(
@@ -51,19 +65,24 @@ const buscarPorId = async (req, res) => {
   }
 }
 
-const criar = async (req, res) => {
+/* =========================
+   CRIAR
+========================= */
+
+const criar = async (
+  req,
+  res
+) => {
   try {
-    const idUsuario = Number(
-      req.body.id_usuario
-    )
+    const idUsuario =
+      Number(
+        req.body.id_usuario
+      )
 
-    const idPropriedade = Number(
-      req.body.id_propriedade
-    )
-
-    const idUnidade = Number(
-      req.body.id_unidade
-    )
+    const idPropriedade =
+      Number(
+        req.body.id_propriedade
+      )
 
     if (
       !Number.isInteger(idUsuario) ||
@@ -76,7 +95,9 @@ const criar = async (req, res) => {
     }
 
     if (
-      !Number.isInteger(idPropriedade) ||
+      !Number.isInteger(
+        idPropriedade
+      ) ||
       idPropriedade <= 0
     ) {
       return res.status(400).json({
@@ -85,57 +106,122 @@ const criar = async (req, res) => {
       })
     }
 
-    if (
-      !Number.isInteger(idUnidade) ||
-      idUnidade <= 0
-    ) {
-      return res.status(400).json({
-        message:
-          'Selecione o local do atendimento.'
-      })
-    }
+    /*
+      CONFERE A PROPRIEDADE
+    */
+    const propriedade =
+      await chamadoModel
+        .buscarPropriedade(
+          idPropriedade
+        )
 
-    if (
-      !req.body.problema ||
-      !String(req.body.problema).trim()
-    ) {
-      return res.status(400).json({
+    if (!propriedade) {
+      return res.status(404).json({
         message:
-          'Informe o problema.'
-      })
-    }
-
-    if (
-      !req.body.descricao ||
-      !String(req.body.descricao).trim()
-    ) {
-      return res.status(400).json({
-        message:
-          'Informe a descrição do problema.'
+          'Propriedade não encontrada.'
       })
     }
 
     /*
-      Confere se o local realmente pertence
-      à propriedade selecionada.
+      AGORA A UNIDADE É OPCIONAL
     */
-    const unidade =
-      await chamadoModel.validarUnidade(
-        idPropriedade,
-        idUnidade
-      )
+    let idUnidade = null
 
-    if (!unidade) {
+    if (
+      req.body.id_unidade !== null &&
+      req.body.id_unidade !== undefined &&
+      req.body.id_unidade !== ''
+    ) {
+      idUnidade =
+        Number(
+          req.body.id_unidade
+        )
+
+      if (
+        !Number.isInteger(
+          idUnidade
+        ) ||
+        idUnidade <= 0
+      ) {
+        return res.status(400).json({
+          message:
+            'Local de atendimento inválido.'
+        })
+      }
+
+      const unidade =
+        await chamadoModel
+          .validarUnidade(
+            idPropriedade,
+            idUnidade
+          )
+
+      if (!unidade) {
+        return res.status(400).json({
+          message:
+            'O local informado não pertence à propriedade.'
+        })
+      }
+    }
+
+    const problema =
+      String(
+        req.body.problema || ''
+      ).trim()
+
+    const descricao =
+      String(
+        req.body.descricao || ''
+      ).trim()
+
+    if (!problema) {
       return res.status(400).json({
         message:
-          'O local selecionado não pertence à propriedade informada ou está desativado.'
+          'Informe o que está acontecendo.'
       })
     }
 
+    if (!descricao) {
+      return res.status(400).json({
+        message:
+          'Informe o que está acontecendo.'
+      })
+    }
+
+    /*
+      CULTURA AUTOMÁTICA.
+
+      Primeiro tenta usar a enviada
+      pelo frontend.
+
+      Se não vier, usa a cultura
+      principal da propriedade.
+
+      Caso a propriedade antiga ainda
+      não tenha cultura, mantém AVES
+      como fallback temporário.
+    */
+    const tipoCultura =
+      String(
+        req.body.tipo_cultura ||
+        propriedade.cultura_principal ||
+        'AVES'
+      ).toUpperCase()
+
+    const tipoChamado =
+      String(
+        req.body.tipo_chamado ||
+        'ASSISTENCIA'
+      ).toUpperCase()
+
+    const urgencia =
+      String(
+        req.body.urgencia ||
+        'MEDIA'
+      ).toUpperCase()
+
     const chamado =
       await chamadoModel.criar({
-        ...req.body,
-
         id_usuario:
           idUsuario,
 
@@ -145,16 +231,23 @@ const criar = async (req, res) => {
         id_unidade:
           idUnidade,
 
-        problema:
-          String(
-            req.body.problema
-          ).trim(),
+        tipo_cultura:
+          tipoCultura,
 
-        descricao:
-          String(
-            req.body.descricao
-          ).trim()
+        tipo_chamado:
+          tipoChamado,
+
+        problema,
+
+        descricao,
+
+        urgencia
       })
+
+    const observacaoHistorico =
+      tipoChamado === 'VENDEDOR'
+        ? `Solicitação de orçamento aberta pelo produtor para ${propriedade.nome_propriedade}.`
+        : `Chamado aberto pelo produtor para atendimento em ${propriedade.nome_propriedade}.`
 
     await historicoModel.criar({
       id_chamado:
@@ -167,7 +260,7 @@ const criar = async (req, res) => {
         'PENDENTE',
 
       observacao:
-        `Chamado aberto pelo produtor para atendimento em ${unidade.nome_unidade}.`,
+        observacaoHistorico,
 
       id_usuario_responsavel:
         chamado.id_usuario
@@ -180,7 +273,9 @@ const criar = async (req, res) => {
 
     res.status(201).json({
       message:
-        'Chamado aberto com sucesso.',
+        tipoChamado === 'VENDEDOR'
+          ? 'Solicitação enviada com sucesso.'
+          : 'Chamado aberto com sucesso.',
 
       chamado:
         chamadoCompleto
@@ -197,7 +292,14 @@ const criar = async (req, res) => {
   }
 }
 
-const atualizar = async (req, res) => {
+/* =========================
+   ATUALIZAR
+========================= */
+
+const atualizar = async (
+  req,
+  res
+) => {
   try {
     const chamadoAnterior =
       await chamadoModel.buscarPorId(
@@ -214,7 +316,8 @@ const atualizar = async (req, res) => {
     if (
       String(
         chamadoAnterior.status || ''
-      ).toUpperCase() !== 'PENDENTE'
+      ).toUpperCase() !==
+      'PENDENTE'
     ) {
       return res.status(409).json({
         message:
@@ -222,18 +325,17 @@ const atualizar = async (req, res) => {
       })
     }
 
-    const idPropriedade = Number(
-      req.body.id_propriedade ||
-      chamadoAnterior.id_propriedade
-    )
-
-    const idUnidade = Number(
-      req.body.id_unidade ||
-      chamadoAnterior.id_unidade
-    )
+    const idPropriedade =
+      Number(
+        req.body.id_propriedade ||
+        chamadoAnterior
+          .id_propriedade
+      )
 
     if (
-      !Number.isInteger(idPropriedade) ||
+      !Number.isInteger(
+        idPropriedade
+      ) ||
       idPropriedade <= 0
     ) {
       return res.status(400).json({
@@ -242,27 +344,66 @@ const atualizar = async (req, res) => {
       })
     }
 
-    if (
-      !Number.isInteger(idUnidade) ||
-      idUnidade <= 0
-    ) {
-      return res.status(400).json({
+    const propriedade =
+      await chamadoModel
+        .buscarPropriedade(
+          idPropriedade
+        )
+
+    if (!propriedade) {
+      return res.status(404).json({
         message:
-          'Selecione o local do atendimento.'
+          'Propriedade não encontrada.'
       })
     }
 
-    const unidade =
-      await chamadoModel.validarUnidade(
-        idPropriedade,
-        idUnidade
-      )
+    /*
+      Se id_unidade não vier na requisição,
+      mantém a unidade anterior.
 
-    if (!unidade) {
-      return res.status(400).json({
-        message:
-          'O local informado não pertence à propriedade selecionada ou está desativado.'
-      })
+      Se vier null, remove a unidade.
+    */
+    let idUnidade =
+      chamadoAnterior.id_unidade
+        ? Number(
+            chamadoAnterior.id_unidade
+          )
+        : null
+
+    if (
+      Object.prototype
+        .hasOwnProperty.call(
+          req.body,
+          'id_unidade'
+        )
+    ) {
+      if (
+        req.body.id_unidade === null ||
+        req.body.id_unidade === ''
+      ) {
+        idUnidade = null
+      } else {
+        idUnidade =
+          Number(
+            req.body.id_unidade
+          )
+      }
+    }
+
+    if (idUnidade) {
+      const unidade =
+        await chamadoModel
+          .validarUnidade(
+            idPropriedade,
+            idUnidade
+          )
+
+      if (!unidade) {
+        return res.status(400).json({
+          message:
+            'O local informado não pertence à propriedade selecionada.'
+        })
+      }
     }
 
     const chamado =
@@ -277,11 +418,36 @@ const atualizar = async (req, res) => {
           id_unidade:
             idUnidade,
 
+          tipo_cultura:
+            req.body.tipo_cultura ||
+            chamadoAnterior.tipo_cultura ||
+            propriedade
+              .cultura_principal ||
+            'AVES',
+
+          tipo_chamado:
+            req.body.tipo_chamado ||
+            chamadoAnterior
+              .tipo_chamado,
+
+          problema:
+            req.body.problema ||
+            chamadoAnterior.problema,
+
+          descricao:
+            req.body.descricao ||
+            chamadoAnterior.descricao,
+
+          urgencia:
+            req.body.urgencia ||
+            chamadoAnterior.urgencia,
+
           status:
             chamadoAnterior.status,
 
           resposta_tecnico:
-            chamadoAnterior.resposta_tecnico
+            chamadoAnterior
+              .resposta_tecnico
         }
       )
 
@@ -316,18 +482,24 @@ const atualizar = async (req, res) => {
   }
 }
 
+/* =========================
+   STATUS
+========================= */
+
 const atualizarStatus = async (
   req,
   res
 ) => {
   try {
-    const idChamado = Number(
-      req.params.id
-    )
+    const idChamado =
+      Number(
+        req.params.id
+      )
 
-    const novoStatus = String(
-      req.body.status || ''
-    ).toUpperCase()
+    const novoStatus =
+      String(
+        req.body.status || ''
+      ).toUpperCase()
 
     const idUsuarioResponsavel =
       Number(
@@ -344,7 +516,9 @@ const atualizarStatus = async (
       null
 
     if (
-      !Number.isInteger(idChamado) ||
+      !Number.isInteger(
+        idChamado
+      ) ||
       idChamado <= 0
     ) {
       return res.status(400).json({
@@ -385,11 +559,12 @@ const atualizarStatus = async (
     }
 
     const chamado =
-      await chamadoModel.atualizarStatus(
-        idChamado,
-        novoStatus,
-        respostaTecnico
-      )
+      await chamadoModel
+        .atualizarStatus(
+          idChamado,
+          novoStatus,
+          respostaTecnico
+        )
 
     if (!chamado) {
       return res.status(404).json({
@@ -438,7 +613,14 @@ const atualizarStatus = async (
   }
 }
 
-const deletar = async (req, res) => {
+/* =========================
+   CANCELAR
+========================= */
+
+const deletar = async (
+  req,
+  res
+) => {
   try {
     const chamadoAnterior =
       await chamadoModel.buscarPorId(
@@ -455,7 +637,8 @@ const deletar = async (req, res) => {
     if (
       String(
         chamadoAnterior.status || ''
-      ).toUpperCase() !== 'PENDENTE'
+      ).toUpperCase() !==
+      'PENDENTE'
     ) {
       return res.status(409).json({
         message:

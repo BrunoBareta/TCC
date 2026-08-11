@@ -112,6 +112,14 @@
           </div>
         </div>
 
+        <!-- FOTOS E VÍDEOS -->
+<div class="q-mt-lg">
+  <AnexosChamado
+    v-if="chamado?.id_chamado"
+    :id-chamado="chamado.id_chamado"
+  />
+</div>
+
         <HistoricoChamado
           :chamado="chamado"
           :historicos="historicos"
@@ -306,6 +314,8 @@ import historicoService from 'src/services/historicoService'
 import ResumoChamado from 'src/components/produtor/chamados/detalhes/ResumoChamado.vue'
 import InformacoesChamado from 'src/components/produtor/chamados/detalhes/InformacoesChamado.vue'
 import HistoricoChamado from 'src/components/produtor/chamados/detalhes/HistoricoChamado.vue'
+import AnexosChamado from
+  'src/components/shared/AnexosChamado.vue'
 
 const route = useRoute()
 const $q = useQuasar()

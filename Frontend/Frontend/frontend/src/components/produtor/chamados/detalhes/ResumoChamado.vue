@@ -166,7 +166,6 @@ function classeStatus(status) {
 
 .problema {
   margin-top: 6px;
-  color: #101828;
   font-size: 25px;
   font-weight: 800;
 }
@@ -192,7 +191,6 @@ function classeStatus(status) {
 
 .item-valor {
   margin-top: 3px;
-  color: #344054;
   font-size: 14px;
   font-weight: 600;
 }

@@ -196,18 +196,26 @@
         </div>
 
         <!-- DESCRIÇÃO -->
-        <div class="card q-mt-lg">
-          <div class="card-titulo">
-            Descrição do problema
-          </div>
+<div class="card q-mt-lg">
+  <div class="card-titulo">
+    Descrição do problema
+  </div>
 
-          <div class="descricao">
-            {{
-              chamado.descricao ||
-              'Nenhuma descrição informada.'
-            }}
-          </div>
-        </div>
+  <div class="descricao">
+    {{
+      chamado.descricao ||
+      'Nenhuma descrição informada.'
+    }}
+  </div>
+</div>
+
+<!-- FOTOS E VÍDEOS DO PRODUTOR -->
+<div class="q-mt-lg">
+  <AnexosChamado
+    v-if="chamado?.id_chamado"
+    :id-chamado="chamado.id_chamado"
+  />
+</div>
 
         <!-- AVISO ANTES DE INICIAR -->
         <div
@@ -385,6 +393,9 @@ import MateriaisAtendimento from
 
 import DeslocamentoAtendimento from
   'src/components/tecnico/atendimento/DeslocamentoAtendimento.vue'
+
+import AnexosChamado from
+  'src/components/shared/AnexosChamado.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -1055,5 +1066,25 @@ onMounted(
       repeat(2, 1fr);
     gap: 20px;
   }
+}
+/* =========================
+   RESPOSTA FINAL - DARK
+========================= */
+
+.body--dark
+.observacao-finalizada {
+  border: 1px solid #3a3f47;
+
+  background: #1b1f25;
+}
+
+.body--dark
+.observacao-finalizada-label {
+  color: #fb923c;
+}
+
+.body--dark
+.observacao-finalizada-texto {
+  color: #f2f4f7;
 }
 </style>
