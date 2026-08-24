@@ -5,6 +5,7 @@ const routes = [
 
   {
     path: '/',
+
     component: () =>
       import(
         'layouts/LoginLayout.vue'
@@ -221,6 +222,103 @@ const routes = [
         component: () =>
           import(
             'pages/tecnico/PerfilTecnicoPage.vue'
+          )
+      }
+    ]
+  },
+
+  // ==========================
+  // ADMINISTRADOR
+  // ==========================
+
+  {
+    path: '/admin',
+
+    component: () =>
+      import(
+        'layouts/AdminLayout.vue'
+      ),
+
+    meta: {
+      requiresAuth: true,
+      roles: ['ADMINISTRADOR']
+    },
+
+    children: [
+      {
+        path: '',
+        redirect: '/admin/dashboard'
+      },
+
+      // DASHBOARD
+
+      {
+        path: 'dashboard',
+        name: 'admin-dashboard',
+
+        component: () =>
+          import(
+            'pages/admin/DashboardAdminPage.vue'
+          )
+      },
+
+      // CHAMADOS
+
+      {
+        path: 'chamados',
+        name: 'admin-chamados',
+
+        component: () =>
+          import(
+            'pages/admin/ChamadosAdminPage.vue'
+          )
+      },
+
+      // TÉCNICOS
+
+      {
+        path: 'tecnicos',
+        name: 'admin-tecnicos',
+
+        component: () =>
+          import(
+            'pages/admin/TecnicosAdminPage.vue'
+          )
+      },
+
+      // PRODUTORES
+
+      {
+        path: 'produtores',
+        name: 'admin-produtores',
+
+        component: () =>
+          import(
+            'pages/admin/ProdutoresAdminPage.vue'
+          )
+      },
+
+      // RELATÓRIOS
+
+      {
+        path: 'relatorios',
+        name: 'admin-relatorios',
+
+        component: () =>
+          import(
+            'pages/admin/RelatoriosAdminPage.vue'
+          )
+      },
+
+      // PERFIL
+
+      {
+        path: 'perfil',
+        name: 'admin-perfil',
+
+        component: () =>
+          import(
+            'pages/admin/PerfilAdminPage.vue'
           )
       }
     ]

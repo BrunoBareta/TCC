@@ -1,9 +1,25 @@
 const db = require('../database/db')
 
+/* =========================
+   LISTAR CHAMADOS
+========================= */
+
 const listar = async () => {
   const resultado = await db.query(
     `SELECT
       c.*,
+
+      /* =========================
+         PRODUTOR
+      ========================= */
+
+      produtor.nome AS nome_produtor,
+      produtor.email AS email_produtor,
+      produtor.telefone AS telefone_produtor,
+
+      /* =========================
+         PROPRIEDADE
+      ========================= */
 
       p.nome_propriedade,
       p.endereco AS endereco_propriedade,
@@ -14,30 +30,111 @@ const listar = async () => {
       p.longitude AS longitude_propriedade,
       p.cultura_principal,
 
+      /* =========================
+         UNIDADE ANTIGA
+      ========================= */
+
       up.nome_unidade,
       up.tipo_unidade,
       up.descricao AS descricao_unidade,
-      up.referencia AS referencia_unidade
+      up.referencia AS referencia_unidade,
+
+      /* =========================
+         TÉCNICO
+      ========================= */
+
+      tecnico.nome_tecnico,
+      tecnico.email_tecnico,
+      tecnico.telefone_tecnico
 
     FROM chamados c
+
+    /* =========================
+       USUÁRIO QUE ABRIU
+       O CHAMADO
+    ========================= */
+
+    LEFT JOIN usuarios produtor
+      ON produtor.id_usuario = c.id_usuario
+
+    /* =========================
+       PROPRIEDADE
+    ========================= */
 
     LEFT JOIN propriedades p
       ON p.id_propriedade = c.id_propriedade
 
+    /* =========================
+       UNIDADE / AVIÁRIO ANTIGO
+    ========================= */
+
     LEFT JOIN unidades_propriedade up
       ON up.id_unidade = c.id_unidade
 
-    ORDER BY c.id_chamado ASC`
+    /* =========================
+       TÉCNICO(S) VINCULADO(S)
+    ========================= */
+
+    LEFT JOIN LATERAL (
+      SELECT
+        STRING_AGG(
+          u.nome,
+          ', '
+          ORDER BY cf.data_aceite ASC
+        ) AS nome_tecnico,
+
+        STRING_AGG(
+          u.email,
+          ', '
+          ORDER BY cf.data_aceite ASC
+        ) AS email_tecnico,
+
+        STRING_AGG(
+          COALESCE(
+            u.telefone,
+            ''
+          ),
+          ', '
+          ORDER BY cf.data_aceite ASC
+        ) AS telefone_tecnico
+
+      FROM chamado_funcionario cf
+
+      INNER JOIN usuarios u
+        ON u.id_usuario = cf.id_funcionario
+
+      WHERE cf.id_chamado = c.id_chamado
+        AND cf.status_aceite = 'ACEITO'
+    ) tecnico
+      ON TRUE
+
+    ORDER BY c.id_chamado DESC`
   )
 
   return resultado.rows
 }
+
+/* =========================
+   BUSCAR CHAMADO POR ID
+========================= */
 
 const buscarPorId = async (id) => {
   const resultado = await db.query(
     `SELECT
       c.*,
 
+      /* =========================
+         PRODUTOR
+      ========================= */
+
+      produtor.nome AS nome_produtor,
+      produtor.email AS email_produtor,
+      produtor.telefone AS telefone_produtor,
+
+      /* =========================
+         PROPRIEDADE
+      ========================= */
+
       p.nome_propriedade,
       p.endereco AS endereco_propriedade,
       p.cidade AS cidade_propriedade,
@@ -47,18 +144,66 @@ const buscarPorId = async (id) => {
       p.longitude AS longitude_propriedade,
       p.cultura_principal,
 
+      /* =========================
+         UNIDADE ANTIGA
+      ========================= */
+
       up.nome_unidade,
       up.tipo_unidade,
       up.descricao AS descricao_unidade,
-      up.referencia AS referencia_unidade
+      up.referencia AS referencia_unidade,
+
+      /* =========================
+         TÉCNICO
+      ========================= */
+
+      tecnico.nome_tecnico,
+      tecnico.email_tecnico,
+      tecnico.telefone_tecnico
 
     FROM chamados c
+
+    LEFT JOIN usuarios produtor
+      ON produtor.id_usuario = c.id_usuario
 
     LEFT JOIN propriedades p
       ON p.id_propriedade = c.id_propriedade
 
     LEFT JOIN unidades_propriedade up
       ON up.id_unidade = c.id_unidade
+
+    LEFT JOIN LATERAL (
+      SELECT
+        STRING_AGG(
+          u.nome,
+          ', '
+          ORDER BY cf.data_aceite ASC
+        ) AS nome_tecnico,
+
+        STRING_AGG(
+          u.email,
+          ', '
+          ORDER BY cf.data_aceite ASC
+        ) AS email_tecnico,
+
+        STRING_AGG(
+          COALESCE(
+            u.telefone,
+            ''
+          ),
+          ', '
+          ORDER BY cf.data_aceite ASC
+        ) AS telefone_tecnico
+
+      FROM chamado_funcionario cf
+
+      INNER JOIN usuarios u
+        ON u.id_usuario = cf.id_funcionario
+
+      WHERE cf.id_chamado = c.id_chamado
+        AND cf.status_aceite = 'ACEITO'
+    ) tecnico
+      ON TRUE
 
     WHERE c.id_chamado = $1`,
     [id]
@@ -67,12 +212,10 @@ const buscarPorId = async (id) => {
   return resultado.rows[0]
 }
 
-/*
-  BUSCA A PROPRIEDADE.
+/* =========================
+   BUSCAR PROPRIEDADE
+========================= */
 
-  Usado para confirmar se a propriedade
-  realmente existe antes de abrir chamado.
-*/
 const buscarPropriedade = async (
   idPropriedade
 ) => {
@@ -100,11 +243,10 @@ const buscarPropriedade = async (
   return resultado.rows[0]
 }
 
-/*
-  Continua existindo para manter
-  compatibilidade com chamados antigos
-  que possuem unidade/Aviário.
-*/
+/* =========================
+   VALIDAR UNIDADE ANTIGA
+========================= */
+
 const validarUnidade = async (
   idPropriedade,
   idUnidade
@@ -133,6 +275,10 @@ const validarUnidade = async (
   return resultado.rows[0]
 }
 
+/* =========================
+   CRIAR CHAMADO
+========================= */
+
 const criar = async (dados) => {
   const {
     id_usuario,
@@ -142,7 +288,16 @@ const criar = async (dados) => {
     tipo_chamado,
     problema,
     descricao,
-    urgencia
+    urgencia,
+
+    /* =========================
+       LOCAL DO ATENDIMENTO
+    ========================= */
+
+    latitude_atendimento = null,
+    longitude_atendimento = null,
+    endereco_atendimento = null,
+    origem_localizacao = 'CADASTRO'
   } = dados
 
   const resultado = await db.query(
@@ -156,6 +311,12 @@ const criar = async (dados) => {
       problema,
       descricao,
       urgencia,
+
+      latitude_atendimento,
+      longitude_atendimento,
+      endereco_atendimento,
+      origem_localizacao,
+
       status,
       data_abertura
     )
@@ -169,6 +330,12 @@ const criar = async (dados) => {
       $6,
       $7,
       $8,
+
+      $9,
+      $10,
+      $11,
+      $12,
+
       'PENDENTE',
       NOW()
     )
@@ -181,12 +348,21 @@ const criar = async (dados) => {
       tipo_chamado,
       problema,
       descricao,
-      urgencia
+      urgencia,
+
+      latitude_atendimento,
+      longitude_atendimento,
+      endereco_atendimento,
+      origem_localizacao
     ]
   )
 
   return resultado.rows[0]
 }
+
+/* =========================
+   ATUALIZAR CHAMADO
+========================= */
 
 const atualizar = async (
   id,
@@ -201,7 +377,16 @@ const atualizar = async (
     descricao,
     urgencia,
     status,
-    resposta_tecnico
+    resposta_tecnico,
+
+    /* =========================
+       LOCAL DO ATENDIMENTO
+    ========================= */
+
+    latitude_atendimento,
+    longitude_atendimento,
+    endereco_atendimento,
+    origem_localizacao
   } = dados
 
   const resultado = await db.query(
@@ -216,19 +401,43 @@ const atualizar = async (
        descricao = $6,
        urgencia = $7,
 
-       status =
+       latitude_atendimento =
          COALESCE(
            $8,
+           latitude_atendimento
+         ),
+
+       longitude_atendimento =
+         COALESCE(
+           $9,
+           longitude_atendimento
+         ),
+
+       endereco_atendimento =
+         COALESCE(
+           $10,
+           endereco_atendimento
+         ),
+
+       origem_localizacao =
+         COALESCE(
+           $11,
+           origem_localizacao
+         ),
+
+       status =
+         COALESCE(
+           $12,
            status
          ),
 
        resposta_tecnico =
          COALESCE(
-           $9,
+           $13,
            resposta_tecnico
          )
 
-     WHERE id_chamado = $10
+     WHERE id_chamado = $14
 
      RETURNING *`,
     [
@@ -239,14 +448,25 @@ const atualizar = async (
       problema,
       descricao,
       urgencia,
+
+      latitude_atendimento ?? null,
+      longitude_atendimento ?? null,
+      endereco_atendimento ?? null,
+      origem_localizacao ?? null,
+
       status || null,
       resposta_tecnico || null,
+
       id
     ]
   )
 
   return resultado.rows[0]
 }
+
+/* =========================
+   ATUALIZAR STATUS
+========================= */
 
 const atualizarStatus = async (
   id,
@@ -292,6 +512,10 @@ const atualizarStatus = async (
   return resultado.rows[0]
 }
 
+/* =========================
+   CANCELAR CHAMADO
+========================= */
+
 const deletar = async (id) => {
   const resultado = await db.query(
     `UPDATE chamados
@@ -306,6 +530,10 @@ const deletar = async (id) => {
 
   return resultado.rows[0]
 }
+
+/* =========================
+   EXPORTAÇÕES
+========================= */
 
 module.exports = {
   listar,

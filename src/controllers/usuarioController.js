@@ -2,6 +2,10 @@ const usuarioModel = require(
   '../models/usuarioModels'
 )
 
+/* =========================
+   LISTAR USUÁRIOS
+========================= */
+
 const listar = async (
   req,
   res
@@ -12,11 +16,20 @@ const listar = async (
 
     res.json(usuarios)
   } catch (error) {
+    console.error(
+      'Erro ao listar usuários:',
+      error
+    )
+
     res.status(500).json({
       erro: error.message
     })
   }
 }
+
+/* =========================
+   BUSCAR USUÁRIO POR ID
+========================= */
 
 const buscarPorId = async (
   req,
@@ -37,11 +50,21 @@ const buscarPorId = async (
 
     res.json(usuario)
   } catch (error) {
+    console.error(
+      'Erro ao buscar usuário:',
+      error
+    )
+
     res.status(500).json({
       erro: error.message
     })
   }
 }
+
+/* =========================
+   CADASTRO PÚBLICO
+   SOMENTE PRODUTOR
+========================= */
 
 const criar = async (
   req,
@@ -106,12 +129,12 @@ const criar = async (
     }
 
     /*
-      Cadastro aberto pelo Login sempre
-      cria um PRODUTOR.
+      Cadastro realizado pela
+      tela pública.
 
-      Não confiamos no frontend para
-      escolher FUNCIONARIO ou ADMIN.
+      Sempre será PRODUTOR.
     */
+
     const usuario =
       await usuarioModel.criar({
         nome,
@@ -146,7 +169,7 @@ const criar = async (
     )
   } catch (error) {
     console.error(
-      'Erro ao criar usuário:',
+      'Erro ao criar produtor:',
       error
     )
 
@@ -155,6 +178,151 @@ const criar = async (
     })
   }
 }
+
+/* =========================
+   CADASTRAR TÉCNICO
+   ÁREA ADMINISTRATIVA
+========================= */
+
+const criarFuncionario = async (
+  req,
+  res
+) => {
+  try {
+    const nome =
+      String(
+        req.body.nome || ''
+      ).trim()
+
+    const email =
+      String(
+        req.body.email || ''
+      )
+        .trim()
+        .toLowerCase()
+
+    const telefone =
+      String(
+        req.body.telefone || ''
+      ).trim()
+
+    const senha =
+      String(
+        req.body.senha || ''
+      )
+
+    /* =========================
+       VALIDAÇÕES
+    ========================= */
+
+    if (!nome) {
+      return res.status(400).json({
+        message:
+          'Informe o nome do técnico.'
+      })
+    }
+
+    if (!email) {
+      return res.status(400).json({
+        message:
+          'Informe o e-mail do técnico.'
+      })
+    }
+
+    if (!telefone) {
+      return res.status(400).json({
+        message:
+          'Informe o telefone do técnico.'
+      })
+    }
+
+    if (!senha) {
+      return res.status(400).json({
+        message:
+          'Informe a senha do técnico.'
+      })
+    }
+
+    if (senha.length < 6) {
+      return res.status(400).json({
+        message:
+          'A senha deve possuir pelo menos 6 caracteres.'
+      })
+    }
+
+    /* =========================
+       VERIFICAR E-MAIL
+    ========================= */
+
+    const usuarioExistente =
+      await usuarioModel.buscarPorEmail(
+        email
+      )
+
+    if (usuarioExistente) {
+      return res.status(409).json({
+        message:
+          'Já existe um usuário cadastrado com este e-mail.'
+      })
+    }
+
+    /* =========================
+       CRIAR FUNCIONÁRIO
+    ========================= */
+
+    const usuario =
+      await usuarioModel.criar({
+        nome,
+
+        telefone,
+
+        email,
+
+        /*
+          Técnico não possui
+          CPF/CNPJ obrigatório
+          nesse protótipo.
+        */
+        cpf_cnpj:
+          null,
+
+        senha,
+
+        /*
+          O frontend não escolhe
+          o tipo de usuário.
+
+          Este endpoint sempre cria
+          FUNCIONARIO.
+        */
+        tipo_usuario:
+          'FUNCIONARIO',
+
+        foto_perfil:
+          null
+      })
+
+    res.status(201).json({
+      message:
+        'Técnico cadastrado com sucesso.',
+
+      usuario
+    })
+  } catch (error) {
+    console.error(
+      'Erro ao cadastrar técnico:',
+      error
+    )
+
+    res.status(500).json({
+      erro: error.message
+    })
+  }
+}
+
+/* =========================
+   ATUALIZAR USUÁRIO
+========================= */
 
 const atualizar = async (
   req,
@@ -197,6 +365,10 @@ const atualizar = async (
             req.body.senha ??
             usuarioAnterior.senha,
 
+          /*
+            Não permitimos mudar
+            o perfil por este endpoint.
+          */
           tipo_usuario:
             usuarioAnterior.tipo_usuario,
 
@@ -223,6 +395,10 @@ const atualizar = async (
   }
 }
 
+/* =========================
+   DESATIVAR USUÁRIO
+========================= */
+
 const deletar = async (
   req,
   res
@@ -247,11 +423,20 @@ const deletar = async (
       usuario
     })
   } catch (error) {
+    console.error(
+      'Erro ao desativar usuário:',
+      error
+    )
+
     res.status(500).json({
       erro: error.message
     })
   }
 }
+
+/* =========================
+   LOGIN
+========================= */
 
 const login = async (
   req,
@@ -300,16 +485,26 @@ const login = async (
       usuario
     })
   } catch (error) {
+    console.error(
+      'Erro ao realizar login:',
+      error
+    )
+
     res.status(500).json({
       erro: error.message
     })
   }
 }
 
+/* =========================
+   EXPORTAÇÕES
+========================= */
+
 module.exports = {
   listar,
   buscarPorId,
   criar,
+  criarFuncionario,
   atualizar,
   deletar,
   login

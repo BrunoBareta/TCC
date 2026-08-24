@@ -21,6 +21,10 @@
       />
     </div>
 
+    <!-- =========================================
+         CARREGANDO
+    ========================================== -->
+
     <div
       v-if="carregando"
       class="estado-central"
@@ -34,6 +38,10 @@
         Carregando atendimento...
       </div>
     </div>
+
+    <!-- =========================================
+         ERRO
+    ========================================== -->
 
     <q-banner
       v-else-if="erro"
@@ -52,16 +60,21 @@
       </template>
     </q-banner>
 
+    <!-- =========================================
+         ATENDIMENTO
+    ========================================== -->
+
     <div
       v-else-if="chamado"
       class="atendimento-grid"
     >
-      <!-- =============================== -->
-      <!-- COLUNA PRINCIPAL -->
-      <!-- =============================== -->
+      <!-- ===============================
+           COLUNA PRINCIPAL
+      ================================ -->
 
       <div class="coluna-principal">
         <!-- RESUMO -->
+
         <div class="card">
           <div class="card-topo">
             <div>
@@ -140,7 +153,10 @@
           </div>
         </div>
 
-        <!-- ETAPA -->
+        <!-- =========================================
+             ANDAMENTO
+        ========================================== -->
+
         <div class="card q-mt-lg">
           <div class="card-titulo">
             Andamento do atendimento
@@ -158,6 +174,7 @@
                   :class="{
                     'etapa-concluida':
                       indiceEtapaAtual >= index,
+
                     'etapa-atual':
                       indiceEtapaAtual === index
                   }"
@@ -179,7 +196,7 @@
                     'linha-concluida':
                       indiceEtapaAtual > index
                   }"
-                />
+                ></div>
               </div>
 
               <div
@@ -195,31 +212,43 @@
           </div>
         </div>
 
-        <!-- DESCRIÇÃO -->
-<div class="card q-mt-lg">
-  <div class="card-titulo">
-    Descrição do problema
-  </div>
+        <!-- =========================================
+             DESCRIÇÃO
+        ========================================== -->
 
-  <div class="descricao">
-    {{
-      chamado.descricao ||
-      'Nenhuma descrição informada.'
-    }}
-  </div>
-</div>
+        <div class="card q-mt-lg">
+          <div class="card-titulo">
+            Descrição do problema
+          </div>
 
-<!-- FOTOS E VÍDEOS DO PRODUTOR -->
-<div class="q-mt-lg">
-  <AnexosChamado
-    v-if="chamado?.id_chamado"
-    :id-chamado="chamado.id_chamado"
-  />
-</div>
+          <div class="descricao">
+            {{
+              chamado.descricao ||
+              'Nenhuma descrição informada.'
+            }}
+          </div>
+        </div>
 
-        <!-- AVISO ANTES DE INICIAR -->
+        <!-- =========================================
+             FOTOS E VÍDEOS
+        ========================================== -->
+
+        <div class="q-mt-lg">
+          <AnexosChamado
+            v-if="chamado?.id_chamado"
+            :id-chamado="chamado.id_chamado"
+          />
+        </div>
+
+        <!-- =========================================
+             AVISO ANTES DE INICIAR
+        ========================================== -->
+
         <div
-          v-if="!podeRegistrarServico && !atendimentoFinalizado"
+          v-if="
+            !podeRegistrarServico &&
+            !atendimentoFinalizado
+          "
           class="card q-mt-lg aguardando-card"
         >
           <div class="aguardando-conteudo">
@@ -246,7 +275,7 @@
               <div class="aguardando-texto">
                 {{
                   statusAtual === 'EM_ROTA'
-                    ? 'Quando chegar à propriedade, inicie o atendimento para liberar o registro de materiais e observações.'
+                    ? 'Quando chegar ao local, inicie o atendimento para liberar o registro de materiais e observações.'
                     : 'Os materiais e as observações serão liberados após o técnico chegar ao local e iniciar o atendimento.'
                 }}
               </div>
@@ -254,12 +283,16 @@
           </div>
         </div>
 
-        <!-- =============================== -->
-        <!-- SERVIÇO -->
-        <!-- Só EM_ATENDIMENTO ou FINALIZADO -->
-        <!-- =============================== -->
+        <!-- =========================================
+             SERVIÇO
+        ========================================== -->
 
-        <template v-if="podeRegistrarServico || atendimentoFinalizado">
+        <template
+          v-if="
+            podeRegistrarServico ||
+            atendimentoFinalizado
+          "
+        >
           <div class="q-mt-lg">
             <MateriaisAtendimento
               :id-chamado="chamado.id_chamado"
@@ -307,16 +340,136 @@
         </template>
       </div>
 
-      <!-- =============================== -->
-      <!-- COLUNA LATERAL -->
-      <!-- =============================== -->
+      <!-- ===============================
+           COLUNA LATERAL
+      ================================ -->
 
       <div class="coluna-lateral">
+        <!-- =========================================
+             DESLOCAMENTO
+        ========================================== -->
+
         <DeslocamentoAtendimento
           :chamado="chamado"
           :observacao="observacao"
           @chamado-atualizado="atualizarChamadoLocal"
         />
+
+        <!-- =========================================
+             LOCAL DO ATENDIMENTO
+        ========================================== -->
+
+        <div class="card q-mt-lg local-card">
+          <div class="local-topo">
+            <div>
+              <div class="card-titulo local-titulo">
+                Local do atendimento
+              </div>
+
+              <div class="local-origem">
+                {{ textoOrigemLocalizacao }}
+              </div>
+            </div>
+
+            <div class="local-icone">
+              <q-icon
+                name="location_on"
+                size="23px"
+              />
+            </div>
+          </div>
+
+          <div class="local-endereco">
+            <q-icon
+              name="place"
+              color="orange"
+              size="20px"
+            />
+
+            <div>
+              <div class="local-endereco-label">
+                Endereço
+              </div>
+
+              <div class="local-endereco-valor">
+                {{ enderecoAtendimento }}
+              </div>
+            </div>
+          </div>
+
+          <div class="local-acoes">
+            <q-btn
+              v-if="possuiCoordenadasAtendimento"
+              outline
+              no-caps
+              color="orange"
+              :icon="
+                mostrarMapa
+                  ? 'map'
+                  : 'map'
+              "
+              :label="
+                mostrarMapa
+                  ? 'Ocultar mapa'
+                  : 'Ver mapa'
+              "
+              @click="
+                mostrarMapa =
+                  !mostrarMapa
+              "
+            />
+
+            <q-btn
+              v-if="possuiCoordenadasAtendimento"
+              unelevated
+              no-caps
+              color="orange"
+              icon="near_me"
+              label="Abrir rota"
+              @click="abrirRota"
+            />
+          </div>
+
+          <q-slide-transition>
+            <div
+              v-show="
+                mostrarMapa &&
+                possuiCoordenadasAtendimento
+              "
+              class="local-mapa"
+            >
+              <MapaLocalizacao
+                :key="
+                  `atendimento-${latitudeAtendimento}-${longitudeAtendimento}`
+                "
+                :latitude="latitudeAtendimento"
+                :longitude="longitudeAtendimento"
+                nome-local="Local do atendimento"
+                :endereco="enderecoAtendimento"
+                titulo="Localização do atendimento"
+                :subtitulo="textoOrigemLocalizacao"
+              />
+            </div>
+          </q-slide-transition>
+
+          <div
+            v-if="!possuiCoordenadasAtendimento"
+            class="local-sem-coordenadas"
+          >
+            <q-icon
+              name="location_off"
+              size="20px"
+            />
+
+            <span>
+              Este chamado possui somente o endereço escrito.
+            </span>
+          </div>
+        </div>
+
+        <!-- =========================================
+             EQUIPE
+        ========================================== -->
 
         <div class="card q-mt-lg">
           <div class="card-titulo">
@@ -383,7 +536,8 @@ import {
   useRouter
 } from 'vue-router'
 
-import chamadoService from 'src/services/chamadoService'
+import chamadoService from
+  'src/services/chamadoService'
 
 import chamadoFuncionarioService from
   'src/services/chamadoFuncionarioService'
@@ -397,14 +551,36 @@ import DeslocamentoAtendimento from
 import AnexosChamado from
   'src/components/shared/AnexosChamado.vue'
 
-const route = useRoute()
-const router = useRouter()
+import MapaLocalizacao from
+  'src/components/shared/MapaLocalizacao.vue'
 
-const chamado = ref(null)
-const equipe = ref([])
-const observacao = ref('')
-const carregando = ref(false)
-const erro = ref('')
+const route =
+  useRoute()
+
+const router =
+  useRouter()
+
+const chamado =
+  ref(null)
+
+const equipe =
+  ref([])
+
+const observacao =
+  ref('')
+
+const carregando =
+  ref(false)
+
+const erro =
+  ref('')
+
+const mostrarMapa =
+  ref(false)
+
+/* =========================================
+   ETAPAS
+========================================= */
 
 const etapas = [
   {
@@ -412,16 +588,19 @@ const etapas = [
     label: 'Aceito',
     icone: 'thumb_up'
   },
+
   {
     status: 'EM_ROTA',
     label: 'Em deslocamento',
     icone: 'local_shipping'
   },
+
   {
     status: 'EM_ATENDIMENTO',
     label: 'Em atendimento',
     icone: 'engineering'
   },
+
   {
     status: 'FINALIZADO',
     label: 'Finalizado',
@@ -429,52 +608,295 @@ const etapas = [
   }
 ]
 
-const statusAtual = computed(() =>
-  String(
-    chamado.value?.status || ''
-  ).toUpperCase()
-)
+/* =========================================
+   STATUS
+========================================= */
 
-const atendimentoFinalizado = computed(() =>
-  [
-    'FINALIZADO',
-    'CONCLUIDO'
-  ].includes(statusAtual.value)
-)
-
-const podeRegistrarServico = computed(() =>
-  statusAtual.value === 'EM_ATENDIMENTO'
-)
-
-const indiceEtapaAtual = computed(() => {
-  const status = statusAtual.value
-
-  if (
-    status === 'FINALIZADO' ||
-    status === 'CONCLUIDO'
-  ) {
-    return 3
-  }
-
-  const indice = etapas.findIndex(
-    (etapa) => etapa.status === status
+const statusAtual =
+  computed(() =>
+    String(
+      chamado.value?.status ||
+      ''
+    ).toUpperCase()
   )
 
-  return indice >= 0
-    ? indice
-    : 0
-})
+const atendimentoFinalizado =
+  computed(() =>
+    [
+      'FINALIZADO',
+      'CONCLUIDO'
+    ].includes(
+      statusAtual.value
+    )
+  )
+
+const podeRegistrarServico =
+  computed(() =>
+    statusAtual.value ===
+    'EM_ATENDIMENTO'
+  )
+
+const indiceEtapaAtual =
+  computed(() => {
+    const status =
+      statusAtual.value
+
+    if (
+      status === 'FINALIZADO' ||
+      status === 'CONCLUIDO'
+    ) {
+      return 3
+    }
+
+    const indice =
+      etapas.findIndex(
+        etapa =>
+          etapa.status ===
+          status
+      )
+
+    return indice >= 0
+      ? indice
+      : 0
+  })
+
+/* =========================================
+   LOCALIZAÇÃO
+========================================= */
+
+function converterCoordenada(
+  valor
+) {
+  if (
+    valor === null ||
+    valor === undefined ||
+    valor === ''
+  ) {
+    return null
+  }
+
+  const numero =
+    Number(
+      String(valor)
+        .replace(',', '.')
+    )
+
+  return Number.isFinite(
+    numero
+  )
+    ? numero
+    : null
+}
+
+/*
+  A localização escolhida no chamado
+  sempre tem prioridade.
+
+  Chamados antigos continuam funcionando
+  usando a localização da propriedade.
+*/
+
+const latitudeAtendimento =
+  computed(() => {
+    const latitudeChamado =
+      converterCoordenada(
+        chamado.value
+          ?.latitude_atendimento
+      )
+
+    if (
+      latitudeChamado !==
+      null
+    ) {
+      return latitudeChamado
+    }
+
+    return converterCoordenada(
+      chamado.value
+        ?.latitude_propriedade
+    )
+  })
+
+const longitudeAtendimento =
+  computed(() => {
+    const longitudeChamado =
+      converterCoordenada(
+        chamado.value
+          ?.longitude_atendimento
+      )
+
+    if (
+      longitudeChamado !==
+      null
+    ) {
+      return longitudeChamado
+    }
+
+    return converterCoordenada(
+      chamado.value
+        ?.longitude_propriedade
+    )
+  })
+
+const possuiCoordenadasAtendimento =
+  computed(() => {
+    const latitude =
+      latitudeAtendimento.value
+
+    const longitude =
+      longitudeAtendimento.value
+
+    return (
+      Number.isFinite(latitude) &&
+      Number.isFinite(longitude) &&
+      latitude >= -90 &&
+      latitude <= 90 &&
+      longitude >= -180 &&
+      longitude <= 180
+    )
+  })
+
+const enderecoAtendimento =
+  computed(() => {
+    /*
+      1º - endereço específico do chamado
+    */
+
+    const enderecoChamado =
+      String(
+        chamado.value
+          ?.endereco_atendimento ||
+        ''
+      ).trim()
+
+    if (enderecoChamado) {
+      return enderecoChamado
+    }
+
+    /*
+      2º - endereço cadastrado
+      da propriedade
+    */
+
+    const endereco =
+      String(
+        chamado.value
+          ?.endereco_propriedade ||
+        ''
+      ).trim()
+
+    const cidade =
+      String(
+        chamado.value
+          ?.cidade_propriedade ||
+        ''
+      ).trim()
+
+    const estado =
+      String(
+        chamado.value
+          ?.estado_propriedade ||
+        ''
+      ).trim()
+
+    const cidadeEstado =
+      [
+        cidade,
+        estado
+      ]
+        .filter(Boolean)
+        .join(' - ')
+
+    return (
+      [
+        endereco,
+        cidadeEstado
+      ]
+        .filter(Boolean)
+        .join(', ') ||
+      'Endereço não informado'
+    )
+  })
+
+const origemLocalizacao =
+  computed(() =>
+    String(
+      chamado.value
+        ?.origem_localizacao ||
+      ''
+    )
+      .trim()
+      .toUpperCase()
+  )
+
+const textoOrigemLocalizacao =
+  computed(() => {
+    if (
+      origemLocalizacao.value ===
+      'ATUAL'
+    ) {
+      return 'Localização informada pelo produtor neste chamado.'
+    }
+
+    if (
+      origemLocalizacao.value ===
+      'PESQUISA'
+    ) {
+      return 'Endereço escolhido pelo produtor neste chamado.'
+    }
+
+    return 'Localização cadastrada da propriedade.'
+  })
+
+/* =========================================
+   ABRIR ROTA
+========================================= */
+
+function abrirRota() {
+  if (
+    !possuiCoordenadasAtendimento
+      .value
+  ) {
+    return
+  }
+
+  const latitude =
+    latitudeAtendimento.value
+
+  const longitude =
+    longitudeAtendimento.value
+
+  const url =
+    `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}`
+
+  window.open(
+    url,
+    '_blank',
+    'noopener,noreferrer'
+  )
+}
+
+/* =========================================
+   CARREGAR CHAMADO
+========================================= */
 
 async function carregarChamado() {
-  carregando.value = true
-  erro.value = ''
+  carregando.value =
+    true
+
+  erro.value =
+    ''
 
   try {
     const idChamado =
-      Number(route.params.id)
+      Number(
+        route.params.id
+      )
 
     if (
-      !Number.isInteger(idChamado) ||
+      !Number.isInteger(
+        idChamado
+      ) ||
       idChamado <= 0
     ) {
       throw new Error(
@@ -483,12 +905,14 @@ async function carregarChamado() {
     }
 
     chamado.value =
-      await chamadoService.buscarPorId(
-        idChamado
-      )
+      await chamadoService
+        .buscarPorId(
+          idChamado
+        )
 
     observacao.value =
-      chamado.value?.resposta_tecnico ||
+      chamado.value
+        ?.resposta_tecnico ||
       ''
 
     const respostaEquipe =
@@ -498,9 +922,12 @@ async function carregarChamado() {
         )
 
     equipe.value =
-      Array.isArray(respostaEquipe)
+      Array.isArray(
+        respostaEquipe
+      )
         ? respostaEquipe
-        : respostaEquipe?.data || []
+        : respostaEquipe?.data ||
+          []
   } catch (error) {
     console.error(
       'Erro ao carregar atendimento:',
@@ -513,15 +940,25 @@ async function carregarChamado() {
       error.message ||
       'Não foi possível carregar o atendimento.'
   } finally {
-    carregando.value = false
+    carregando.value =
+      false
   }
 }
 
+/* =========================================
+   VOLTAR
+========================================= */
+
 function voltar() {
   router.push({
-    name: 'tecnico-meus-chamados'
+    name:
+      'tecnico-meus-chamados'
   })
 }
+
+/* =========================================
+   ATUALIZAÇÃO LOCAL
+========================================= */
 
 function atualizarChamadoLocal(
   chamadoAtualizado
@@ -535,18 +972,26 @@ function atualizarChamadoLocal(
       'CONCLUIDO'
     ].includes(
       String(
-        chamadoAtualizado?.status || ''
+        chamadoAtualizado
+          ?.status ||
+        ''
       ).toUpperCase()
     )
   ) {
     observacao.value =
       chamadoAtualizado
-        .resposta_tecnico ||
+        ?.resposta_tecnico ||
       observacao.value
   }
 }
 
-function formatarTexto(valor) {
+/* =========================================
+   FORMATAÇÕES
+========================================= */
+
+function formatarTexto(
+  valor
+) {
   if (!valor) {
     return 'Não informado'
   }
@@ -556,12 +1001,14 @@ function formatarTexto(valor) {
     .toLowerCase()
     .replace(
       /^\w/,
-      (letra) =>
+      letra =>
         letra.toUpperCase()
     )
 }
 
-function formatarData(valor) {
+function formatarData(
+  valor
+) {
   if (!valor) {
     return 'Não informada'
   }
@@ -586,17 +1033,30 @@ function formatarData(valor) {
   )
 }
 
-function classeStatus(status) {
+/* =========================================
+   STATUS
+========================================= */
+
+function classeStatus(
+  status
+) {
   const valor =
     String(
-      status || ''
+      status ||
+      ''
     ).toUpperCase()
 
-  if (valor === 'ACEITO') {
+  if (
+    valor ===
+    'ACEITO'
+  ) {
     return 'status-aceito'
   }
 
-  if (valor === 'EM_ROTA') {
+  if (
+    valor ===
+    'EM_ROTA'
+  ) {
     return 'status-rota'
   }
 
@@ -611,7 +1071,9 @@ function classeStatus(status) {
     [
       'FINALIZADO',
       'CONCLUIDO'
-    ].includes(valor)
+    ].includes(
+      valor
+    )
   ) {
     return 'status-finalizado'
   }
@@ -619,16 +1081,23 @@ function classeStatus(status) {
   return 'status-pendente'
 }
 
-function iniciais(nome) {
+/* =========================================
+   INICIAIS
+========================================= */
+
+function iniciais(
+  nome
+) {
   return String(
-    nome || '?'
+    nome ||
+    '?'
   )
     .trim()
     .split(' ')
     .filter(Boolean)
     .slice(0, 2)
     .map(
-      (parte) =>
+      parte =>
         parte.charAt(0)
     )
     .join('')
@@ -641,6 +1110,10 @@ onMounted(
 </script>
 
 <style scoped>
+/* =========================================
+   PÁGINA
+========================================= */
+
 .atendimento-page {
   min-height: 100%;
   padding: 28px 32px 48px;
@@ -672,6 +1145,10 @@ onMounted(
   text-align: center;
 }
 
+/* =========================================
+   GRID
+========================================= */
+
 .atendimento-grid {
   display: grid;
   grid-template-columns:
@@ -680,13 +1157,19 @@ onMounted(
   gap: 24px;
 }
 
+/* =========================================
+   CARD
+========================================= */
+
 .card {
   padding: 26px;
   border: 1px solid #eaecf0;
   border-radius: 22px;
   background: #ffffff;
+
   box-shadow:
-    0 3px 10px rgba(
+    0 3px 10px
+    rgba(
       16,
       24,
       40,
@@ -722,10 +1205,17 @@ onMounted(
   font-weight: 800;
 }
 
+/* =========================================
+   INFORMAÇÕES
+========================================= */
+
 .informacoes-grid {
   display: grid;
   grid-template-columns:
-    repeat(2, 1fr);
+    repeat(
+      2,
+      1fr
+    );
   gap: 22px;
 }
 
@@ -750,12 +1240,17 @@ onMounted(
   white-space: pre-line;
 }
 
-/* ETAPAS */
+/* =========================================
+   ETAPAS
+========================================= */
 
 .etapas {
   display: grid;
   grid-template-columns:
-    repeat(4, 1fr);
+    repeat(
+      4,
+      1fr
+    );
 }
 
 .etapa {
@@ -770,12 +1265,15 @@ onMounted(
 .etapa-circulo {
   width: 38px;
   height: 38px;
+
   display: flex;
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
+
   border: 2px solid #eaecf0;
   border-radius: 50%;
+
   color: #98a2b3;
   background: #ffffff;
 }
@@ -813,7 +1311,110 @@ onMounted(
   color: #475467;
 }
 
-/* AVISO */
+/* =========================================
+   LOCALIZAÇÃO
+========================================= */
+
+.local-card {
+  padding: 22px;
+}
+
+.local-topo {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 15px;
+}
+
+.local-titulo {
+  margin-bottom: 4px;
+}
+
+.local-origem {
+  max-width: 250px;
+  color: #98a2b3;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.local-icone {
+  width: 42px;
+  height: 42px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  border-radius: 12px;
+
+  color: #f97316;
+  background: #fff1e6;
+}
+
+.local-endereco {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+
+  margin-top: 18px;
+  padding: 14px;
+
+  border-radius: 13px;
+
+  background: #f9fafb;
+}
+
+.local-endereco-label {
+  color: #98a2b3;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.local-endereco-valor {
+  margin-top: 3px;
+  color: #344054;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.local-acoes {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      2,
+      minmax(0, 1fr)
+    );
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.local-mapa {
+  margin-top: 16px;
+}
+
+.local-sem-coordenadas {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  margin-top: 14px;
+  padding: 11px 13px;
+
+  border-radius: 12px;
+
+  color: #667085;
+  background: #f9fafb;
+
+  font-size: 11px;
+}
+
+/* =========================================
+   AVISO
+========================================= */
 
 .aguardando-card {
   border-color: #fed7aa;
@@ -829,11 +1430,14 @@ onMounted(
 .aguardando-icone {
   width: 50px;
   height: 50px;
+
   display: flex;
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
+
   border-radius: 14px;
+
   color: #f97316;
   background: #ffedd5;
 }
@@ -847,18 +1451,24 @@ onMounted(
 .aguardando-texto {
   margin-top: 5px;
   max-width: 700px;
+
   color: #c2410c;
+
   font-size: 12px;
   line-height: 1.5;
 }
 
-/* EQUIPE */
+/* =========================================
+   EQUIPE
+========================================= */
 
 .funcionario-item {
   display: flex;
   align-items: center;
   gap: 12px;
+
   padding: 12px 0;
+
   border-bottom:
     1px solid #f2f4f7;
 }
@@ -882,13 +1492,17 @@ onMounted(
 .total-equipe {
   margin-top: 14px;
   padding-top: 14px;
+
   border-top:
     1px solid #eaecf0;
+
   color: #667085;
   font-size: 13px;
 }
 
-/* OBSERVAÇÃO */
+/* =========================================
+   OBSERVAÇÃO
+========================================= */
 
 .observacao-finalizada {
   padding: 16px;
@@ -919,7 +1533,9 @@ onMounted(
   font-size: 13px;
 }
 
-/* STATUS */
+/* =========================================
+   STATUS
+========================================= */
 
 .status-pendente,
 .status-aceito,
@@ -954,7 +1570,9 @@ onMounted(
   background: #d1fae5;
 }
 
-/* DARK MODE */
+/* =========================================
+   DARK MODE
+========================================= */
 
 .body--dark .atendimento-page {
   background: #0d0f12;
@@ -1002,6 +1620,20 @@ onMounted(
   background: #f97316;
 }
 
+.body--dark .local-endereco,
+.body--dark .local-sem-coordenadas {
+  background: #1b1f25;
+}
+
+.body--dark .local-endereco-valor {
+  color: #f2f4f7;
+}
+
+.body--dark .local-icone {
+  color: #fb923c;
+  background: #332217;
+}
+
 .body--dark .aguardando-card {
   border-color: #7c2d12;
   background: #24160f;
@@ -1028,6 +1660,23 @@ onMounted(
   color: #98a2b3;
   background: #1b1f25;
 }
+
+.body--dark .observacao-finalizada {
+  border: 1px solid #3a3f47;
+  background: #1b1f25;
+}
+
+.body--dark .observacao-finalizada-label {
+  color: #fb923c;
+}
+
+.body--dark .observacao-finalizada-texto {
+  color: #f2f4f7;
+}
+
+/* =========================================
+   RESPONSIVO
+========================================= */
 
 @media (max-width: 1100px) {
   .atendimento-grid {
@@ -1063,28 +1712,15 @@ onMounted(
 
   .etapas {
     grid-template-columns:
-      repeat(2, 1fr);
+      repeat(
+        2,
+        1fr
+      );
     gap: 20px;
   }
-}
-/* =========================
-   RESPOSTA FINAL - DARK
-========================= */
 
-.body--dark
-.observacao-finalizada {
-  border: 1px solid #3a3f47;
-
-  background: #1b1f25;
-}
-
-.body--dark
-.observacao-finalizada-label {
-  color: #fb923c;
-}
-
-.body--dark
-.observacao-finalizada-texto {
-  color: #f2f4f7;
+  .local-acoes {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

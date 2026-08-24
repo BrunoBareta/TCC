@@ -26,12 +26,16 @@ const aceitarChamado = async (idChamado, idFuncionario) => {
       const erro = new Error(
         'Este chamado já foi aceito ou não está mais pendente.'
       )
+
       erro.codigo = 'CHAMADO_NAO_PENDENTE'
       throw erro
     }
 
     const funcionarioResultado = await cliente.query(
-      `SELECT id_usuario, nome, tipo_usuario
+      `SELECT
+        id_usuario,
+        nome,
+        tipo_usuario
        FROM usuarios
        WHERE id_usuario = $1`,
       [idFuncionario]
@@ -45,10 +49,16 @@ const aceitarChamado = async (idChamado, idFuncionario) => {
       throw erro
     }
 
-    if (!['FUNCIONARIO', 'TECNICO'].includes(funcionario.tipo_usuario)) {
+    if (
+      ![
+        'FUNCIONARIO',
+        'TECNICO'
+      ].includes(funcionario.tipo_usuario)
+    ) {
       const erro = new Error(
         'O usuário informado não possui perfil de técnico.'
       )
+
       erro.codigo = 'PERFIL_INVALIDO'
       throw erro
     }
@@ -58,13 +68,17 @@ const aceitarChamado = async (idChamado, idFuncionario) => {
        FROM chamado_funcionario
        WHERE id_chamado = $1
          AND id_funcionario = $2`,
-      [idChamado, idFuncionario]
+      [
+        idChamado,
+        idFuncionario
+      ]
     )
 
     if (vinculoExistente.rows.length > 0) {
       const erro = new Error(
         'Este funcionário já está vinculado ao chamado.'
       )
+
       erro.codigo = 'VINCULO_EXISTENTE'
       throw erro
     }
@@ -80,7 +94,14 @@ const aceitarChamado = async (idChamado, idFuncionario) => {
         observacao_aceite
       )
       VALUES
-      ($1, $2, 'FUNCIONARIO', 'ACEITO', NOW(), $3)
+      (
+        $1,
+        $2,
+        'FUNCIONARIO',
+        'ACEITO',
+        NOW(),
+        $3
+      )
       RETURNING *`,
       [
         idChamado,
@@ -108,7 +129,14 @@ const aceitarChamado = async (idChamado, idFuncionario) => {
         data_alteracao
       )
       VALUES
-      ($1, 'PENDENTE', 'ACEITO', $2, $3, NOW())
+      (
+        $1,
+        'PENDENTE',
+        'ACEITO',
+        $2,
+        $3,
+        NOW()
+      )
       RETURNING *`,
       [
         idChamado,
@@ -133,7 +161,10 @@ const aceitarChamado = async (idChamado, idFuncionario) => {
   }
 }
 
-const desistirChamado = async (idChamado, idFuncionario) => {
+const desistirChamado = async (
+  idChamado,
+  idFuncionario
+) => {
   const cliente = await db.connect()
 
   try {
@@ -150,7 +181,10 @@ const desistirChamado = async (idChamado, idFuncionario) => {
     const chamado = chamadoResultado.rows[0]
 
     if (!chamado) {
-      const erro = new Error('Chamado não encontrado.')
+      const erro = new Error(
+        'Chamado não encontrado.'
+      )
+
       erro.codigo = 'CHAMADO_NAO_ENCONTRADO'
       throw erro
     }
@@ -165,7 +199,9 @@ const desistirChamado = async (idChamado, idFuncionario) => {
     }
 
     const funcionarioResultado = await cliente.query(
-      `SELECT id_usuario, nome
+      `SELECT
+        id_usuario,
+        nome
        FROM usuarios
        WHERE id_usuario = $1`,
       [idFuncionario]
@@ -174,7 +210,10 @@ const desistirChamado = async (idChamado, idFuncionario) => {
     const funcionario = funcionarioResultado.rows[0]
 
     if (!funcionario) {
-      const erro = new Error('Funcionário não encontrado.')
+      const erro = new Error(
+        'Funcionário não encontrado.'
+      )
+
       erro.codigo = 'FUNCIONARIO_NAO_ENCONTRADO'
       throw erro
     }
@@ -185,7 +224,10 @@ const desistirChamado = async (idChamado, idFuncionario) => {
          AND id_funcionario = $2
          AND status_aceite = 'ACEITO'
        RETURNING *`,
-      [idChamado, idFuncionario]
+      [
+        idChamado,
+        idFuncionario
+      ]
     )
 
     if (vinculoResultado.rows.length === 0) {
@@ -198,14 +240,16 @@ const desistirChamado = async (idChamado, idFuncionario) => {
     }
 
     const totalResultado = await cliente.query(
-      `SELECT COUNT(*)::integer AS total
+      `SELECT
+        COUNT(*)::integer AS total
        FROM chamado_funcionario
        WHERE id_chamado = $1
          AND status_aceite = 'ACEITO'`,
       [idChamado]
     )
 
-    const totalFuncionarios = totalResultado.rows[0].total
+    const totalFuncionarios =
+      totalResultado.rows[0].total
 
     let chamadoAtualizado = chamado
     let historico = null
@@ -219,7 +263,8 @@ const desistirChamado = async (idChamado, idFuncionario) => {
         [idChamado]
       )
 
-      chamadoAtualizado = chamadoResultado.rows[0]
+      chamadoAtualizado =
+        chamadoResultado.rows[0]
 
       const historicoResultado = await cliente.query(
         `INSERT INTO historico_chamado
@@ -248,16 +293,22 @@ const desistirChamado = async (idChamado, idFuncionario) => {
         ]
       )
 
-      historico = historicoResultado.rows[0]
+      historico =
+        historicoResultado.rows[0]
     }
 
     await cliente.query('COMMIT')
 
     return {
       chamado: chamadoAtualizado,
-      vinculo_removido: vinculoResultado.rows[0],
+
+      vinculo_removido:
+        vinculoResultado.rows[0],
+
       historico,
-      voltou_para_fila: totalFuncionarios === 0
+
+      voltou_para_fila:
+        totalFuncionarios === 0
     }
   } catch (error) {
     await cliente.query('ROLLBACK')
@@ -267,7 +318,9 @@ const desistirChamado = async (idChamado, idFuncionario) => {
   }
 }
 
-const adicionarFuncionario = async (dados) => {
+const adicionarFuncionario = async (
+  dados
+) => {
   const {
     id_chamado,
     id_funcionario,
@@ -280,7 +333,10 @@ const adicionarFuncionario = async (dados) => {
      FROM chamado_funcionario
      WHERE id_chamado = $1
        AND id_funcionario = $2`,
-    [id_chamado, id_funcionario]
+    [
+      id_chamado,
+      id_funcionario
+    ]
   )
 
   if (existente.rows.length > 0) {
@@ -297,7 +353,15 @@ const adicionarFuncionario = async (dados) => {
       data_aceite,
       observacao_aceite
     )
-    VALUES ($1, $2, $3, 'ACEITO', NOW(), $4)
+    VALUES
+    (
+      $1,
+      $2,
+      $3,
+      'ACEITO',
+      NOW(),
+      $4
+    )
     RETURNING *`,
     [
       id_chamado,
@@ -310,7 +374,9 @@ const adicionarFuncionario = async (dados) => {
   return resultado.rows[0]
 }
 
-const listarPorChamado = async (idChamado) => {
+const listarPorChamado = async (
+  idChamado
+) => {
   const resultado = await db.query(
     `SELECT
       cf.id_chamado_funcionario,
@@ -320,13 +386,18 @@ const listarPorChamado = async (idChamado) => {
       cf.status_aceite,
       cf.data_aceite,
       cf.observacao_aceite,
+
       u.nome,
       u.email,
       u.telefone
+
     FROM chamado_funcionario cf
+
     INNER JOIN usuarios u
       ON u.id_usuario = cf.id_funcionario
+
     WHERE cf.id_chamado = $1
+
     ORDER BY cf.data_aceite ASC`,
     [idChamado]
   )
@@ -334,21 +405,98 @@ const listarPorChamado = async (idChamado) => {
   return resultado.rows
 }
 
-const listarPorFuncionario = async (idFuncionario) => {
+/*
+  LISTA OS CHAMADOS DO TÉCNICO
+
+  Agora também busca:
+  - produtor
+  - propriedade
+  - endereço
+  - cidade
+  - estado
+  - CEP
+  - latitude
+  - longitude
+  - cultura principal
+  - unidade antiga, quando existir
+*/
+
+const listarPorFuncionario = async (
+  idFuncionario
+) => {
   const resultado = await db.query(
     `SELECT
       c.*,
+
+      /* =========================
+         VÍNCULO DO TÉCNICO
+      ========================= */
+
       cf.id_chamado_funcionario,
       cf.id_funcionario,
       cf.funcao_atendimento,
       cf.status_aceite,
       cf.data_aceite,
-      cf.observacao_aceite
+      cf.observacao_aceite,
+
+      /* =========================
+         PRODUTOR
+      ========================= */
+
+      produtor.nome AS nome_produtor,
+      produtor.email AS email_produtor,
+      produtor.telefone AS telefone_produtor,
+
+      /* =========================
+         PROPRIEDADE
+      ========================= */
+
+      p.nome_propriedade,
+
+      p.endereco AS endereco_propriedade,
+
+      p.cidade AS cidade_propriedade,
+
+      p.estado AS estado_propriedade,
+
+      p.cep AS cep_propriedade,
+
+      p.latitude AS latitude_propriedade,
+
+      p.longitude AS longitude_propriedade,
+
+      p.cultura_principal,
+
+      /* =========================
+         UNIDADE / AVIÁRIO ANTIGO
+      ========================= */
+
+      up.nome_unidade,
+
+      up.tipo_unidade,
+
+      up.descricao AS descricao_unidade,
+
+      up.referencia AS referencia_unidade
+
     FROM chamado_funcionario cf
+
     INNER JOIN chamados c
       ON c.id_chamado = cf.id_chamado
+
+    LEFT JOIN usuarios produtor
+      ON produtor.id_usuario = c.id_usuario
+
+    LEFT JOIN propriedades p
+      ON p.id_propriedade = c.id_propriedade
+
+    LEFT JOIN unidades_propriedade up
+      ON up.id_unidade = c.id_unidade
+
     WHERE cf.id_funcionario = $1
+
       AND cf.status_aceite = 'ACEITO'
+
     ORDER BY c.data_abertura DESC`,
     [idFuncionario]
   )
@@ -356,10 +504,15 @@ const listarPorFuncionario = async (idFuncionario) => {
   return resultado.rows
 }
 
-const contarPorChamado = async (idChamado) => {
+const contarPorChamado = async (
+  idChamado
+) => {
   const resultado = await db.query(
-    `SELECT COUNT(*)::integer AS total_funcionarios
+    `SELECT
+      COUNT(*)::integer AS total_funcionarios
+
      FROM chamado_funcionario
+
      WHERE id_chamado = $1
        AND status_aceite = 'ACEITO'`,
     [idChamado]

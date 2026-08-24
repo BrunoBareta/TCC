@@ -18,6 +18,10 @@ const buscarPorId = async (
   return response.data
 }
 
+/* =========================
+   CADASTRAR PRODUTOR
+========================= */
+
 const criar = async (
   dados
 ) => {
@@ -28,6 +32,26 @@ const criar = async (
 
   return response.data
 }
+
+/* =========================
+   CADASTRAR TÉCNICO
+   PAINEL ADMINISTRATIVO
+========================= */
+
+const criarFuncionario = async (
+  dados
+) => {
+  const response = await api.post(
+    '/usuarios/funcionarios',
+    dados
+  )
+
+  return response.data
+}
+
+/* =========================
+   ATUALIZAR USUÁRIO
+========================= */
 
 const atualizar = async (
   idUsuario,
@@ -40,6 +64,10 @@ const atualizar = async (
 
   return response.data
 }
+
+/* =========================
+   DESATIVAR USUÁRIO
+========================= */
 
 const desativar = async (
   idUsuario
@@ -55,6 +83,7 @@ export default {
   listar,
   buscarPorId,
   criar,
+  criarFuncionario,
   atualizar,
   desativar
 }

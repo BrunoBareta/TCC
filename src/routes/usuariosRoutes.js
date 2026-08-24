@@ -17,26 +17,55 @@ const redefinicaoSenhaController = require(
    USUÁRIOS
 ========================= */
 
+/*
+  Listar todos os usuários
+*/
 router.get(
   '/usuarios',
   usuarioController.listar
 )
 
+/*
+  Cadastro específico de técnico.
+
+  Esta rota será usada somente
+  pelo Painel Administrativo.
+*/
+router.post(
+  '/usuarios/funcionarios',
+  usuarioController.criarFuncionario
+)
+
+/*
+  Buscar usuário por ID
+*/
 router.get(
   '/usuarios/:id',
   usuarioController.buscarPorId
 )
 
+/*
+  Cadastro público.
+
+  Este endpoint continua criando
+  somente PRODUTOR.
+*/
 router.post(
   '/usuarios',
   usuarioController.criar
 )
 
+/*
+  Atualizar usuário
+*/
 router.put(
   '/usuarios/:id',
   usuarioController.atualizar
 )
 
+/*
+  Desativar usuário
+*/
 router.delete(
   '/usuarios/:id',
   usuarioController.deletar
