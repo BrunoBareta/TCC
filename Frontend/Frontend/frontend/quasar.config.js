@@ -28,8 +28,9 @@ export default defineConfig((/* ctx */) => {
     },
 
     devServer: {
-      open: true
-    },
+  host: '0.0.0.0',
+  open: true
+   },
 
     framework: {
       config: {},

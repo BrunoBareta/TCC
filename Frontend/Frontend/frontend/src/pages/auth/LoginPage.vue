@@ -2,139 +2,41 @@
   <q-page
     class="login-page"
     :class="{
-      'login-page--dark': $q.dark.isActive
+      'login-page--dark':
+        $q.dark.isActive
     }"
   >
     <div class="login-container">
 
-      <!-- =========================
-           LADO ESQUERDO
-      ========================== -->
+      <!-- =====================================
+           IMAGEM LATERAL
+      ====================================== -->
 
-      <section class="login-brand">
-        <div class="brand-conteudo">
-
-          <div class="brand-logo">
-            <q-icon
-              name="agriculture"
-              size="36px"
-            />
-          </div>
-
-          <div class="brand-nome">
-            Avioeste
-          </div>
-
-          <div class="brand-subtitulo">
-            Portal de Atendimento
-          </div>
-
-          <div class="brand-linha"></div>
-
-          <h1 class="brand-titulo">
-            Assistência mais simples,
-            rápida e organizada.
-          </h1>
-
-          <p class="brand-texto">
-            Abra chamados, acompanhe seus atendimentos
-            e mantenha sua propriedade conectada com
-            a equipe técnica.
-          </p>
-
-          <div class="brand-recursos">
-
-            <div class="recurso-item">
-              <div class="recurso-icone">
-                <q-icon
-                  name="support_agent"
-                  size="20px"
-                />
-              </div>
-
-              <div>
-                <strong>
-                  Atendimento técnico
-                </strong>
-
-                <span>
-                  Solicite assistência de forma rápida.
-                </span>
-              </div>
-            </div>
-
-            <div class="recurso-item">
-              <div class="recurso-icone">
-                <q-icon
-                  name="location_on"
-                  size="20px"
-                />
-              </div>
-
-              <div>
-                <strong>
-                  Localização integrada
-                </strong>
-
-                <span>
-                  Sua propriedade conectada ao atendimento.
-                </span>
-              </div>
-            </div>
-
-            <div class="recurso-item">
-              <div class="recurso-icone">
-                <q-icon
-                  name="notifications_active"
-                  size="20px"
-                />
-              </div>
-
-              <div>
-                <strong>
-                  Acompanhamento
-                </strong>
-
-                <span>
-                  Saiba o andamento dos seus chamados.
-                </span>
-              </div>
-            </div>
-
-          </div>
-        </div>
-
-        <div class="brand-rodape">
-          Sistema de Chamados Avioeste
-        </div>
+      <section
+        class="login-brand"
+        :style="{
+          backgroundImage:
+            `url(${avioesteDecola})`
+        }"
+      >
+        <div class="login-brand__overlay"></div>
       </section>
 
-      <!-- =========================
+      <!-- =====================================
            LOGIN
-      ========================== -->
+      ====================================== -->
 
       <section class="login-area">
         <div class="login-box">
 
-          <!-- MOBILE -->
+          <!-- LOGO MOBILE / TABLET -->
 
           <div class="mobile-brand">
-            <div class="mobile-logo">
-              <q-icon
-                name="agriculture"
-                size="28px"
-              />
-            </div>
-
-            <div>
-              <div class="mobile-nome">
-                Avioeste
-              </div>
-
-              <div class="mobile-subtitulo">
-                Portal de Atendimento
-              </div>
-            </div>
+            <img
+              :src="logoAvicola"
+              alt="Avícola Pinhal"
+              class="mobile-brand__logo"
+            />
           </div>
 
           <!-- CABEÇALHO -->
@@ -155,7 +57,6 @@
             class="login-form"
             @submit.prevent="fazerLogin"
           >
-
             <!-- EMAIL -->
 
             <div class="campo-grupo">
@@ -184,7 +85,6 @@
             <!-- SENHA -->
 
             <div class="campo-grupo">
-
               <div class="senha-topo">
                 <label class="campo-label">
                   Senha
@@ -236,7 +136,6 @@
                   />
                 </template>
               </q-input>
-
             </div>
 
             <!-- ENTRAR -->
@@ -259,7 +158,6 @@
                 class="q-ml-sm"
               />
             </q-btn>
-
           </q-form>
 
           <!-- DIVISOR -->
@@ -319,6 +217,12 @@ import {
   redirecionarPorPerfil
 } from 'src/router/auth'
 
+import avioesteDecola from
+  'src/assets/logo/logo-avicola-decola.png'
+
+import logoAvicola from
+  'src/assets/logo/logo-avicola-pinhal.png'
+
 const router =
   useRouter()
 
@@ -340,9 +244,9 @@ const carregando =
 const mostrarSenha =
   ref(false)
 
-/* =========================
+/* =====================================
    LOGIN
-========================= */
+===================================== */
 
 const fazerLogin =
   async () => {
@@ -391,10 +295,8 @@ const fazerLogin =
       )
 
       const mensagem =
-        error.response?.data
-          ?.message ||
-        error.response?.data
-          ?.erro ||
+        error.response?.data?.message ||
+        error.response?.data?.erro ||
         'Não foi possível realizar o login.'
 
       $q.notify({
@@ -407,9 +309,9 @@ const fazerLogin =
     }
   }
 
-/* =========================
+/* =====================================
    CADASTRO
-========================= */
+===================================== */
 
 function abrirCadastro() {
   router.push({
@@ -417,9 +319,9 @@ function abrirCadastro() {
   })
 }
 
-/* =========================
+/* =====================================
    RECUPERAR SENHA
-========================= */
+===================================== */
 
 function esqueciMinhaSenha() {
   const emailDigitado =
@@ -431,7 +333,8 @@ function esqueciMinhaSenha() {
     query:
       emailDigitado
         ? {
-            email: emailDigitado
+            email:
+              emailDigitado
           }
         : {}
   })
@@ -439,10 +342,9 @@ function esqueciMinhaSenha() {
 </script>
 
 <style scoped>
-
-/* =========================
+/* =====================================
    PÁGINA
-========================= */
+===================================== */
 
 .login-page {
   min-height: 100vh;
@@ -458,286 +360,55 @@ function esqueciMinhaSenha() {
   display: grid;
 
   grid-template-columns:
-    minmax(390px, 0.9fr)
-    minmax(500px, 1.1fr);
+    minmax(500px, 1.05fr)
+    minmax(500px, 0.95fr);
 }
 
-/* =========================
-   BRAND
-========================= */
+/* =====================================
+   IMAGEM LATERAL
+===================================== */
 
 .login-brand {
-  min-height: 100vh;
-
-  display: flex;
-
-  flex-direction: column;
-
-  justify-content:
-    space-between;
-
   position: relative;
+
+  min-height: 100vh;
 
   overflow: hidden;
 
-  padding:
-    58px 64px 38px;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
 
-  color: #ffffff;
+.login-brand__overlay {
+  position: absolute;
+
+  inset: 0;
+
+  pointer-events: none;
 
   background:
     linear-gradient(
-      145deg,
-      #ff8a00 0%,
-      #f97316 55%,
-      #ea580c 100%
+      90deg,
+      rgba(0, 0, 0, 0.08),
+      rgba(0, 0, 0, 0)
     );
 }
 
-.login-brand::before {
-  content: '';
-
-  position: absolute;
-
-  width: 420px;
-
-  height: 420px;
-
-  top: -170px;
-
-  right: -170px;
-
-  border-radius: 50%;
-
-  background:
-    rgba(
-      255,
-      255,
-      255,
-      0.08
-    );
-}
-
-.login-brand::after {
-  content: '';
-
-  position: absolute;
-
-  width: 340px;
-
-  height: 340px;
-
-  left: -170px;
-
-  bottom: -140px;
-
-  border-radius: 50%;
-
-  background:
-    rgba(
-      255,
-      255,
-      255,
-      0.07
-    );
-}
-
-.brand-conteudo,
-.brand-rodape {
-  position: relative;
-
-  z-index: 1;
-}
-
-.brand-logo {
-  width: 68px;
-
-  height: 68px;
-
-  display: flex;
-
-  align-items: center;
-
-  justify-content: center;
-
-  border-radius: 20px;
-
-  color: #f97316;
-
-  background: #ffffff;
-
-  box-shadow:
-    0 8px 30px
-    rgba(
-      0,
-      0,
-      0,
-      0.12
-    );
-}
-
-.brand-nome {
-  margin-top: 22px;
-
-  font-size: 30px;
-
-  font-weight: 900;
-}
-
-.brand-subtitulo {
-  margin-top: 2px;
-
-  color:
-    rgba(
-      255,
-      255,
-      255,
-      0.82
-    );
-
-  font-size: 14px;
-}
-
-.brand-linha {
-  width: 45px;
-
-  height: 4px;
-
-  margin-top: 32px;
-
-  border-radius: 10px;
-
-  background:
-    rgba(
-      255,
-      255,
-      255,
-      0.8
-    );
-}
-
-.brand-titulo {
-  max-width: 470px;
-
-  margin:
-    28px 0 0;
-
-  font-size: 35px;
-
-  line-height: 1.16;
-
-  font-weight: 900;
-}
-
-.brand-texto {
-  max-width: 470px;
-
-  margin:
-    17px 0 0;
-
-  color:
-    rgba(
-      255,
-      255,
-      255,
-      0.84
-    );
-
-  font-size: 14px;
-
-  line-height: 1.7;
-}
-
-.brand-recursos {
-  display: flex;
-
-  flex-direction: column;
-
-  gap: 15px;
-
-  margin-top: 37px;
-}
-
-.recurso-item {
-  display: flex;
-
-  align-items: center;
-
-  gap: 13px;
-}
-
-.recurso-icone {
-  width: 42px;
-
-  height: 42px;
-
-  display: flex;
-
-  align-items: center;
-
-  justify-content: center;
-
-  flex-shrink: 0;
-
-  border-radius: 12px;
-
-  background:
-    rgba(
-      255,
-      255,
-      255,
-      0.14
-    );
-}
-
-.recurso-item strong {
-  display: block;
-
-  font-size: 13px;
-}
-
-.recurso-item span {
-  display: block;
-
-  margin-top: 2px;
-
-  color:
-    rgba(
-      255,
-      255,
-      255,
-      0.75
-    );
-
-  font-size: 11px;
-}
-
-.brand-rodape {
-  color:
-    rgba(
-      255,
-      255,
-      255,
-      0.65
-    );
-
-  font-size: 11px;
-}
-
-/* =========================
-   ÁREA LOGIN
-========================= */
+/* =====================================
+   ÁREA DO LOGIN
+===================================== */
 
 .login-area {
   min-height: 100vh;
 
   display: flex;
-
   align-items: center;
-
   justify-content: center;
 
   padding: 50px;
+
+  background: #f4f6f8;
 }
 
 .login-box {
@@ -746,9 +417,26 @@ function esqueciMinhaSenha() {
   max-width: 470px;
 }
 
+/* =====================================
+   LOGO MOBILE
+===================================== */
+
 .mobile-brand {
   display: none;
 }
+
+.mobile-brand__logo {
+  display: block;
+
+  width: 180px;
+  height: auto;
+
+  object-fit: contain;
+}
+
+/* =====================================
+   CABEÇALHO
+===================================== */
 
 .login-cabecalho {
   margin-bottom: 32px;
@@ -758,7 +446,6 @@ function esqueciMinhaSenha() {
   color: #101828;
 
   font-size: 31px;
-
   font-weight: 900;
 
   letter-spacing: -0.5px;
@@ -771,6 +458,10 @@ function esqueciMinhaSenha() {
 
   font-size: 14px;
 }
+
+/* =====================================
+   FORMULÁRIO
+===================================== */
 
 .login-form {
   width: 100%;
@@ -788,7 +479,6 @@ function esqueciMinhaSenha() {
   color: #344054;
 
   font-size: 12px;
-
   font-weight: 700;
 }
 
@@ -796,7 +486,6 @@ function esqueciMinhaSenha() {
   display: flex;
 
   align-items: center;
-
   justify-content: space-between;
 
   gap: 10px;
@@ -816,7 +505,6 @@ function esqueciMinhaSenha() {
   font-family: inherit;
 
   font-size: 11px;
-
   font-weight: 700;
 }
 
@@ -830,7 +518,8 @@ function esqueciMinhaSenha() {
   cursor: not-allowed;
 }
 
-.login-input :deep(.q-field__control) {
+.login-input
+:deep(.q-field__control) {
   min-height: 56px;
 
   border-radius: 12px;
@@ -838,9 +527,14 @@ function esqueciMinhaSenha() {
   background: #ffffff;
 }
 
-.login-input :deep(.q-field__native) {
+.login-input
+:deep(.q-field__native) {
   font-size: 14px;
 }
+
+/* =====================================
+   ENTRAR
+===================================== */
 
 .entrar-btn {
   width: 100%;
@@ -852,13 +546,12 @@ function esqueciMinhaSenha() {
   border-radius: 12px;
 
   font-size: 14px;
-
   font-weight: 800;
 }
 
-/* =========================
+/* =====================================
    CADASTRO
-========================= */
+===================================== */
 
 .cadastro-divisor {
   display: flex;
@@ -895,7 +588,6 @@ function esqueciMinhaSenha() {
   display: flex;
 
   align-items: center;
-
   justify-content: center;
 
   gap: 8px;
@@ -914,7 +606,6 @@ function esqueciMinhaSenha() {
   font-family: inherit;
 
   font-size: 13px;
-
   font-weight: 700;
 
   transition:
@@ -952,11 +643,16 @@ function esqueciMinhaSenha() {
   text-align: center;
 }
 
-/* =========================
+/* =====================================
    DARK MODE
-========================= */
+===================================== */
 
 .login-page--dark {
+  background: #0d0f12;
+}
+
+.login-page--dark
+.login-area {
   background: #0d0f12;
 }
 
@@ -1008,24 +704,15 @@ function esqueciMinhaSenha() {
   background: #2b2f36;
 }
 
-/* =========================
-   NOTEBOOK MENOR
-========================= */
+/* =====================================
+   NOTEBOOK
+===================================== */
 
 @media (max-width: 1100px) {
   .login-container {
     grid-template-columns:
-      420px
-      minmax(0, 1fr);
-  }
-
-  .login-brand {
-    padding:
-      45px 40px 32px;
-  }
-
-  .brand-titulo {
-    font-size: 30px;
+      minmax(410px, 0.9fr)
+      minmax(450px, 1.1fr);
   }
 
   .login-area {
@@ -1033,14 +720,20 @@ function esqueciMinhaSenha() {
   }
 }
 
-/* =========================
-   TABLET
-========================= */
+/* =====================================
+   TABLET / CELULAR
+===================================== */
 
 @media (max-width: 850px) {
   .login-container {
     display: block;
   }
+
+  /*
+    No celular não mostramos aquela
+    imagem enorme. Ela fica somente
+    na experiência desktop.
+  */
 
   .login-brand {
     display: none;
@@ -1049,11 +742,21 @@ function esqueciMinhaSenha() {
   .login-area {
     min-height: 100vh;
 
-    padding: 40px 24px;
+    align-items: flex-start;
+
+    padding:
+      calc(
+        28px +
+        env(safe-area-inset-top)
+      )
+      24px
+      40px;
   }
 
   .login-box {
     max-width: 460px;
+
+    margin: 0 auto;
   }
 
   .mobile-brand {
@@ -1061,70 +764,35 @@ function esqueciMinhaSenha() {
 
     align-items: center;
 
-    gap: 12px;
-
-    margin-bottom: 42px;
+    margin-bottom: 38px;
   }
 
-  .mobile-logo {
-    width: 52px;
-
-    height: 52px;
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    border-radius: 15px;
-
-    color: #ffffff;
-
-    background: #f97316;
-  }
-
-  .mobile-nome {
-    color: #101828;
-
-    font-size: 20px;
-
-    font-weight: 900;
-  }
-
-  .mobile-subtitulo {
-    margin-top: 1px;
-
-    color: #667085;
-
-    font-size: 11px;
-  }
-
-  .login-page--dark
-  .mobile-nome {
-    color: #f9fafb;
-  }
-
-  .login-page--dark
-  .mobile-subtitulo {
-    color: #98a2b3;
+  .mobile-brand__logo {
+    width: 175px;
   }
 }
 
-/* =========================
+/* =====================================
    CELULAR
-========================= */
+===================================== */
 
 @media (max-width: 500px) {
   .login-area {
-    align-items: flex-start;
-
     padding:
-      28px 18px 38px;
+      calc(
+        24px +
+        env(safe-area-inset-top)
+      )
+      18px
+      38px;
   }
 
   .mobile-brand {
-    margin-bottom: 38px;
+    margin-bottom: 34px;
+  }
+
+  .mobile-brand__logo {
+    width: 165px;
   }
 
   .login-bem-vindo {

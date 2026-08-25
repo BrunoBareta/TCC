@@ -1,14 +1,24 @@
 <template>
   <div class="header-produtor">
-    <div>
-      <div class="header-titulo">
-        Painel do Produtor
+    <!-- IDENTIDADE -->
+
+    <div class="header-identidade">
+      <img
+        :src="logoAvicola"
+        alt="Avícola Pinhal"
+        class="logo-avicola"
+      />
+
+      <div class="header-boas-vindas">
+        Bem-vindo, {{ primeiroNome }}
       </div>
 
       <div class="header-subtitulo">
-        Bem-vindo de volta, {{ auth.nomeUsuario }}.
+        Portal do Produtor
       </div>
     </div>
+
+    <!-- AÇÕES -->
 
     <div class="header-acoes">
       <q-btn
@@ -20,7 +30,6 @@
         :to="{ name: 'produtor-relatorios' }"
       />
 
-      <!-- MODO ESCURO -->
       <q-btn
         flat
         round
@@ -140,6 +149,9 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from 'src/stores/auth'
 import { useTheme } from 'src/composables/useTheme'
 
+import logoAvicola from
+  'src/assets/logo/logo-avicola-pinhal.png'
+
 const router = useRouter()
 const auth = useAuthStore()
 
@@ -150,6 +162,16 @@ const {
   alternarTema
 } = useTheme()
 
+const primeiroNome = computed(() => {
+  if (!auth.nomeUsuario) {
+    return 'Produtor'
+  }
+
+  return auth.nomeUsuario
+    .trim()
+    .split(/\s+/)[0]
+})
+
 const iniciais = computed(() => {
   if (!auth.nomeUsuario) {
     return '?'
@@ -159,50 +181,103 @@ const iniciais = computed(() => {
     .split(' ')
     .filter(Boolean)
     .slice(0, 2)
-    .map((nome) => nome[0])
+    .map(nome => nome[0])
     .join('')
     .toUpperCase()
 })
 
 async function sair() {
   auth.logout()
-
   await router.replace('/')
 }
 </script>
 
 <style scoped>
 .header-produtor {
-  min-height: 92px;
-  padding: 20px 32px;
+  min-height: 112px;
+
+  padding: 12px 32px;
+
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 24px;
+
+  gap: 30px;
+
   border-bottom: 1px solid #eaecf0;
+
   background: #ffffff;
+
   transition:
     background 0.25s,
     border-color 0.25s;
 }
 
-.header-titulo {
+/* IDENTIDADE */
+
+.header-identidade {
+  width: 250px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+}
+
+/* AGORA A IMAGEM NÃO É CORTADA */
+
+.logo-avicola {
+  display: block;
+
+  width: 230px;
+  max-width: 100%;
+
+  height: auto;
+
+  margin-bottom: 3px;
+
+  object-fit: contain;
+}
+
+.header-boas-vindas {
+  width: 100%;
+
   color: #101828;
-  font-size: 25px;
+
+  font-size: 17px;
   font-weight: 800;
+
+  line-height: 1.2;
+
+  text-align: center;
 }
 
 .header-subtitulo {
-  margin-top: 3px;
-  color: #667085;
-  font-size: 14px;
+  width: 100%;
+
+  margin-top: 2px;
+
+  color: #98a2b3;
+
+  font-size: 11px;
+  font-weight: 500;
+
+  text-align: center;
 }
+
+/* AÇÕES */
 
 .header-acoes {
   display: flex;
   align-items: center;
+
   gap: 14px;
 }
+
+/* PROPRIEDADE */
 
 .propriedade-dados {
   text-align: right;
@@ -210,24 +285,28 @@ async function sair() {
 
 .propriedade-nome {
   color: #101828;
+
   font-size: 14px;
   font-weight: 700;
 }
 
 .propriedade-local {
   margin-top: 2px;
+
   color: #98a2b3;
+
   font-size: 12px;
 }
 
-/* MODO ESCURO */
+/* DARK */
 
 .body--dark .header-produtor {
   border-bottom-color: #2b2f36;
+
   background: #16191f;
 }
 
-.body--dark .header-titulo,
+.body--dark .header-boas-vindas,
 .body--dark .propriedade-nome {
   color: #f9fafb;
 }
@@ -237,11 +316,27 @@ async function sair() {
   color: #98a2b3;
 }
 
-@media (max-width: 1023px) {
+@media (max-width: 1200px) {
   .header-produtor {
-    padding: 20px;
+    padding:
+      12px
+      22px;
   }
 
+  .header-identidade {
+    width: 220px;
+  }
+
+  .logo-avicola {
+    width: 205px;
+  }
+
+  .header-acoes {
+    gap: 9px;
+  }
+}
+
+@media (max-width: 1023px) {
   .header-acoes {
     display: none;
   }
