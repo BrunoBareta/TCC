@@ -1,6 +1,8 @@
 <template>
   <div class="header-produtor">
-    <!-- IDENTIDADE -->
+    <!-- ==================================================
+         IDENTIDADE
+    =================================================== -->
 
     <div class="header-identidade">
       <img
@@ -18,23 +20,38 @@
       </div>
     </div>
 
-    <!-- AÇÕES -->
+    <!-- ==================================================
+         AÇÕES
+    =================================================== -->
 
     <div class="header-acoes">
       <q-btn
         outline
         no-caps
-        :color="modoEscuro ? 'orange' : 'dark'"
+        :color="
+          modoEscuro
+            ? 'orange'
+            : 'dark'
+        "
         icon="assessment"
         label="Relatórios"
-        :to="{ name: 'produtor-relatorios' }"
+        :to="{
+          name:
+            'produtor-relatorios'
+        }"
       />
+
+      <!-- TEMA -->
 
       <q-btn
         flat
         round
         :icon="iconeTema"
-        :color="modoEscuro ? 'orange' : 'dark'"
+        :color="
+          modoEscuro
+            ? 'orange'
+            : 'dark'
+        "
         @click="alternarTema"
       >
         <q-tooltip>
@@ -42,22 +59,67 @@
         </q-tooltip>
       </q-btn>
 
+      <!-- NOTIFICAÇÕES -->
+
       <q-btn
         flat
         round
         icon="notifications_none"
-        :color="modoEscuro ? 'orange' : 'dark'"
+        :color="
+          modoEscuro
+            ? 'orange'
+            : 'dark'
+        "
       />
 
-      <div class="propriedade-dados">
-        <div class="propriedade-nome">
-          Fazenda Boa Vista
-        </div>
+      <!-- ==================================================
+           PROPRIEDADE DO PRODUTOR LOGADO
+      =================================================== -->
 
-        <div class="propriedade-local">
-          Chapecó - SC
-        </div>
+      <div
+        class="propriedade-dados"
+      >
+        <template v-if="carregandoPropriedade">
+          <q-skeleton
+            type="text"
+            width="130px"
+          />
+
+          <q-skeleton
+            type="text"
+            width="90px"
+            class="q-ml-auto"
+          />
+        </template>
+
+        <template
+          v-else-if="propriedade"
+        >
+          <div class="propriedade-nome">
+            {{
+              propriedade.nome_propriedade
+            }}
+          </div>
+
+          <div class="propriedade-local">
+            {{ localPropriedade }}
+          </div>
+        </template>
+
+        <template v-else>
+          <div class="propriedade-nome">
+            Sem propriedade
+          </div>
+
+          <div class="propriedade-local">
+            Nenhuma propriedade cadastrada
+          </div>
+        </template>
       </div>
+
+      <!-- ==================================================
+           PERFIL
+      =================================================== -->
 
       <q-btn
         flat
@@ -65,22 +127,47 @@
         class="q-pa-none"
       >
         <q-avatar
-          :color="modoEscuro ? 'grey-9' : 'grey-3'"
-          :text-color="modoEscuro ? 'orange' : 'dark'"
+          :color="
+            modoEscuro
+              ? 'grey-9'
+              : 'grey-3'
+          "
+          :text-color="
+            modoEscuro
+              ? 'orange'
+              : 'dark'
+          "
         >
           {{ iniciais }}
         </q-avatar>
 
         <q-menu>
-          <q-list style="min-width: 220px">
+          <q-list
+            style="
+              min-width: 220px
+            "
+          >
             <q-item>
               <q-item-section>
-                <div class="text-weight-bold">
-                  {{ auth.nomeUsuario }}
+                <div
+                  class="
+                    text-weight-bold
+                  "
+                >
+                  {{
+                    auth.nomeUsuario
+                  }}
                 </div>
 
-                <div class="text-caption text-grey">
-                  {{ auth.tipoUsuario }}
+                <div
+                  class="
+                    text-caption
+                    text-grey
+                  "
+                >
+                  {{
+                    auth.tipoUsuario
+                  }}
                 </div>
               </q-item-section>
             </q-item>
@@ -90,10 +177,15 @@
             <q-item
               clickable
               v-close-popup
-              :to="{ name: 'produtor-perfil' }"
+              :to="{
+                name:
+                  'produtor-perfil'
+              }"
             >
               <q-item-section avatar>
-                <q-icon name="person" />
+                <q-icon
+                  name="person"
+                />
               </q-item-section>
 
               <q-item-section>
@@ -132,7 +224,9 @@
                 />
               </q-item-section>
 
-              <q-item-section class="text-negative">
+              <q-item-section
+                class="text-negative"
+              >
                 Sair
               </q-item-section>
             </q-item>
@@ -144,16 +238,36 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import { useRouter } from 'vue-router'
-import { useAuthStore } from 'src/stores/auth'
-import { useTheme } from 'src/composables/useTheme'
+import {
+  computed,
+  onMounted,
+  ref,
+  watch
+} from 'vue'
+
+import {
+  useRouter
+} from 'vue-router'
+
+import {
+  useAuthStore
+} from 'src/stores/auth'
+
+import {
+  useTheme
+} from 'src/composables/useTheme'
+
+import propriedadeService from
+  'src/services/propriedadeService'
 
 import logoAvicola from
   'src/assets/logo/logo-avicola-pinhal.png'
 
-const router = useRouter()
-const auth = useAuthStore()
+const router =
+  useRouter()
+
+const auth =
+  useAuthStore()
 
 const {
   modoEscuro,
@@ -162,32 +276,231 @@ const {
   alternarTema
 } = useTheme()
 
-const primeiroNome = computed(() => {
-  if (!auth.nomeUsuario) {
-    return 'Produtor'
+/* ==================================================
+   PROPRIEDADE
+=================================================== */
+
+const propriedade =
+  ref(null)
+
+const carregandoPropriedade =
+  ref(false)
+
+/* ==================================================
+   USUÁRIO LOGADO
+=================================================== */
+
+function obterUsuarioLocal() {
+  const chaves = [
+    'usuario',
+    'user',
+    'authUser'
+  ]
+
+  for (
+    const chave of chaves
+  ) {
+    try {
+      const valor =
+        localStorage.getItem(
+          chave
+        )
+
+      if (!valor) {
+        continue
+      }
+
+      const usuario =
+        JSON.parse(valor)
+
+      if (usuario) {
+        return usuario
+      }
+    } catch {
+      // Continua procurando
+    }
   }
 
-  return auth.nomeUsuario
-    .trim()
-    .split(/\s+/)[0]
-})
+  return {}
+}
 
-const iniciais = computed(() => {
-  if (!auth.nomeUsuario) {
-    return '?'
+const idUsuario =
+  computed(() => {
+    const usuarioLocal =
+      obterUsuarioLocal()
+
+    const id =
+      auth.usuario?.id_usuario ||
+      auth.idUsuario ||
+      usuarioLocal.id_usuario ||
+      usuarioLocal.idUsuario ||
+      usuarioLocal.id
+
+    const numero =
+      Number(id)
+
+    if (
+      !Number.isInteger(numero) ||
+      numero <= 0
+    ) {
+      return null
+    }
+
+    return numero
+  })
+
+/* ==================================================
+   PRIMEIRO NOME
+=================================================== */
+
+const primeiroNome =
+  computed(() => {
+    if (
+      !auth.nomeUsuario
+    ) {
+      const usuarioLocal =
+        obterUsuarioLocal()
+
+      const nome =
+        usuarioLocal.nome ||
+        usuarioLocal.nome_usuario ||
+        usuarioLocal.name ||
+        'Produtor'
+
+      return nome
+        .trim()
+        .split(/\s+/)[0]
+    }
+
+    return auth.nomeUsuario
+      .trim()
+      .split(/\s+/)[0]
+  })
+
+/* ==================================================
+   INICIAIS
+=================================================== */
+
+const iniciais =
+  computed(() => {
+    let nome =
+      auth.nomeUsuario
+
+    if (!nome) {
+      const usuarioLocal =
+        obterUsuarioLocal()
+
+      nome =
+        usuarioLocal.nome ||
+        usuarioLocal.nome_usuario ||
+        usuarioLocal.name ||
+        ''
+    }
+
+    if (!nome) {
+      return '?'
+    }
+
+    return nome
+      .split(' ')
+      .filter(Boolean)
+      .slice(0, 2)
+      .map(
+        parte =>
+          parte[0]
+      )
+      .join('')
+      .toUpperCase()
+  })
+
+/* ==================================================
+   LOCAL
+=================================================== */
+
+const localPropriedade =
+  computed(() => {
+    if (
+      !propriedade.value
+    ) {
+      return ''
+    }
+
+    const cidade =
+      propriedade.value.cidade ||
+      ''
+
+    const estado =
+      propriedade.value.estado ||
+      ''
+
+    if (
+      cidade &&
+      estado
+    ) {
+      return `${cidade} - ${estado}`
+    }
+
+    return (
+      cidade ||
+      estado ||
+      'Local não informado'
+    )
+  })
+
+/* ==================================================
+   CARREGAR PROPRIEDADE
+=================================================== */
+
+async function carregarPropriedade() {
+  if (!idUsuario.value) {
+    propriedade.value =
+      null
+
+    return
   }
 
-  return auth.nomeUsuario
-    .split(' ')
-    .filter(Boolean)
-    .slice(0, 2)
-    .map(nome => nome[0])
-    .join('')
-    .toUpperCase()
-})
+  carregandoPropriedade.value =
+    true
+
+  try {
+    const dados =
+      await propriedadeService
+        .buscarPorUsuario(
+          idUsuario.value
+        )
+
+    propriedade.value =
+      dados || null
+  } catch (error) {
+    console.error(
+      'Erro ao buscar propriedade do produtor:',
+      error
+    )
+
+    propriedade.value =
+      null
+  } finally {
+    carregandoPropriedade.value =
+      false
+  }
+}
+
+onMounted(
+  carregarPropriedade
+)
+
+watch(
+  idUsuario,
+  carregarPropriedade
+)
+
+/* ==================================================
+   SAIR
+=================================================== */
 
 async function sair() {
   auth.logout()
+
   await router.replace('/')
 }
 </script>
@@ -196,15 +509,21 @@ async function sair() {
 .header-produtor {
   min-height: 112px;
 
-  padding: 12px 32px;
+  padding:
+    12px
+    32px;
 
   display: flex;
+
   align-items: center;
-  justify-content: space-between;
+
+  justify-content:
+    space-between;
 
   gap: 30px;
 
-  border-bottom: 1px solid #eaecf0;
+  border-bottom:
+    1px solid #eaecf0;
 
   background: #ffffff;
 
@@ -213,7 +532,9 @@ async function sair() {
     border-color 0.25s;
 }
 
-/* IDENTIDADE */
+/* ==================================================
+   IDENTIDADE
+=================================================== */
 
 .header-identidade {
   width: 250px;
@@ -221,18 +542,19 @@ async function sair() {
   flex-shrink: 0;
 
   display: flex;
+
   flex-direction: column;
 
   align-items: center;
+
   justify-content: center;
 }
-
-/* AGORA A IMAGEM NÃO É CORTADA */
 
 .logo-avicola {
   display: block;
 
   width: 230px;
+
   max-width: 100%;
 
   height: auto;
@@ -248,6 +570,7 @@ async function sair() {
   color: #101828;
 
   font-size: 17px;
+
   font-weight: 800;
 
   line-height: 1.2;
@@ -263,60 +586,103 @@ async function sair() {
   color: #98a2b3;
 
   font-size: 11px;
+
   font-weight: 500;
 
   text-align: center;
 }
 
-/* AÇÕES */
+/* ==================================================
+   AÇÕES
+=================================================== */
 
 .header-acoes {
   display: flex;
+
   align-items: center;
 
   gap: 14px;
 }
 
-/* PROPRIEDADE */
+/* ==================================================
+   PROPRIEDADE
+=================================================== */
 
 .propriedade-dados {
+  min-width: 150px;
+
   text-align: right;
 }
 
 .propriedade-nome {
+  max-width: 210px;
+
+  overflow: hidden;
+
   color: #101828;
 
   font-size: 14px;
+
   font-weight: 700;
+
+  text-overflow:
+    ellipsis;
+
+  white-space: nowrap;
 }
 
 .propriedade-local {
+  max-width: 210px;
+
   margin-top: 2px;
+
+  overflow: hidden;
 
   color: #98a2b3;
 
   font-size: 12px;
+
+  text-overflow:
+    ellipsis;
+
+  white-space: nowrap;
 }
 
-/* DARK */
+/* ==================================================
+   DARK
+=================================================== */
 
-.body--dark .header-produtor {
-  border-bottom-color: #2b2f36;
+.body--dark
+.header-produtor {
+  border-bottom-color:
+    #2b2f36;
 
   background: #16191f;
 }
 
-.body--dark .header-boas-vindas,
-.body--dark .propriedade-nome {
+.body--dark
+.header-boas-vindas,
+
+.body--dark
+.propriedade-nome {
   color: #f9fafb;
 }
 
-.body--dark .header-subtitulo,
-.body--dark .propriedade-local {
+.body--dark
+.header-subtitulo,
+
+.body--dark
+.propriedade-local {
   color: #98a2b3;
 }
 
-@media (max-width: 1200px) {
+/* ==================================================
+   RESPONSIVO
+=================================================== */
+
+@media (
+  max-width: 1200px
+) {
   .header-produtor {
     padding:
       12px
@@ -336,7 +702,9 @@ async function sair() {
   }
 }
 
-@media (max-width: 1023px) {
+@media (
+  max-width: 1023px
+) {
   .header-acoes {
     display: none;
   }

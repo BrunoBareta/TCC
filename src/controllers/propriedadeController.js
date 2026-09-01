@@ -2,66 +2,9 @@ const propriedadeModel = require(
   '../models/propriedadeModels'
 )
 
-/* =========================
-   AUXILIARES
-========================= */
-
-function converterCoordenada(
-  valor
-) {
-  if (
-    valor === null ||
-    valor === undefined ||
-    String(valor).trim() === ''
-  ) {
-    return null
-  }
-
-  const numero =
-    Number(
-      String(valor)
-        .trim()
-        .replace(',', '.')
-    )
-
-  return Number.isFinite(numero)
-    ? numero
-    : null
-}
-
-function coordenadasValidas(
-  latitude,
-  longitude
-) {
-  if (
-    latitude === null &&
-    longitude === null
-  ) {
-    return true
-  }
-
-  if (
-    latitude === null ||
-    longitude === null
-  ) {
-    return false
-  }
-
-  return (
-    latitude >= -90 &&
-    latitude <= 90 &&
-    longitude >= -180 &&
-    longitude <= 180 &&
-    !(
-      latitude === 0 &&
-      longitude === 0
-    )
-  )
-}
-
-/* =========================
+/* =====================================================
    LISTAR
-========================= */
+===================================================== */
 
 const listar = async (
   req,
@@ -69,12 +12,9 @@ const listar = async (
 ) => {
   try {
     const propriedades =
-      await propriedadeModel
-        .listar()
+      await propriedadeModel.listar()
 
-    res.json(
-      propriedades
-    )
+    res.json(propriedades)
   } catch (error) {
     console.error(
       'Erro ao listar propriedades:',
@@ -82,39 +22,45 @@ const listar = async (
     )
 
     res.status(500).json({
-      erro:
-        error.message
+      erro: error.message
     })
   }
 }
 
-/* =========================
+/* =====================================================
    BUSCAR POR ID
-========================= */
+===================================================== */
 
 const buscarPorId = async (
   req,
   res
 ) => {
   try {
-    const propriedade =
-      await propriedadeModel
-        .buscarPorId(
-          req.params.id
-        )
+    const id =
+      Number(req.params.id)
 
-    if (!propriedade) {
-      return res
-        .status(404)
-        .json({
-          message:
-            'Propriedade não encontrada.'
-        })
+    if (
+      !Number.isInteger(id) ||
+      id <= 0
+    ) {
+      return res.status(400).json({
+        message:
+          'ID da propriedade inválido.'
+      })
     }
 
-    res.json(
-      propriedade
-    )
+    const propriedade =
+      await propriedadeModel
+        .buscarPorId(id)
+
+    if (!propriedade) {
+      return res.status(404).json({
+        message:
+          'Propriedade não encontrada.'
+      })
+    }
+
+    res.json(propriedade)
   } catch (error) {
     console.error(
       'Erro ao buscar propriedade:',
@@ -122,74 +68,71 @@ const buscarPorId = async (
     )
 
     res.status(500).json({
-      erro:
-        error.message
+      erro: error.message
     })
   }
 }
 
-/* =========================
-   BUSCAR POR USUÁRIO
-========================= */
+/* =====================================================
+   BUSCAR PROPRIEDADE DO PRODUTOR
+===================================================== */
 
-const buscarPorUsuario =
-  async (
-    req,
-    res
-  ) => {
-    try {
-      const idUsuario =
-        Number(
-          req.params.idUsuario
-        )
-
-      if (
-        !Number.isInteger(
-          idUsuario
-        ) ||
-        idUsuario <= 0
-      ) {
-        return res
-          .status(400)
-          .json({
-            message:
-              'Usuário inválido.'
-          })
-      }
-
-      const propriedade =
-        await propriedadeModel
-          .buscarPorUsuario(
-            idUsuario
-          )
-
-      /*
-        NÃO ter propriedade
-        não é erro.
-
-        Retorna null para o frontend
-        mostrar "Cadastrar propriedade".
-      */
-      res.json(
-        propriedade ||
-        null
-      )
-    } catch (error) {
-      console.error(
-        'Erro ao buscar propriedade do usuário:',
-        error
+const buscarPorUsuario = async (
+  req,
+  res
+) => {
+  try {
+    const idUsuario =
+      Number(
+        req.params.idUsuario
       )
 
-      res.status(500).json({
-        erro:
-          error.message
+    if (
+      !Number.isInteger(
+        idUsuario
+      ) ||
+      idUsuario <= 0
+    ) {
+      return res.status(400).json({
+        message:
+          'Produtor inválido.'
       })
     }
-  }
 
-/* =========================
+    const propriedade =
+      await propriedadeModel
+        .buscarPorUsuario(
+          idUsuario
+        )
+
+    /*
+      Se o produtor ainda não possuir
+      propriedade, retornamos null.
+
+      Isso facilita o tratamento
+      no frontend.
+    */
+
+    if (!propriedade) {
+      return res.json(null)
+    }
+
+    res.json(propriedade)
+  } catch (error) {
+    console.error(
+      'Erro ao buscar propriedade do produtor:',
+      error
+    )
+
+    res.status(500).json({
+      erro: error.message
+    })
+  }
+}
+
+/* =====================================================
    CRIAR
-========================= */
+===================================================== */
 
 const criar = async (
   req,
@@ -201,286 +144,151 @@ const criar = async (
         req.body.id_usuario
       )
 
-    const nomePropriedade =
-      String(
-        req.body
-          .nome_propriedade ||
-        ''
-      ).trim()
-
     if (
       !Number.isInteger(
         idUsuario
       ) ||
       idUsuario <= 0
     ) {
-      return res
-        .status(400)
-        .json({
-          message:
-            'Produtor não identificado.'
-        })
+      return res.status(400).json({
+        message:
+          'Produtor não identificado.'
+      })
     }
+
+    const nomePropriedade =
+      String(
+        req.body.nome_propriedade ||
+        ''
+      ).trim()
 
     if (!nomePropriedade) {
-      return res
-        .status(400)
-        .json({
-          message:
-            'Informe o nome da propriedade.'
-        })
-    }
-
-    /*
-      PROTÓTIPO:
-      UMA PROPRIEDADE ATIVA
-      POR PRODUTOR.
-    */
-    const propriedadeExistente =
-      await propriedadeModel
-        .buscarPorUsuario(
-          idUsuario
-        )
-
-    if (propriedadeExistente) {
-      return res
-        .status(409)
-        .json({
-          message:
-            'Este produtor já possui uma propriedade cadastrada.'
-        })
-    }
-
-    const latitude =
-      converterCoordenada(
-        req.body.latitude
-      )
-
-    const longitude =
-      converterCoordenada(
-        req.body.longitude
-      )
-
-    if (
-      !coordenadasValidas(
-        latitude,
-        longitude
-      )
-    ) {
-      return res
-        .status(400)
-        .json({
-          message:
-            'Localização da propriedade inválida.'
-        })
+      return res.status(400).json({
+        message:
+          'Informe o nome da propriedade.'
+      })
     }
 
     const propriedade =
-      await propriedadeModel
-        .criar({
-          id_usuario:
-            idUsuario,
+      await propriedadeModel.criar({
+        ...req.body,
 
-          nome_propriedade:
-            nomePropriedade,
+        id_usuario:
+          idUsuario,
 
-          /*
-            Como o projeto atualmente
-            trabalha com Avioeste,
-            mantemos AVES como padrão.
-          */
-          cultura_principal:
-            req.body
-              .cultura_principal ||
-            'AVES',
+        nome_propriedade:
+          nomePropriedade
+      })
 
-          quantidade_galpoes:
-            Number(
-              req.body
-                .quantidade_galpoes ||
-              0
-            ),
+    res.status(201).json({
+      message:
+        'Propriedade cadastrada com sucesso.',
 
-          endereco:
-            req.body.endereco
-              ? String(
-                  req.body.endereco
-                ).trim()
-              : null,
-
-          cidade:
-            req.body.cidade
-              ? String(
-                  req.body.cidade
-                ).trim()
-              : null,
-
-          estado:
-            req.body.estado
-              ? String(
-                  req.body.estado
-                )
-                  .trim()
-                  .toUpperCase()
-              : null,
-
-          cep:
-            req.body.cep
-              ? String(
-                  req.body.cep
-                ).trim()
-              : null,
-
-          latitude,
-
-          longitude
-        })
-
-    res.status(201).json(
       propriedade
-    )
+    })
   } catch (error) {
     console.error(
-      'Erro ao criar propriedade:',
+      'Erro ao cadastrar propriedade:',
       error
     )
 
     res.status(500).json({
-      erro:
-        error.message
+      erro: error.message
     })
   }
 }
 
-/* =========================
+/* =====================================================
    ATUALIZAR
-========================= */
+===================================================== */
 
 const atualizar = async (
   req,
   res
 ) => {
   try {
-    const propriedadeAnterior =
-      await propriedadeModel
-        .buscarPorId(
-          req.params.id
-        )
-
-    if (!propriedadeAnterior) {
-      return res
-        .status(404)
-        .json({
-          message:
-            'Propriedade não encontrada.'
-        })
-    }
-
-    const nomePropriedade =
-      String(
-        req.body
-          .nome_propriedade ||
-        propriedadeAnterior
-          .nome_propriedade ||
-        ''
-      ).trim()
-
-    if (!nomePropriedade) {
-      return res
-        .status(400)
-        .json({
-          message:
-            'Informe o nome da propriedade.'
-        })
-    }
-
-    const latitude =
-      converterCoordenada(
-        req.body.latitude ??
-        propriedadeAnterior.latitude
-      )
-
-    const longitude =
-      converterCoordenada(
-        req.body.longitude ??
-        propriedadeAnterior.longitude
-      )
+    const id =
+      Number(req.params.id)
 
     if (
-      !coordenadasValidas(
-        latitude,
-        longitude
-      )
+      !Number.isInteger(id) ||
+      id <= 0
     ) {
-      return res
-        .status(400)
-        .json({
-          message:
-            'Localização da propriedade inválida.'
-        })
+      return res.status(400).json({
+        message:
+          'ID da propriedade inválido.'
+      })
+    }
+
+    const propriedadeAnterior =
+      await propriedadeModel
+        .buscarPorId(id)
+
+    if (!propriedadeAnterior) {
+      return res.status(404).json({
+        message:
+          'Propriedade não encontrada.'
+      })
+    }
+
+    const dados = {
+      nome_propriedade:
+        req.body.nome_propriedade ??
+        propriedadeAnterior
+          .nome_propriedade,
+
+      cultura_principal:
+        req.body.cultura_principal ??
+        propriedadeAnterior
+          .cultura_principal,
+
+      quantidade_galpoes:
+        req.body.quantidade_galpoes ??
+        propriedadeAnterior
+          .quantidade_galpoes,
+
+      endereco:
+        req.body.endereco ??
+        propriedadeAnterior.endereco,
+
+      cidade:
+        req.body.cidade ??
+        propriedadeAnterior.cidade,
+
+      estado:
+        req.body.estado ??
+        propriedadeAnterior.estado,
+
+      cep:
+        req.body.cep ??
+        propriedadeAnterior.cep,
+
+      latitude:
+        req.body.latitude ??
+        propriedadeAnterior.latitude,
+
+      longitude:
+        req.body.longitude ??
+        propriedadeAnterior.longitude,
+
+      ativo:
+        req.body.ativo ??
+        propriedadeAnterior.ativo
     }
 
     const propriedade =
       await propriedadeModel
         .atualizar(
-          req.params.id,
-          {
-            nome_propriedade:
-              nomePropriedade,
-
-            cultura_principal:
-              req.body
-                .cultura_principal ||
-              propriedadeAnterior
-                .cultura_principal ||
-              'AVES',
-
-            quantidade_galpoes:
-              Number(
-                req.body
-                  .quantidade_galpoes ??
-                propriedadeAnterior
-                  .quantidade_galpoes ??
-                0
-              ),
-
-            endereco:
-              req.body.endereco ??
-              propriedadeAnterior
-                .endereco,
-
-            cidade:
-              req.body.cidade ??
-              propriedadeAnterior
-                .cidade,
-
-            estado:
-              req.body.estado
-                ? String(
-                    req.body.estado
-                  )
-                    .trim()
-                    .toUpperCase()
-                : propriedadeAnterior
-                    .estado,
-
-            cep:
-              req.body.cep ??
-              propriedadeAnterior
-                .cep,
-
-            latitude,
-
-            longitude,
-
-            ativo:
-              true
-          }
+          id,
+          dados
         )
 
-    res.json(
+    res.json({
+      message:
+        'Propriedade atualizada com sucesso.',
+
       propriedade
-    )
+    })
   } catch (error) {
     console.error(
       'Erro ao atualizar propriedade:',
@@ -488,34 +296,42 @@ const atualizar = async (
     )
 
     res.status(500).json({
-      erro:
-        error.message
+      erro: error.message
     })
   }
 }
 
-/* =========================
+/* =====================================================
    DESATIVAR
-========================= */
+===================================================== */
 
 const deletar = async (
   req,
   res
 ) => {
   try {
+    const id =
+      Number(req.params.id)
+
+    if (
+      !Number.isInteger(id) ||
+      id <= 0
+    ) {
+      return res.status(400).json({
+        message:
+          'ID da propriedade inválido.'
+      })
+    }
+
     const propriedade =
       await propriedadeModel
-        .deletar(
-          req.params.id
-        )
+        .deletar(id)
 
     if (!propriedade) {
-      return res
-        .status(404)
-        .json({
-          message:
-            'Propriedade não encontrada.'
-        })
+      return res.status(404).json({
+        message:
+          'Propriedade não encontrada.'
+      })
     }
 
     res.json({
@@ -531,11 +347,14 @@ const deletar = async (
     )
 
     res.status(500).json({
-      erro:
-        error.message
+      erro: error.message
     })
   }
 }
+
+/* =====================================================
+   EXPORTAÇÕES
+===================================================== */
 
 module.exports = {
   listar,

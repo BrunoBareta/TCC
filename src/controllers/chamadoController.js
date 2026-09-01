@@ -273,8 +273,45 @@ const listar = async (
   res
 ) => {
   try {
+    let idUsuario = null
+
+    /*
+      Quando o produtor solicitar
+      seus chamados, o frontend envia:
+
+      /chamados?id_usuario=6
+    */
+
+    if (
+      req.query.id_usuario !==
+        undefined &&
+      req.query.id_usuario !==
+        null &&
+      req.query.id_usuario !==
+        ''
+    ) {
+      idUsuario =
+        Number(
+          req.query.id_usuario
+        )
+
+      if (
+        !Number.isInteger(
+          idUsuario
+        ) ||
+        idUsuario <= 0
+      ) {
+        return res.status(400).json({
+          message:
+            'Produtor inválido.'
+        })
+      }
+    }
+
     const chamados =
-      await chamadoModel.listar()
+      await chamadoModel.listar(
+        idUsuario
+      )
 
     res.json(chamados)
   } catch (error) {

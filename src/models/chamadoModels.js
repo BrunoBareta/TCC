@@ -4,7 +4,9 @@ const db = require('../database/db')
    LISTAR CHAMADOS
 ========================= */
 
-const listar = async () => {
+const listar = async (
+  idUsuario = null
+) => {
   const resultado = await db.query(
     `SELECT
       c.*,
@@ -105,10 +107,19 @@ const listar = async () => {
 
       WHERE cf.id_chamado = c.id_chamado
         AND cf.status_aceite = 'ACEITO'
-    ) tecnico
+        ) tecnico
       ON TRUE
 
-    ORDER BY c.id_chamado DESC`
+    ${
+      idUsuario
+        ? 'WHERE c.id_usuario = $1'
+        : ''
+    }
+
+    ORDER BY c.id_chamado DESC`,
+    idUsuario
+      ? [idUsuario]
+      : []
   )
 
   return resultado.rows
