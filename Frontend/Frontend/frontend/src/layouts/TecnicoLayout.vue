@@ -13,8 +13,13 @@
     />
 
     <q-page-container class="page-container">
+      <!--
+        Na dashboard o cabeçalho próprio da página já contém
+        "Painel do Técnico + Olá, usuário", portanto escondemos
+        o HeaderTecnico para eliminar a faixa duplicada.
+      -->
       <HeaderTecnico
-        v-if="!isMobile"
+        v-if="!isMobile && !ehDashboard"
       />
 
       <!-- ==================================================
@@ -25,12 +30,9 @@
         v-if="isMobile"
         class="mobile-header"
         :class="{
-          'mobile-header--dashboard':
-            route.path === '/tecnico/dashboard'
+          'mobile-header--dashboard': ehDashboard
         }"
       >
-        <!-- ESQUERDA -->
-
         <div class="mobile-header__lado">
           <q-btn
             v-if="mostrarVoltar"
@@ -43,24 +45,13 @@
           />
         </div>
 
-        <!-- CENTRO -->
-
         <div class="mobile-header__centro">
-          <template
-            v-if="
-              route.path ===
-              '/tecnico/dashboard'
-            "
-          >
+          <template v-if="ehDashboard">
             <img
               :src="logoAvicola"
               alt="Avícola Pinhal"
               class="mobile-logo-avicola"
             />
-
-            <div class="mobile-header__boas-vindas">
-              Bem-vindo, {{ primeiroNome }}
-            </div>
 
             <div class="mobile-header__portal">
               Portal do Técnico
@@ -74,22 +65,12 @@
           </template>
         </div>
 
-        <!-- DIREITA -->
-
         <div
           class="
             mobile-header__lado
             mobile-header__lado--direita
           "
         >
-          <q-btn
-            flat
-            round
-            dense
-            icon="notifications_none"
-            class="mobile-header__acao"
-          />
-
           <q-btn
             flat
             round
@@ -104,8 +85,6 @@
           </q-btn>
         </div>
       </div>
-
-      <!-- CONTEÚDO -->
 
       <div
         :class="{
@@ -125,21 +104,13 @@
       class="mobile-footer"
     >
       <div class="mobile-nav">
-        <!-- INÍCIO -->
-
         <button
           type="button"
           class="mobile-nav__item"
           :class="{
-            'mobile-nav__item--ativo':
-              route.path ===
-              '/tecnico/dashboard'
+            'mobile-nav__item--ativo': ehDashboard
           }"
-          @click="
-            irPara(
-              '/tecnico/dashboard'
-            )
-          "
+          @click="irPara('/tecnico/dashboard')"
         >
           <q-icon
             name="dashboard"
@@ -151,8 +122,6 @@
           </span>
         </button>
 
-        <!-- PENDENTES -->
-
         <button
           type="button"
           class="mobile-nav__item"
@@ -161,11 +130,7 @@
               route.path ===
               '/tecnico/chamados-pendentes'
           }"
-          @click="
-            irPara(
-              '/tecnico/chamados-pendentes'
-            )
-          "
+          @click="irPara('/tecnico/chamados-pendentes')"
         >
           <q-icon
             name="schedule"
@@ -177,17 +142,11 @@
           </span>
         </button>
 
-        <!-- MEUS -->
-
         <div class="mobile-nav__novo-container">
           <button
             type="button"
             class="mobile-nav__novo"
-            @click="
-              irPara(
-                '/tecnico/meus-chamados'
-              )
-            "
+            @click="irPara('/tecnico/meus-chamados')"
           >
             <q-icon
               name="assignment"
@@ -200,20 +159,13 @@
           </span>
         </div>
 
-        <!-- ATENDIMENTO -->
-
         <button
           type="button"
           class="mobile-nav__item"
           :class="{
-            'mobile-nav__item--ativo':
-              ehAtendimento
+            'mobile-nav__item--ativo': ehAtendimento
           }"
-          @click="
-            irPara(
-              '/tecnico/atendimento'
-            )
-          "
+          @click="irPara('/tecnico/atendimento')"
         >
           <q-icon
             name="engineering"
@@ -225,8 +177,6 @@
           </span>
         </button>
 
-        <!-- PERFIL -->
-
         <button
           type="button"
           class="mobile-nav__item"
@@ -235,11 +185,7 @@
               route.path ===
               '/tecnico/perfil'
           }"
-          @click="
-            irPara(
-              '/tecnico/perfil'
-            )
-          "
+          @click="irPara('/tecnico/perfil')"
         >
           <q-icon
             name="person"
@@ -295,6 +241,12 @@ const isMobile =
     $q.screen.lt.md
   )
 
+const ehDashboard =
+  computed(() =>
+    route.path ===
+    '/tecnico/dashboard'
+  )
+
 /* ==================================================
    USUÁRIO
 =================================================== */
@@ -328,13 +280,6 @@ const nomeUsuario =
       return 'Técnico'
     }
   })
-
-const primeiroNome =
-  computed(() =>
-    nomeUsuario.value
-      .trim()
-      .split(/\s+/)[0]
-  )
 
 /* ==================================================
    TÍTULOS
@@ -465,7 +410,6 @@ async function sair() {
 .app-layout,
 .page-container {
   min-height: 100vh;
-
   background: #f7f8fa;
 }
 
@@ -491,14 +435,14 @@ async function sair() {
 
   z-index: 1000;
 
-  min-height: 60px;
+  min-height: 58px;
 
   display: grid;
 
   grid-template-columns:
-    76px
+    54px
     minmax(0, 1fr)
-    76px;
+    54px;
 
   align-items: center;
 
@@ -506,11 +450,11 @@ async function sair() {
 
   padding:
     calc(
-      7px +
+      6px +
       env(safe-area-inset-top)
     )
     8px
-    8px;
+    7px;
 
   border-bottom: 1px solid #eaecf0;
 
@@ -524,11 +468,11 @@ async function sair() {
 }
 
 .mobile-header--dashboard {
-  min-height: 110px;
+  min-height: 78px;
 }
 
 .mobile-header__lado {
-  width: 76px;
+  width: 54px;
 
   display: flex;
 
@@ -537,11 +481,9 @@ async function sair() {
 
 .mobile-header__lado--direita {
   justify-content: flex-end;
-  gap: 0;
 }
 
-.mobile-header__voltar,
-.mobile-header__acao {
+.mobile-header__voltar {
   color: #344054;
 }
 
@@ -562,27 +504,12 @@ async function sair() {
 .mobile-logo-avicola {
   display: block;
 
-  width: 175px;
+  width: 150px;
   max-width: 100%;
 
   height: auto;
 
-  margin-bottom: 3px;
-
   object-fit: contain;
-}
-
-.mobile-header__boas-vindas {
-  color: #101828;
-
-  font-size: 16px;
-  font-weight: 800;
-
-  line-height: 1.15;
-
-  text-align: center;
-
-  white-space: nowrap;
 }
 
 .mobile-header__portal {
@@ -590,8 +517,8 @@ async function sair() {
 
   color: #98a2b3;
 
-  font-size: 10px;
-  font-weight: 500;
+  font-size: 9px;
+  font-weight: 600;
 
   text-align: center;
 }
@@ -692,8 +619,6 @@ async function sair() {
   color: #f97316;
 }
 
-/* BOTÃO CENTRAL */
-
 .mobile-nav__novo-container {
   position: relative;
 
@@ -720,7 +645,6 @@ async function sair() {
   justify-content: center;
 
   border: 5px solid #ffffff;
-
   border-radius: 50%;
 
   color: #ffffff;
@@ -750,7 +674,9 @@ async function sair() {
   font-weight: 800;
 }
 
-/* DARK */
+/* ==================================================
+   DARK
+=================================================== */
 
 .body--dark .app-layout,
 .body--dark .page-container,
@@ -765,13 +691,11 @@ async function sair() {
     rgba(22, 25, 31, 0.96);
 }
 
-.body--dark .mobile-header__titulo,
-.body--dark .mobile-header__boas-vindas {
+.body--dark .mobile-header__titulo {
   color: #f9fafb;
 }
 
-.body--dark .mobile-header__voltar,
-.body--dark .mobile-header__acao {
+.body--dark .mobile-header__voltar {
   color: #f2f4f7;
 }
 

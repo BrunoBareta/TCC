@@ -9,30 +9,6 @@
          CABEÇALHO
     ========================== -->
 
-    <div class="pagina-topo">
-      <div>
-        <h1>
-          Produtores
-        </h1>
-
-        <p>
-          Consulte os produtores e suas propriedades cadastradas.
-        </p>
-      </div>
-
-      <q-btn
-        flat
-        round
-        icon="refresh"
-        :loading="carregando"
-        @click="carregarDados"
-      >
-        <q-tooltip>
-          Atualizar
-        </q-tooltip>
-      </q-btn>
-    </div>
-
     <!-- =========================
          RESUMO
     ========================== -->
@@ -154,21 +130,36 @@
           </div>
         </div>
 
-        <q-input
-          v-model="pesquisa"
-          outlined
-          dense
-          clearable
-          placeholder="Buscar produtor..."
-          class="pesquisa-input"
-        >
-          <template #prepend>
-            <q-icon
-              name="search"
-              size="19px"
-            />
-          </template>
-        </q-input>
+        <div class="lista-acoes">
+          <q-input
+            v-model="pesquisa"
+            outlined
+            dense
+            clearable
+            placeholder="Buscar produtor..."
+            class="pesquisa-input"
+          >
+            <template #prepend>
+              <q-icon
+                name="search"
+                size="19px"
+              />
+            </template>
+          </q-input>
+
+          <q-btn
+            flat
+            round
+            icon="refresh"
+            class="botao-atualizar-lista"
+            :loading="carregando"
+            @click="carregarDados"
+          >
+            <q-tooltip>
+              Atualizar produtores
+            </q-tooltip>
+          </q-btn>
+        </div>
       </div>
 
       <!-- =========================
@@ -2276,4 +2267,328 @@ tr:hover {
       1fr;
   }
 }
+
+/* =========================================================
+   AJUSTE FINAL - PRODUTORES ADMIN
+   O AdminLayout já exibe o título principal da página.
+========================================================= */
+
+.produtores-page {
+  min-height: 100%;
+  padding: 14px 20px 28px;
+  background: #f5f6f8;
+}
+
+.pagina-topo {
+  display: none !important;
+}
+
+/* =========================================================
+   INDICADORES
+========================================================= */
+
+.resumo-grid {
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.resumo-card {
+  min-height: 96px;
+  gap: 12px;
+  padding: 14px 15px;
+  border-radius: 15px;
+}
+
+.resumo-icone {
+  width: 43px;
+  height: 43px;
+  border-radius: 12px;
+}
+
+.resumo-numero {
+  font-size: 25px;
+  line-height: 1;
+}
+
+.resumo-label {
+  margin-top: 5px;
+  color: #475467;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+/* =========================================================
+   LISTA
+========================================================= */
+
+.lista-card {
+  padding: 0;
+  overflow: hidden;
+  border-radius: 16px;
+}
+
+.lista-cabecalho {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+
+  padding: 14px 18px 12px;
+
+  border-bottom: 1px solid #eaecf0;
+}
+
+.lista-titulo {
+  font-size: 14px;
+}
+
+.lista-subtitulo {
+  margin-top: 3px;
+  font-size: 9px;
+}
+
+.lista-acoes {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.pesquisa-input {
+  width: 320px;
+}
+
+.pesquisa-input :deep(.q-field__control) {
+  min-height: 40px;
+  height: 40px;
+  border-radius: 10px;
+}
+
+.pesquisa-input :deep(.q-field__native),
+.pesquisa-input :deep(.q-field__input) {
+  font-size: 11px;
+}
+
+.botao-atualizar-lista {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  color: #f97316;
+}
+
+/* =========================================================
+   TABELA - LETRAS MAIORES
+========================================================= */
+
+.tabela-container {
+  width: 100%;
+  overflow-x: auto;
+  margin-top: 0;
+}
+
+.produtores-tabela {
+  width: 100%;
+  min-width: 1080px;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+
+.produtores-tabela th {
+  padding: 11px 14px;
+  border-bottom: 1px solid #eaecf0;
+
+  color: #667085;
+  font-size: 9px;
+  font-weight: 900;
+
+  text-align: left;
+  text-transform: uppercase;
+  letter-spacing: 0.35px;
+  white-space: nowrap;
+}
+
+.produtores-tabela td {
+  padding: 13px 14px;
+  border-bottom: 1px solid #f2f4f7;
+
+  color: #475467;
+  font-size: 11px;
+  line-height: 1.35;
+
+  vertical-align: middle;
+}
+
+.produtores-tabela tbody tr:hover {
+  background: #fffaf5;
+}
+
+.produtor-identificacao {
+  gap: 10px;
+}
+
+.produtor-avatar {
+  width: 42px;
+  height: 42px;
+  font-size: 12px;
+}
+
+.produtor-info strong {
+  max-width: 220px;
+  color: #24324a;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.produtor-info span {
+  max-width: 240px;
+  margin-top: 3px;
+  font-size: 9px;
+}
+
+.propriedade-info {
+  gap: 7px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.propriedade-info .q-icon {
+  font-size: 19px !important;
+}
+
+.sem-propriedade {
+  font-size: 10px;
+}
+
+.produtores-tabela :deep(.q-badge) {
+  padding: 6px 10px;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+/* Distribuição das colunas */
+.produtores-tabela th:nth-child(1),
+.produtores-tabela td:nth-child(1) {
+  width: 25%;
+}
+
+.produtores-tabela th:nth-child(2),
+.produtores-tabela td:nth-child(2) {
+  width: 15%;
+}
+
+.produtores-tabela th:nth-child(3),
+.produtores-tabela td:nth-child(3) {
+  width: 19%;
+}
+
+.produtores-tabela th:nth-child(4),
+.produtores-tabela td:nth-child(4) {
+  width: 15%;
+}
+
+.produtores-tabela th:nth-child(5),
+.produtores-tabela td:nth-child(5) {
+  width: 10%;
+}
+
+.produtores-tabela th:nth-child(6),
+.produtores-tabela td:nth-child(6) {
+  width: 10%;
+}
+
+.produtores-tabela th:nth-child(7),
+.produtores-tabela td:nth-child(7) {
+  width: 6%;
+}
+
+.acao-coluna {
+  width: auto;
+}
+
+.acao-coluna .q-btn {
+  min-width: 34px;
+  min-height: 34px;
+}
+
+/* =========================================================
+   CARREGANDO / VAZIO
+========================================================= */
+
+.carregando,
+.vazio {
+  min-height: 220px;
+}
+
+/* =========================================================
+   DARK
+========================================================= */
+
+.produtores-page--dark .lista-cabecalho {
+  border-color: #292d33;
+}
+
+.produtores-page--dark .resumo-label {
+  color: #cbd5e1;
+}
+
+.produtores-page--dark .produtor-info strong {
+  color: #f2f4f7;
+}
+
+/* =========================================================
+   RESPONSIVO
+========================================================= */
+
+@media (max-width: 1100px) {
+  .resumo-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .lista-cabecalho {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .lista-acoes {
+    width: 100%;
+  }
+
+  .pesquisa-input {
+    flex: 1;
+    width: auto;
+  }
+}
+
+@media (max-width: 800px) {
+  .produtores-page {
+    padding: 14px 14px 30px;
+  }
+}
+
+@media (max-width: 600px) {
+  .produtores-page {
+    padding: 12px 12px 28px;
+  }
+
+  .resumo-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .lista-acoes {
+    flex-direction: column;
+  }
+
+  .pesquisa-input,
+  .botao-atualizar-lista {
+    width: 100%;
+  }
+
+  .botao-atualizar-lista {
+    border: 1px solid #fed7aa;
+    border-radius: 10px;
+  }
+}
+
 </style>

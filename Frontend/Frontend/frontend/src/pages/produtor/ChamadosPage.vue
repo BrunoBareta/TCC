@@ -1,29 +1,14 @@
 <template>
   <q-page class="chamados-page">
-    <!-- ==================================================
-         CABEÇALHO DA PÁGINA
-         No celular o Layout já mostra "Meus chamados",
-         então evitamos repetir um título enorme.
-    =================================================== -->
-
-    <div class="pagina-cabecalho">
-      <div class="pagina-titulo">
-        Meus Chamados
-      </div>
-
-      <div class="pagina-subtitulo">
-        Consulte todos os chamados da sua propriedade.
-      </div>
-    </div>
-
-    <!-- FILTROS -->
+    <!--
+      O título e o subtítulo já são exibidos pelo Header do
+      ProdutorLayout. Aqui deixamos apenas filtros e listagem.
+    -->
 
     <FiltroChamados
       v-model:pesquisa="pesquisa"
       v-model:status="statusSelecionado"
     />
-
-    <!-- LISTAGEM -->
 
     <div class="listagem-container">
       <TabelaChamados
@@ -105,43 +90,14 @@ onMounted(() => {
 <style scoped>
 .chamados-page {
   min-height: 100%;
-
-  padding:
-    28px
-    32px
-    48px;
-
+  padding: 14px 20px 28px;
   overflow-x: hidden;
-
-  background: #f7f8fa;
-}
-
-.pagina-cabecalho {
-  margin-bottom: 28px;
-}
-
-.pagina-titulo {
-  color: #101828;
-
-  font-size: 30px;
-  font-weight: 800;
-
-  line-height: 1.2;
-}
-
-.pagina-subtitulo {
-  margin-top: 5px;
-
-  color: #667085;
-
-  font-size: 14px;
+  background: #f5f6f8;
 }
 
 .listagem-container {
-  margin-top: 28px;
-
   width: 100%;
-
+  margin-top: 12px;
   overflow: hidden;
 }
 
@@ -151,53 +107,23 @@ onMounted(() => {
   background: #0d0f12;
 }
 
-.body--dark .pagina-titulo {
-  color: #f9fafb;
+/* TABLET */
+
+@media (max-width: 1023px) {
+  .chamados-page {
+    padding: 14px 14px 30px;
+  }
 }
 
-.body--dark .pagina-subtitulo {
-  color: #98a2b3;
-}
-
-/* ==================================================
-   MOBILE
-=================================================== */
+/* MOBILE */
 
 @media (max-width: 700px) {
   .chamados-page {
-    padding:
-      16px
-      14px
-      30px;
-  }
-
-  /*
-    O header mobile do ProdutorLayout
-    já mostra "Meus chamados".
-    No conteúdo deixamos apenas uma
-    pequena explicação.
-  */
-
-  .pagina-cabecalho {
-    margin-bottom: 15px;
-  }
-
-  .pagina-titulo {
-    display: none;
-  }
-
-  .pagina-subtitulo {
-    margin: 0;
-
-    color: #667085;
-
-    font-size: 13px;
-
-    text-align: center;
+    padding: 12px 12px 28px;
   }
 
   .listagem-container {
-    margin-top: 16px;
+    margin-top: 10px;
   }
 }
 </style>

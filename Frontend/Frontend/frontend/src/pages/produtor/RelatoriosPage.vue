@@ -3,21 +3,8 @@
     class="relatorios-page"
     :class="{ 'relatorios-page--dark': $q.dark.isActive }"
   >
-    <!-- =========================
-         CABEÇALHO
-    ========================== -->
-
-    <div class="pagina-cabecalho">
-      <div>
-        <div class="pagina-titulo">
-          Relatórios
-        </div>
-
-        <div class="pagina-subtitulo">
-          Visualize seus atendimentos e gere relatórios em PDF.
-        </div>
-      </div>
-
+    <!-- AÇÃO RÁPIDA -->
+    <div class="pagina-acoes">
       <q-btn
         outline
         color="orange-8"
@@ -3571,4 +3558,136 @@ onMounted(
       none;
   }
 }
+
+/* =========================================================
+   AJUSTES DE LAYOUT - PADRÃO COMPACTO
+========================================================= */
+
+.relatorios-page {
+  padding: 14px 20px 28px;
+}
+
+.pagina-acoes {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+}
+
+.pagina-acoes .q-btn {
+  min-height: 38px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.cards-resumo {
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.card-resumo {
+  min-height: 105px;
+  gap: 10px;
+  padding: 13px;
+  border-radius: 15px;
+}
+
+.card-icone {
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+}
+
+.card-valor {
+  font-size: 25px;
+}
+
+.card-titulo {
+  margin-top: 4px;
+  font-size: 10px;
+}
+
+.card-texto {
+  margin-top: 3px;
+  font-size: 7px;
+}
+
+.graficos-grid {
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.grafico-card,
+.relatorio-card {
+  padding: 16px;
+  border-radius: 16px;
+}
+
+.bloco-titulo {
+  font-size: 13px;
+}
+
+.bloco-subtitulo {
+  margin-top: 2px;
+  font-size: 8px;
+}
+
+.icone-lateral {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+}
+
+.grafico-area {
+  min-height: 240px;
+  margin-top: 8px;
+}
+
+.grafico-loading {
+  min-height: 235px;
+}
+
+.relatorio-topo {
+  align-items: center;
+}
+
+.relatorio-acoes .q-btn {
+  min-height: 36px;
+  border-radius: 9px;
+  font-size: 9px;
+}
+
+.filtro-atual {
+  margin-top: 12px;
+  padding: 9px 11px;
+}
+
+.selecionar-todos {
+  padding: 10px 4px;
+}
+
+.chamado-relatorio-item {
+  padding: 10px 4px;
+}
+
+@media (max-width: 850px) {
+  .relatorios-page {
+    padding: 14px 14px 30px;
+  }
+
+  .pagina-acoes {
+    justify-content: stretch;
+  }
+
+  .pagina-acoes .q-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .relatorios-page {
+    padding: 12px 12px 28px;
+  }
+}
+
 </style>

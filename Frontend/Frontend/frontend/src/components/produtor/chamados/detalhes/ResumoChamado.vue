@@ -1,7 +1,7 @@
 <template>
   <div class="resumo-card">
     <div class="resumo-topo">
-      <div>
+      <div class="resumo-identificacao">
         <div class="protocolo">
           Chamado #{{ chamado.id_chamado }}
         </div>
@@ -19,18 +19,22 @@
       </q-badge>
     </div>
 
-    <q-separator class="q-my-lg" />
+    <q-separator class="separador" />
 
     <div class="resumo-grid">
       <div class="resumo-item">
-        <q-icon
-          name="calendar_today"
-          size="20px"
-          color="grey-6"
-        />
+        <div class="item-icone">
+          <q-icon
+            name="calendar_today"
+            size="20px"
+          />
+        </div>
 
         <div>
-          <div class="item-label">Data de abertura</div>
+          <div class="item-label">
+            Data de abertura
+          </div>
+
           <div class="item-valor">
             {{ formatarData(chamado.data_abertura) }}
           </div>
@@ -38,14 +42,18 @@
       </div>
 
       <div class="resumo-item">
-        <q-icon
-          name="priority_high"
-          size="22px"
-          color="grey-6"
-        />
+        <div class="item-icone">
+          <q-icon
+            name="priority_high"
+            size="21px"
+          />
+        </div>
 
         <div>
-          <div class="item-label">Urgência</div>
+          <div class="item-label">
+            Urgência
+          </div>
+
           <div class="item-valor">
             {{ formatarTexto(chamado.urgencia) }}
           </div>
@@ -53,14 +61,18 @@
       </div>
 
       <div class="resumo-item">
-        <q-icon
-          name="agriculture"
-          size="22px"
-          color="grey-6"
-        />
+        <div class="item-icone">
+          <q-icon
+            name="agriculture"
+            size="21px"
+          />
+        </div>
 
         <div>
-          <div class="item-label">Cultura</div>
+          <div class="item-label">
+            Cultura
+          </div>
+
           <div class="item-valor">
             {{ formatarTexto(chamado.tipo_cultura) }}
           </div>
@@ -68,14 +80,18 @@
       </div>
 
       <div class="resumo-item">
-        <q-icon
-          name="support_agent"
-          size="22px"
-          color="grey-6"
-        />
+        <div class="item-icone">
+          <q-icon
+            name="support_agent"
+            size="21px"
+          />
+        </div>
 
         <div>
-          <div class="item-label">Tipo do chamado</div>
+          <div class="item-label">
+            Tipo do chamado
+          </div>
+
           <div class="item-valor">
             {{ formatarTexto(chamado.tipo_chamado) }}
           </div>
@@ -142,57 +158,113 @@ function classeStatus(status) {
 
 <style scoped>
 .resumo-card {
-  padding: 26px;
+  height: 100%;
+
+  padding: 20px;
+
   border: 1px solid #eaecf0;
-  border-radius: 22px;
+  border-radius: 18px;
+
   background: #ffffff;
-  box-shadow: 0 3px 10px rgba(16, 24, 40, 0.05);
+
+  box-shadow:
+    0 3px 10px
+    rgba(16, 24, 40, 0.045);
 }
 
 .resumo-topo {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 20px;
+
+  gap: 18px;
+}
+
+.resumo-identificacao {
+  min-width: 0;
 }
 
 .protocolo {
   color: #f97316;
+
   font-size: 13px;
-  font-weight: 800;
-  letter-spacing: 0.5px;
+  font-weight: 900;
+
+  letter-spacing: 0.45px;
   text-transform: uppercase;
 }
 
 .problema {
-  margin-top: 6px;
-  font-size: 25px;
-  font-weight: 800;
+  margin-top: 5px;
+
+  color: #101828;
+
+  font-size: 23px;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.separador {
+  margin: 16px 0 !important;
 }
 
 .resumo-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 22px;
+
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+
+  gap: 10px;
 }
 
 .resumo-item {
+  min-width: 0;
+
   display: flex;
   align-items: center;
-  gap: 13px;
+
+  gap: 9px;
+
+  padding: 10px 11px;
+
+  border-radius: 12px;
+
+  background: #f8fafc;
+}
+
+.item-icone {
+  width: 36px;
+  height: 36px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  border-radius: 10px;
+
+  color: #f97316;
+  background: #fff1e6;
 }
 
 .item-label {
   color: #98a2b3;
-  font-size: 12px;
-  font-weight: 700;
+
+  font-size: 10px;
+  font-weight: 800;
+
   text-transform: uppercase;
 }
 
 .item-valor {
   margin-top: 3px;
+
+  color: #344054;
+
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 800;
+  line-height: 1.25;
 }
 
 .status-pendente,
@@ -200,6 +272,9 @@ function classeStatus(status) {
 .status-concluido,
 .status-cancelado {
   padding: 7px 12px;
+
+  font-size: 11px;
+  font-weight: 800;
 }
 
 .status-pendente {
@@ -222,9 +297,34 @@ function classeStatus(status) {
   background: #fee2e2;
 }
 
+.body--dark .resumo-card {
+  border-color: #2b2f36;
+  background: #16191f;
+}
+
+.body--dark .problema,
+.body--dark .item-valor {
+  color: #f9fafb;
+}
+
+.body--dark .resumo-item {
+  background: #1b1f25;
+}
+
+@media (max-width: 1250px) {
+  .resumo-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 650px) {
   .resumo-topo {
     flex-direction: column;
+  }
+
+  .problema {
+    font-size: 20px;
   }
 
   .resumo-grid {

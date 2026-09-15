@@ -1,21 +1,12 @@
 <template>
   <q-page class="atendimento-page">
-    <div class="pagina-cabecalho">
-      <div>
-        <div class="pagina-titulo">
-          Atendimento técnico
-        </div>
-
-        <div class="pagina-subtitulo">
-          Acompanhe e atualize o andamento da assistência.
-        </div>
-      </div>
-
+    <div class="pagina-acoes">
       <q-btn
         flat
         no-caps
+        dense
         icon="arrow_back"
-        label="Voltar"
+        label="Voltar para meus chamados"
         color="grey-7"
         @click="voltar"
       />
@@ -1723,4 +1714,283 @@ onMounted(
     grid-template-columns: 1fr;
   }
 }
+
+/* =========================================================
+   AJUSTE FINAL - ATENDIMENTO DO TÉCNICO
+   O HeaderTecnico já mostra o título da tela.
+========================================================= */
+
+.atendimento-page {
+  min-height: 100%;
+
+  padding: 14px 20px 28px;
+
+  background: #f5f6f8;
+}
+
+.pagina-acoes {
+  display: flex;
+  justify-content: flex-end;
+
+  margin-bottom: 8px;
+}
+
+.pagina-acoes .q-btn {
+  min-height: 32px;
+
+  border-radius: 9px;
+
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.atendimento-grid {
+  grid-template-columns:
+    minmax(0, 1.65fr)
+    minmax(310px, 0.65fr);
+
+  gap: 12px;
+}
+
+.card {
+  padding: 16px;
+
+  border-radius: 16px;
+}
+
+.coluna-principal > .q-mt-lg,
+.coluna-lateral > .q-mt-lg {
+  margin-top: 12px !important;
+}
+
+.card-topo {
+  gap: 12px;
+}
+
+.chamado-numero {
+  font-size: 9px;
+}
+
+.chamado-problema {
+  margin-top: 4px;
+
+  font-size: 19px;
+}
+
+.card-titulo {
+  margin-bottom: 11px;
+
+  font-size: 13px;
+}
+
+.card .q-separator.q-my-lg {
+  margin-top: 12px !important;
+  margin-bottom: 12px !important;
+}
+
+.informacoes-grid {
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+
+  gap: 8px;
+}
+
+.informacao {
+  padding: 9px 10px;
+
+  border-radius: 10px;
+
+  background: #f8fafc;
+}
+
+.informacao-label {
+  font-size: 7px;
+}
+
+.informacao-valor {
+  margin-top: 2px;
+
+  font-size: 9px;
+}
+
+.descricao {
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+/* ETAPAS */
+
+.etapa-circulo {
+  width: 30px;
+  height: 30px;
+}
+
+.etapa-linha {
+  margin: 0 5px;
+}
+
+.etapa-label {
+  margin-top: 5px;
+
+  font-size: 7px;
+}
+
+/* LOCALIZAÇÃO */
+
+.local-card {
+  padding: 15px;
+}
+
+.local-origem {
+  font-size: 8px;
+}
+
+.local-icone {
+  width: 35px;
+  height: 35px;
+
+  border-radius: 10px;
+}
+
+.local-endereco {
+  gap: 7px;
+
+  margin-top: 11px;
+  padding: 10px;
+
+  border-radius: 10px;
+}
+
+.local-endereco-label {
+  font-size: 7px;
+}
+
+.local-endereco-valor {
+  font-size: 9px;
+}
+
+.local-acoes {
+  margin-top: 9px;
+}
+
+.local-acoes .q-btn {
+  min-height: 35px;
+
+  border-radius: 9px;
+
+  font-size: 8px;
+}
+
+.local-mapa {
+  margin-top: 10px;
+}
+
+/* AVISO */
+
+.aguardando-conteudo {
+  gap: 10px;
+}
+
+.aguardando-icone {
+  width: 40px;
+  height: 40px;
+
+  border-radius: 11px;
+}
+
+.aguardando-titulo {
+  font-size: 11px;
+}
+
+.aguardando-texto {
+  margin-top: 3px;
+
+  font-size: 8px;
+}
+
+/* EQUIPE */
+
+.funcionario-item {
+  gap: 8px;
+
+  padding: 8px 0;
+}
+
+.funcionario-nome {
+  font-size: 10px;
+}
+
+.funcionario-funcao {
+  font-size: 8px;
+}
+
+.total-equipe {
+  margin-top: 9px;
+  padding-top: 9px;
+
+  font-size: 9px;
+}
+
+/* OBSERVAÇÃO */
+
+.observacao-finalizada,
+.sem-observacao {
+  padding: 10px;
+
+  border-radius: 10px;
+}
+
+.observacao-finalizada-label {
+  font-size: 8px;
+}
+
+.observacao-finalizada-texto,
+.sem-observacao {
+  font-size: 9px;
+}
+
+/* DARK */
+
+.body--dark .informacao {
+  background: #1b1f25;
+}
+
+/* RESPONSIVO */
+
+@media (max-width: 1100px) {
+  .atendimento-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .informacoes-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .atendimento-page {
+    padding: 12px 12px 28px;
+  }
+
+  .pagina-acoes {
+    justify-content: flex-start;
+  }
+
+  .informacoes-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .card {
+    padding: 14px;
+  }
+
+  .etapas {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+
+    gap: 14px;
+  }
+}
+
 </style>

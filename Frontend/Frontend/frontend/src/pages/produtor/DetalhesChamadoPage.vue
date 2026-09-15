@@ -1,13 +1,43 @@
 <template>
   <q-page class="detalhes-page">
-    <div class="pagina-cabecalho">
-      <div>
-        <div class="pagina-titulo">
-          Detalhes do chamado
+    <!--
+      O ProdutorLayout já exibe "Detalhes do chamado" no topo.
+      Esta barra reúne status e ações sem criar espaço em branco.
+    -->
+    <div
+      v-if="!carregando && !erro && chamado"
+      class="cabecalho-compacto"
+    >
+      <div class="cabecalho-status">
+        <div
+          class="cabecalho-status-icone"
+          :class="{
+            'cabecalho-status-icone--bloqueado': !podeAlterarChamado,
+            'cabecalho-status-icone--editavel': podeAlterarChamado
+          }"
+        >
+          <q-icon
+            :name="podeAlterarChamado ? 'edit_note' : 'lock'"
+            size="20px"
+          />
         </div>
 
-        <div class="pagina-subtitulo">
-          Acompanhe as informações e o andamento da solicitação.
+        <div class="cabecalho-status-texto">
+          <div class="cabecalho-status-titulo">
+            {{
+              podeAlterarChamado
+                ? 'Chamado pendente'
+                : 'Alterações bloqueadas'
+            }}
+          </div>
+
+          <div class="cabecalho-status-subtitulo">
+            {{
+              podeAlterarChamado
+                ? 'Você ainda pode editar ou cancelar esta solicitação.'
+                : 'Este chamado já foi aceito para atendimento e não pode mais ser alterado.'
+            }}
+          </div>
         </div>
       </div>
 
@@ -18,7 +48,7 @@
           no-caps
           color="primary"
           icon="edit"
-          label="Editar chamado"
+          label="Editar"
           @click="abrirEdicao"
         />
 
@@ -28,7 +58,7 @@
           no-caps
           color="negative"
           icon="cancel"
-          label="Cancelar chamado"
+          label="Cancelar"
           @click="abrirCancelamento"
         />
 
@@ -45,14 +75,14 @@
 
     <div
       v-if="carregando"
-      class="text-center q-pa-xl"
+      class="estado-carregando"
     >
       <q-spinner
         color="orange"
-        size="48px"
+        size="46px"
       />
 
-      <div class="text-grey-7 q-mt-md">
+      <div>
         Carregando chamado...
       </div>
     </div>
@@ -75,56 +105,33 @@
     </q-banner>
 
     <template v-else-if="chamado">
-      <q-banner
-        v-if="!podeAlterarChamado"
-        rounded
-        class="banner-bloqueado q-mb-lg"
-      >
-        <div class="banner-conteudo">
-          <q-icon
-            name="lock"
-            size="22px"
-          />
-
-          <div>
-            <div class="banner-titulo">
-              Alterações bloqueadas
-            </div>
-
-            <div class="banner-texto">
-              Este chamado não pode mais ser editado ou cancelado,
-              pois já foi aceito para atendimento.
-            </div>
-          </div>
-        </div>
-      </q-banner>
-
-      <div class="detalhes-grid">
-        <div>
+      <div class="detalhes-conteudo">
+        <!-- PRIMEIRA LINHA -->
+        <div class="detalhes-linha detalhes-linha--superior">
           <ResumoChamado
             :chamado="chamado"
           />
 
-          <div class="q-mt-lg">
-            <InformacoesChamado
-              :chamado="chamado"
+          <div class="anexos-coluna">
+            <AnexosChamado
+              v-if="chamado?.id_chamado"
+              :id-chamado="chamado.id_chamado"
             />
           </div>
         </div>
 
-        <!-- FOTOS E VÍDEOS -->
-<div class="q-mt-lg">
-  <AnexosChamado
-    v-if="chamado?.id_chamado"
-    :id-chamado="chamado.id_chamado"
-  />
-</div>
+        <!-- SEGUNDA LINHA -->
+        <div class="detalhes-linha detalhes-linha--inferior">
+          <InformacoesChamado
+            :chamado="chamado"
+          />
 
-        <HistoricoChamado
-          :chamado="chamado"
-          :historicos="historicos"
-          :carregando="carregandoHistorico"
-        />
+          <HistoricoChamado
+            :chamado="chamado"
+            :historicos="historicos"
+            :carregando="carregandoHistorico"
+          />
+        </div>
       </div>
     </template>
 
@@ -305,6 +312,7 @@ import {
   reactive,
   ref
 } from 'vue'
+
 import { useRoute } from 'vue-router'
 import { useQuasar } from 'quasar'
 
@@ -314,23 +322,18 @@ import historicoService from 'src/services/historicoService'
 import ResumoChamado from 'src/components/produtor/chamados/detalhes/ResumoChamado.vue'
 import InformacoesChamado from 'src/components/produtor/chamados/detalhes/InformacoesChamado.vue'
 import HistoricoChamado from 'src/components/produtor/chamados/detalhes/HistoricoChamado.vue'
-import AnexosChamado from
-  'src/components/shared/AnexosChamado.vue'
+import AnexosChamado from 'src/components/shared/AnexosChamado.vue'
 
 const route = useRoute()
 const $q = useQuasar()
 
 const chamado = ref(null)
 const historicos = ref([])
-
 const carregando = ref(false)
 const carregandoHistorico = ref(false)
-
 const salvando = ref(false)
 const cancelando = ref(false)
-
 const erro = ref('')
-
 const dialogEditar = ref(false)
 const dialogCancelar = ref(false)
 
@@ -491,7 +494,6 @@ async function salvarEdicao() {
       message:
         'Informe o problema do chamado.'
     })
-
     return
   }
 
@@ -501,7 +503,6 @@ async function salvarEdicao() {
       message:
         'Informe a descrição do problema.'
     })
-
     return
   }
 
@@ -511,7 +512,6 @@ async function salvarEdicao() {
       message:
         'Informe a cultura.'
     })
-
     return
   }
 
@@ -521,7 +521,6 @@ async function salvarEdicao() {
       message:
         'Informe o tipo do chamado.'
     })
-
     return
   }
 
@@ -531,7 +530,6 @@ async function salvarEdicao() {
       message:
         'Informe a urgência.'
     })
-
     return
   }
 
@@ -548,13 +546,8 @@ async function salvarEdicao() {
           descricao,
           urgencia:
             formulario.urgencia,
-
-          // Mantemos essas informações porque
-          // o PUT atual do backend atualiza
-          // todas essas colunas.
           status:
             chamado.value.status,
-
           resposta_tecnico:
             chamado.value.resposta_tecnico ||
             null
@@ -654,46 +647,50 @@ onMounted(carregarDados)
 <style scoped>
 .detalhes-page {
   min-height: 100%;
-  padding: 28px 32px 48px;
+  padding: 14px 20px 32px;
   background: #f7f8fa;
 }
 
-.pagina-cabecalho {
+.pagina-acoes {
+  width: 100%;
+  max-width: 1460px;
+
   display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+
+  gap: 8px;
+
+  margin: 0 auto 10px;
+}
+
+.pagina-acoes .q-btn {
+  min-height: 38px;
+  border-radius: 9px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.estado-carregando {
+  min-height: 320px;
+
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  margin-bottom: 24px;
-}
+  justify-content: center;
 
-.pagina-titulo {
-  color: #101828;
-  font-size: 30px;
-  font-weight: 800;
-}
+  gap: 12px;
 
-.pagina-subtitulo {
-  margin-top: 5px;
   color: #667085;
   font-size: 14px;
 }
 
-.cabecalho-acoes {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.detalhes-grid {
-  display: grid;
-  grid-template-columns:
-    minmax(0, 2fr)
-    minmax(300px, 1fr);
-  gap: 24px;
-}
-
 .banner-bloqueado {
+  width: 100%;
+  max-width: 1460px;
+
+  margin: 0 auto 12px;
+
   color: #475467;
   background: #f2f4f7;
 }
@@ -701,21 +698,98 @@ onMounted(carregarDados)
 .banner-conteudo {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+}
+
+.banner-icone {
+  width: 36px;
+  height: 36px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  border-radius: 10px;
+
+  color: #475467;
+  background: #ffffff;
 }
 
 .banner-titulo {
   color: #344054;
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .banner-texto {
   margin-top: 2px;
   color: #667085;
   font-size: 12px;
+  line-height: 1.4;
 }
 
+.detalhes-conteudo {
+  width: 100%;
+  max-width: 1460px;
+  margin: 0 auto;
+}
+
+.detalhes-linha {
+  display: grid;
+  align-items: stretch;
+  gap: 14px;
+}
+
+.detalhes-linha--superior {
+  grid-template-columns:
+    minmax(0, 2fr)
+    minmax(310px, 0.92fr);
+}
+
+.detalhes-linha--inferior {
+  grid-template-columns:
+    minmax(0, 1.25fr)
+    minmax(360px, 0.95fr);
+
+  margin-top: 14px;
+}
+
+.anexos-coluna {
+  min-width: 0;
+  height: 100%;
+}
+
+/* Faz os componentes ocuparem a altura disponível da linha */
+.detalhes-linha > :deep(*) {
+  min-width: 0;
+}
+
+/* DARK */
+.body--dark .detalhes-page {
+  background: #0d0f12;
+}
+
+.body--dark .banner-bloqueado {
+  color: #cbd5e1;
+  background: #1b1f25;
+}
+
+.body--dark .banner-icone {
+  color: #cbd5e1;
+  background: #252a32;
+}
+
+.body--dark .banner-titulo {
+  color: #f9fafb;
+}
+
+.body--dark .banner-texto {
+  color: #98a2b3;
+}
+
+/* DIALOG */
 .dialog-card {
   width: 650px;
   max-width: 94vw;
@@ -726,6 +800,7 @@ onMounted(carregarDados)
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
+
   gap: 20px;
   padding: 24px;
 }
@@ -755,6 +830,7 @@ onMounted(carregarDados)
 .cancelamento-card {
   width: 450px;
   max-width: 92vw;
+
   padding: 10px;
   border-radius: 20px;
 }
@@ -765,34 +841,182 @@ onMounted(carregarDados)
 
 .cancelamento-titulo {
   margin-top: 12px;
+
   color: #101828;
+
   font-size: 20px;
   font-weight: 800;
+
   text-align: center;
 }
 
 .cancelamento-texto {
   margin-top: 10px;
+
   color: #667085;
+
   font-size: 14px;
   line-height: 1.6;
+
   text-align: center;
 }
 
-@media (max-width: 1000px) {
-  .detalhes-grid {
+@media (max-width: 1050px) {
+  .detalhes-linha--superior,
+  .detalhes-linha--inferior {
     grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 700px) {
   .detalhes-page {
-    padding: 22px 16px 40px;
+    padding: 12px 14px 28px;
   }
 
-  .pagina-cabecalho {
-    align-items: flex-start;
+  .pagina-acoes {
+    justify-content: stretch;
+  }
+
+  .pagina-acoes .q-btn {
+    flex: 1;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =========================================================
+   CABEÇALHO COMPACTO
+========================================================= */
+
+.cabecalho-compacto {
+  width: 100%;
+  max-width: 1460px;
+
+  min-height: 64px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 18px;
+
+  margin: 0 auto 12px;
+  padding: 10px 12px 10px 14px;
+
+  border: 1px solid #eaecf0;
+  border-radius: 14px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 2px 8px
+    rgba(16, 24, 40, 0.025);
+}
+
+.cabecalho-status {
+  min-width: 0;
+
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+}
+
+.cabecalho-status-icone {
+  width: 38px;
+  height: 38px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  border-radius: 10px;
+}
+
+.cabecalho-status-icone--bloqueado {
+  color: #475467;
+  background: #f2f4f7;
+}
+
+.cabecalho-status-icone--editavel {
+  color: #f97316;
+  background: #fff1e6;
+}
+
+.cabecalho-status-texto {
+  min-width: 0;
+}
+
+.cabecalho-status-titulo {
+  color: #344054;
+
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.cabecalho-status-subtitulo {
+  margin-top: 2px;
+
+  color: #667085;
+
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.cabecalho-acoes {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+
+  flex-wrap: wrap;
+
+  gap: 7px;
+}
+
+.cabecalho-acoes .q-btn {
+  min-height: 36px;
+
+  border-radius: 8px;
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* Remove qualquer reserva de espaço do cabeçalho antigo */
+.pagina-acoes,
+.banner-bloqueado {
+  display: none !important;
+}
+
+.body--dark .cabecalho-compacto {
+  border-color: #2b2f36;
+  background: #16191f;
+}
+
+.body--dark .cabecalho-status-titulo {
+  color: #f9fafb;
+}
+
+.body--dark .cabecalho-status-subtitulo {
+  color: #98a2b3;
+}
+
+.body--dark .cabecalho-status-icone--bloqueado {
+  color: #cbd5e1;
+  background: #252a32;
+}
+
+@media (max-width: 760px) {
+  .cabecalho-compacto {
+    align-items: stretch;
     flex-direction: column;
+
+    gap: 10px;
   }
 
   .cabecalho-acoes {
@@ -802,13 +1026,6 @@ onMounted(carregarDados)
   .cabecalho-acoes .q-btn {
     flex: 1;
   }
-
-  .pagina-titulo {
-    font-size: 25px;
-  }
-
-  .form-grid {
-    grid-template-columns: 1fr;
-  }
 }
+
 </style>

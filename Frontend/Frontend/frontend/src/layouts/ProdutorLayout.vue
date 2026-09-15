@@ -1,30 +1,33 @@
 <template>
-  <q-layout view="lHh Lpr lFf">
-    <!-- DESKTOP -->
-
+  <q-layout
+    view="lHh Lpr lFf"
+    class="app-layout"
+  >
     <Sidebar
       v-if="!isMobile"
     />
 
-    <q-page-container>
+    <q-page-container class="page-container">
+      <!--
+        Na dashboard, o próprio conteúdo possui o cabeçalho,
+        igual ao padrão adotado no painel do técnico.
+      -->
       <Header
-        v-if="!isMobile"
+        v-if="
+          !isMobile &&
+          !ehDashboard
+        "
       />
 
-      <!-- ==================================================
-           HEADER MOBILE
-      =================================================== -->
-
+      <!-- HEADER MOBILE -->
       <div
         v-if="isMobile"
         class="mobile-header"
         :class="{
           'mobile-header--dashboard':
-            route.name === 'produtor-dashboard'
+            ehDashboard
         }"
       >
-        <!-- ESQUERDA -->
-
         <div class="mobile-header__lado">
           <q-btn
             v-if="mostrarVoltar"
@@ -37,24 +40,13 @@
           />
         </div>
 
-        <!-- CENTRO -->
-
         <div class="mobile-header__centro">
-          <template
-            v-if="
-              route.name ===
-              'produtor-dashboard'
-            "
-          >
+          <template v-if="ehDashboard">
             <img
               :src="logoAvicola"
               alt="Avícola Pinhal"
               class="mobile-logo-avicola"
             />
-
-            <div class="mobile-header__boas-vindas">
-              Bem-vindo, {{ primeiroNome }}
-            </div>
 
             <div class="mobile-header__portal">
               Portal do Produtor
@@ -68,22 +60,12 @@
           </template>
         </div>
 
-        <!-- DIREITA -->
-
         <div
           class="
             mobile-header__lado
             mobile-header__lado--direita
           "
         >
-          <q-btn
-            flat
-            round
-            dense
-            icon="notifications_none"
-            class="mobile-header__acao"
-          />
-
           <q-btn
             flat
             round
@@ -99,8 +81,6 @@
         </div>
       </div>
 
-      <!-- CONTEÚDO -->
-
       <div
         :class="{
           'conteudo-mobile': isMobile
@@ -110,10 +90,7 @@
       </div>
     </q-page-container>
 
-    <!-- ==================================================
-         MENU INFERIOR
-    =================================================== -->
-
+    <!-- MENU INFERIOR MOBILE -->
     <q-footer
       v-if="isMobile"
       class="mobile-footer"
@@ -124,12 +101,22 @@
           class="mobile-nav__item"
           :class="{
             'mobile-nav__item--ativo':
-              route.name === 'produtor-dashboard'
+              ehDashboard
           }"
-          @click="irPara('produtor-dashboard')"
+          @click="
+            irPara(
+              'produtor-dashboard'
+            )
+          "
         >
-          <q-icon name="dashboard" size="23px" />
-          <span>Início</span>
+          <q-icon
+            name="dashboard"
+            size="23px"
+          />
+
+          <span>
+            Início
+          </span>
         </button>
 
         <button
@@ -139,25 +126,36 @@
             'mobile-nav__item--ativo':
               ehRotaChamados
           }"
-          @click="irPara('produtor-chamados')"
+          @click="
+            irPara(
+              'produtor-chamados'
+            )
+          "
         >
           <q-icon
             name="confirmation_number"
             size="23px"
           />
 
-          <span>Chamados</span>
+          <span>
+            Chamados
+          </span>
         </button>
-
-        <!-- NOVO -->
 
         <div class="mobile-nav__novo-container">
           <button
             type="button"
             class="mobile-nav__novo"
-            @click="irPara('produtor-novo-chamado')"
+            @click="
+              irPara(
+                'produtor-novo-chamado'
+              )
+            "
           >
-            <q-icon name="add" size="31px" />
+            <q-icon
+              name="add"
+              size="31px"
+            />
           </button>
 
           <span class="mobile-nav__novo-label">
@@ -170,12 +168,23 @@
           class="mobile-nav__item"
           :class="{
             'mobile-nav__item--ativo':
-              route.name === 'produtor-relatorios'
+              route.name ===
+              'produtor-relatorios'
           }"
-          @click="irPara('produtor-relatorios')"
+          @click="
+            irPara(
+              'produtor-relatorios'
+            )
+          "
         >
-          <q-icon name="bar_chart" size="23px" />
-          <span>Relatórios</span>
+          <q-icon
+            name="bar_chart"
+            size="23px"
+          />
+
+          <span>
+            Relatórios
+          </span>
         </button>
 
         <button
@@ -183,12 +192,23 @@
           class="mobile-nav__item"
           :class="{
             'mobile-nav__item--ativo':
-              route.name === 'produtor-perfil'
+              route.name ===
+              'produtor-perfil'
           }"
-          @click="irPara('produtor-perfil')"
+          @click="
+            irPara(
+              'produtor-perfil'
+            )
+          "
         >
-          <q-icon name="person" size="23px" />
-          <span>Perfil</span>
+          <q-icon
+            name="person"
+            size="23px"
+          />
+
+          <span>
+            Perfil
+          </span>
         </button>
       </div>
     </q-footer>
@@ -232,50 +252,13 @@ const isMobile =
     $q.screen.lt.md
   )
 
-/* ==================================================
-   USUÁRIO
-=================================================== */
-
-const nomeUsuario =
-  computed(() => {
-    const nomeStore =
-      authStore.nomeUsuario ||
-      authStore.usuario?.nome
-
-    if (nomeStore) {
-      return nomeStore
-    }
-
-    try {
-      const usuario =
-        JSON.parse(
-          localStorage.getItem('usuario') ||
-          localStorage.getItem('user') ||
-          localStorage.getItem('authUser') ||
-          '{}'
-        )
-
-      return (
-        usuario.nome ||
-        usuario.nome_usuario ||
-        usuario.name ||
-        'Produtor'
-      )
-    } catch {
-      return 'Produtor'
-    }
-  })
-
-const primeiroNome =
+const ehDashboard =
   computed(() =>
-    nomeUsuario.value
-      .trim()
-      .split(/\s+/)[0]
+    route.name ===
+      'produtor-dashboard' ||
+    route.path ===
+      '/produtor/dashboard'
   )
-
-/* ==================================================
-   TÍTULOS
-=================================================== */
 
 const configuracaoRotas = {
   'produtor-dashboard':
@@ -304,14 +287,14 @@ const tituloAtual =
     ] || 'Avioeste'
   )
 
-/* VOLTAR */
-
 const mostrarVoltar =
   computed(() =>
     [
       'produtor-detalhes-chamado',
       'produtor-novo-chamado'
-    ].includes(route.name)
+    ].includes(
+      route.name
+    )
   )
 
 function voltar() {
@@ -320,7 +303,8 @@ function voltar() {
     'produtor-novo-chamado'
   ) {
     router.push({
-      name: 'produtor-chamados'
+      name:
+        'produtor-chamados'
     })
 
     return
@@ -329,15 +313,19 @@ function voltar() {
   router.back()
 }
 
-/* NAVEGAÇÃO */
-
-async function irPara(nomeRota) {
-  if (route.name === nomeRota) {
+async function irPara(
+  nomeRota
+) {
+  if (
+    route.name ===
+    nomeRota
+  ) {
     return
   }
 
   await router.push({
-    name: nomeRota
+    name:
+      nomeRota
   })
 }
 
@@ -346,17 +334,16 @@ const ehRotaChamados =
     [
       'produtor-chamados',
       'produtor-detalhes-chamado'
-    ].includes(route.name)
+    ].includes(
+      route.name
+    )
   )
-
-/* ==================================================
-   SAIR
-=================================================== */
 
 async function sair() {
   try {
     if (
-      typeof authStore.logout === 'function'
+      typeof authStore.logout ===
+      'function'
     ) {
       await authStore.logout()
     }
@@ -377,6 +364,12 @@ async function sair() {
 </script>
 
 <style scoped>
+.app-layout,
+.page-container {
+  min-height: 100vh;
+  background: #f7f8fa;
+}
+
 .conteudo-mobile {
   min-height: 100vh;
 
@@ -389,7 +382,7 @@ async function sair() {
   background: #f7f8fa;
 }
 
-/* HEADER */
+/* HEADER MOBILE */
 
 .mobile-header {
   position: sticky;
@@ -397,14 +390,14 @@ async function sair() {
 
   z-index: 1000;
 
-  min-height: 60px;
+  min-height: 58px;
 
   display: grid;
 
   grid-template-columns:
-    76px
+    54px
     minmax(0, 1fr)
-    76px;
+    54px;
 
   align-items: center;
 
@@ -412,11 +405,11 @@ async function sair() {
 
   padding:
     calc(
-      7px +
+      6px +
       env(safe-area-inset-top)
     )
     8px
-    8px;
+    7px;
 
   border-bottom: 1px solid #eaecf0;
 
@@ -425,15 +418,16 @@ async function sair() {
 
   backdrop-filter: blur(12px);
 
-  -webkit-backdrop-filter: blur(12px);
+  -webkit-backdrop-filter:
+    blur(12px);
 }
 
 .mobile-header--dashboard {
-  min-height: 110px;
+  min-height: 78px;
 }
 
 .mobile-header__lado {
-  width: 76px;
+  width: 54px;
 
   display: flex;
   align-items: center;
@@ -441,11 +435,9 @@ async function sair() {
 
 .mobile-header__lado--direita {
   justify-content: flex-end;
-  gap: 0;
 }
 
-.mobile-header__voltar,
-.mobile-header__acao {
+.mobile-header__voltar {
   color: #344054;
 }
 
@@ -466,27 +458,12 @@ async function sair() {
 .mobile-logo-avicola {
   display: block;
 
-  width: 175px;
+  width: 150px;
   max-width: 100%;
 
   height: auto;
 
-  margin-bottom: 3px;
-
   object-fit: contain;
-}
-
-.mobile-header__boas-vindas {
-  color: #101828;
-
-  font-size: 16px;
-  font-weight: 800;
-
-  line-height: 1.15;
-
-  text-align: center;
-
-  white-space: nowrap;
 }
 
 .mobile-header__portal {
@@ -494,8 +471,8 @@ async function sair() {
 
   color: #98a2b3;
 
-  font-size: 10px;
-  font-weight: 500;
+  font-size: 9px;
+  font-weight: 600;
 
   text-align: center;
 }
@@ -557,7 +534,8 @@ async function sair() {
 
   backdrop-filter: blur(14px);
 
-  -webkit-backdrop-filter: blur(14px);
+  -webkit-backdrop-filter:
+    blur(14px);
 }
 
 .mobile-nav__item {
@@ -620,7 +598,6 @@ async function sair() {
   justify-content: center;
 
   border: 5px solid #ffffff;
-
   border-radius: 50%;
 
   color: #ffffff;
@@ -652,6 +629,12 @@ async function sair() {
 
 /* DARK */
 
+.body--dark .app-layout,
+.body--dark .page-container,
+.body--dark .conteudo-mobile {
+  background: #0d0f12;
+}
+
 .body--dark .mobile-header {
   border-color: #2b2f36;
 
@@ -659,13 +642,11 @@ async function sair() {
     rgba(22, 25, 31, 0.96);
 }
 
-.body--dark .mobile-header__titulo,
-.body--dark .mobile-header__boas-vindas {
+.body--dark .mobile-header__titulo {
   color: #f9fafb;
 }
 
-.body--dark .mobile-header__voltar,
-.body--dark .mobile-header__acao {
+.body--dark .mobile-header__voltar {
   color: #f2f4f7;
 }
 
@@ -678,9 +659,5 @@ async function sair() {
 
 .body--dark .mobile-nav__novo {
   border-color: #16191f;
-}
-
-.body--dark .conteudo-mobile {
-  background: #0d0f12;
 }
 </style>

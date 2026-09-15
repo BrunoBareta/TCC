@@ -1,43 +1,73 @@
 <template>
   <div class="pendentes-wrapper">
-
-    <!-- =========================
-         TOPO / BUSCA
-    ========================== -->
-
-    <div class="filtros-card">
-      <div class="filtros-topo">
-        <div>
-          <div class="filtros-titulo">
-            Solicitações disponíveis
+    <!-- ==================================================
+         CONTROLE / FILTROS
+    =================================================== -->
+    <section class="controle-card">
+      <div class="controle-topo">
+        <div class="controle-identidade">
+          <div class="controle-icone">
+            <q-icon name="pending_actions" size="22px" />
           </div>
 
-          <div class="filtros-subtitulo">
-            Analise os chamados pendentes e aceite um atendimento.
+          <div>
+            <div class="controle-titulo">
+              Fila de atendimento
+            </div>
+
+            <div class="controle-subtitulo">
+              Priorize os chamados e assuma o próximo atendimento.
+            </div>
           </div>
         </div>
 
-        <div class="acoes-topo">
+        <div class="controle-acoes">
           <q-input
             v-model="pesquisa"
             outlined
             dense
             clearable
             debounce="250"
-            placeholder="Buscar chamado..."
+            placeholder="Buscar chamado, produtor, propriedade..."
             class="campo-pesquisa"
           >
             <template #prepend>
-              <q-icon
-                name="search"
-                size="19px"
-              />
+              <q-icon name="search" size="18px" />
             </template>
           </q-input>
 
+          <q-select
+            v-model="filtroUrgencia"
+            outlined
+            dense
+            emit-value
+            map-options
+            :options="opcoesUrgencia"
+            class="campo-filtro"
+          >
+            <template #prepend>
+              <q-icon name="priority_high" size="18px" />
+            </template>
+          </q-select>
+
+          <q-select
+            v-model="ordenacao"
+            outlined
+            dense
+            emit-value
+            map-options
+            :options="opcoesOrdenacao"
+            class="campo-ordenacao"
+          >
+            <template #prepend>
+              <q-icon name="sort" size="18px" />
+            </template>
+          </q-select>
+
           <q-btn
-            flat
+            unelevated
             round
+            class="botao-atualizar"
             icon="refresh"
             :loading="carregando"
             @click="carregarChamados"
@@ -50,90 +80,76 @@
       </div>
 
       <!-- RESUMO -->
-
       <div class="resumo-grid">
-        <div class="resumo-item">
+        <button
+          type="button"
+          class="resumo-item resumo-item--total"
+          :class="{ 'resumo-item--ativo': filtroUrgencia === 'TODAS' }"
+          @click="filtroUrgencia = 'TODAS'"
+        >
           <div class="resumo-icone resumo-icone--total">
-            <q-icon
-              name="pending_actions"
-              size="20px"
-            />
+            <q-icon name="pending_actions" size="19px" />
           </div>
 
           <div>
-            <strong>
-              {{ totalPendentes }}
-            </strong>
-
-            <span>
-              Pendentes
-            </span>
+            <strong>{{ totalPendentes }}</strong>
+            <span>Pendentes</span>
           </div>
-        </div>
+        </button>
 
-        <div class="resumo-item">
+        <button
+          type="button"
+          class="resumo-item resumo-item--alta"
+          :class="{ 'resumo-item--ativo': filtroUrgencia === 'ALTA' }"
+          @click="filtroUrgencia = 'ALTA'"
+        >
           <div class="resumo-icone resumo-icone--alta">
-            <q-icon
-              name="priority_high"
-              size="20px"
-            />
+            <q-icon name="priority_high" size="19px" />
           </div>
 
           <div>
-            <strong>
-              {{ totalAlta }}
-            </strong>
-
-            <span>
-              Alta urgência
-            </span>
+            <strong>{{ totalAlta }}</strong>
+            <span>Alta urgência</span>
           </div>
-        </div>
+        </button>
 
-        <div class="resumo-item">
+        <button
+          type="button"
+          class="resumo-item resumo-item--media"
+          :class="{ 'resumo-item--ativo': filtroUrgencia === 'MEDIA' }"
+          @click="filtroUrgencia = 'MEDIA'"
+        >
           <div class="resumo-icone resumo-icone--media">
-            <q-icon
-              name="warning_amber"
-              size="20px"
-            />
+            <q-icon name="warning_amber" size="19px" />
           </div>
 
           <div>
-            <strong>
-              {{ totalMedia }}
-            </strong>
-
-            <span>
-              Média urgência
-            </span>
+            <strong>{{ totalMedia }}</strong>
+            <span>Média urgência</span>
           </div>
-        </div>
+        </button>
 
-        <div class="resumo-item">
+        <button
+          type="button"
+          class="resumo-item resumo-item--baixa"
+          :class="{ 'resumo-item--ativo': filtroUrgencia === 'BAIXA' }"
+          @click="filtroUrgencia = 'BAIXA'"
+        >
           <div class="resumo-icone resumo-icone--baixa">
-            <q-icon
-              name="low_priority"
-              size="20px"
-            />
+            <q-icon name="low_priority" size="19px" />
           </div>
 
           <div>
-            <strong>
-              {{ totalBaixa }}
-            </strong>
-
-            <span>
-              Baixa urgência
-            </span>
+            <strong>{{ totalBaixa }}</strong>
+            <span>Baixa urgência</span>
           </div>
-        </div>
+        </button>
       </div>
-    </div>
+    </section>
 
-    <!-- =========================
+    <!-- ==================================================
          ERRO
-    ========================== -->
-
+    =================================================== -->
     <q-banner
       v-if="erro"
       rounded
@@ -151,10 +167,9 @@
       </template>
     </q-banner>
 
-    <!-- =========================
+    <!-- ==================================================
          CARREGANDO
-    ========================== -->
-
+    =================================================== -->
     <div
       v-if="carregando"
       class="estado-central"
@@ -169,11 +184,10 @@
       </span>
     </div>
 
-    <!-- =========================
+    <!-- ==================================================
          LISTAGEM
-    ========================== -->
-
-    <div
+    =================================================== -->
+    <section
       v-else
       class="lista-card"
     >
@@ -193,17 +207,23 @@
           </span>
         </div>
 
-        <div class="ordem-info">
-          <q-icon
-            name="sort"
-            size="17px"
-          />
+        <div class="lista-cabecalho__direita">
+          <span class="lista-legenda">
+            <span class="legenda-bolinha legenda-bolinha--alta"></span>
+            Alta
+          </span>
 
-          Maior urgência primeiro
+          <span class="lista-legenda">
+            <span class="legenda-bolinha legenda-bolinha--media"></span>
+            Média
+          </span>
+
+          <span class="lista-legenda">
+            <span class="legenda-bolinha legenda-bolinha--baixa"></span>
+            Baixa
+          </span>
         </div>
       </div>
-
-      <!-- SEM DADOS -->
 
       <div
         v-if="chamadosFiltrados.length === 0"
@@ -212,17 +232,17 @@
         <div class="estado-vazio-icone">
           <q-icon
             :name="
-              pesquisa
+              pesquisa || filtroUrgencia !== 'TODAS'
                 ? 'search_off'
                 : 'check_circle'
             "
-            size="32px"
+            size="31px"
           />
         </div>
 
         <strong>
           {{
-            pesquisa
+            pesquisa || filtroUrgencia !== 'TODAS'
               ? 'Nenhum chamado encontrado'
               : 'Nenhum chamado pendente'
           }}
@@ -230,35 +250,39 @@
 
         <span>
           {{
-            pesquisa
-              ? 'Tente pesquisar utilizando outro termo.'
+            pesquisa || filtroUrgencia !== 'TODAS'
+              ? 'Altere os filtros para visualizar outros chamados.'
               : 'Não existem novas solicitações aguardando atendimento.'
           }}
         </span>
-      </div>
 
-      <!-- CHAMADOS -->
+        <q-btn
+          v-if="pesquisa || filtroUrgencia !== 'TODAS'"
+          flat
+          no-caps
+          color="orange"
+          label="Limpar filtros"
+          class="q-mt-sm"
+          @click="limparFiltros"
+        />
+      </div>
 
       <div
         v-else
         class="chamados-lista"
       >
-        <div
+        <article
           v-for="chamado in chamadosFiltrados"
           :key="chamado.id_chamado"
           class="chamado-card"
-          :class="{
-            'chamado-card--urgente':
-              urgenciaNormalizada(chamado.urgencia) === 'ALTA'
-          }"
+          :class="classeCardUrgencia(chamado.urgencia)"
         >
-          <!-- NÚMERO -->
+          <div class="chamado-faixa"></div>
 
-          <div class="chamado-numero">
-            #{{ chamado.id_chamado }}
+          <div class="chamado-id-area">
+            <span>CHAMADO</span>
+            <strong>#{{ chamado.id_chamado }}</strong>
           </div>
-
-          <!-- PROBLEMA -->
 
           <div class="chamado-principal">
             <div class="chamado-problema">
@@ -277,80 +301,75 @@
             </div>
           </div>
 
-          <!-- PRODUTOR -->
+          <div class="chamado-dados">
+            <div class="dado-item">
+              <q-icon
+                name="person_outline"
+                size="17px"
+              />
 
-          <div class="chamado-info">
-            <q-icon
-              name="person_outline"
-              size="17px"
-            />
+              <div>
+                <span>Produtor</span>
+                <strong>
+                  {{
+                    chamado.nome_produtor ||
+                    'Não informado'
+                  }}
+                </strong>
+              </div>
+            </div>
 
-            <div>
-              <span>
-                Produtor
-              </span>
+            <div class="dado-item">
+              <q-icon
+                name="agriculture"
+                size="17px"
+              />
 
-              <strong>
-                {{
-                  chamado.nome_produtor ||
-                  'Não informado'
-                }}
-              </strong>
+              <div>
+                <span>Propriedade</span>
+                <strong>
+                  {{
+                    chamado.nome_propriedade ||
+                    'Não informada'
+                  }}
+                </strong>
+              </div>
+            </div>
+
+            <div class="dado-item">
+              <q-icon
+                name="location_on"
+                size="17px"
+              />
+
+              <div>
+                <span>Localização</span>
+                <strong>
+                  {{ localChamado(chamado) }}
+                </strong>
+              </div>
+            </div>
+
+            <div class="dado-item">
+              <q-icon
+                name="event"
+                size="17px"
+              />
+
+              <div>
+                <span>Abertura</span>
+                <strong>
+                  {{
+                    formatarData(
+                      chamado.data_abertura
+                    )
+                  }}
+                </strong>
+              </div>
             </div>
           </div>
 
-          <!-- PROPRIEDADE -->
-
-          <div class="chamado-info">
-            <q-icon
-              name="agriculture"
-              size="17px"
-            />
-
-            <div>
-              <span>
-                Propriedade
-              </span>
-
-              <strong>
-                {{
-                  chamado.nome_propriedade ||
-                  'Não informada'
-                }}
-              </strong>
-            </div>
-          </div>
-
-          <!-- LOCALIZAÇÃO -->
-
-          <div class="chamado-info">
-            <q-icon
-              name="location_on"
-              size="17px"
-            />
-
-            <div>
-              <span>
-                Localização
-              </span>
-
-              <strong>
-                {{
-                  localChamado(
-                    chamado
-                  )
-                }}
-              </strong>
-            </div>
-          </div>
-
-          <!-- URGÊNCIA -->
-
-          <div class="chamado-status-area">
-            <span>
-              Urgência
-            </span>
-
+          <div class="chamado-lateral">
             <q-badge
               rounded
               :class="
@@ -365,74 +384,48 @@
                 )
               }}
             </q-badge>
+
+            <div class="chamado-acoes">
+              <q-btn
+                outline
+                no-caps
+                class="botao-detalhes"
+                icon="visibility"
+                label="Detalhes"
+                :disable="aceitandoId !== null"
+                @click="verDetalhes(chamado)"
+              />
+
+              <q-btn
+                unelevated
+                no-caps
+                class="botao-aceitar"
+                icon="check_circle"
+                label="Aceitar chamado"
+                :loading="
+                  aceitandoId ===
+                  chamado.id_chamado
+                "
+                :disable="
+                  aceitandoId !== null &&
+                  aceitandoId !==
+                    chamado.id_chamado
+                "
+                @click="
+                  prepararAceite(
+                    chamado
+                  )
+                "
+              />
+            </div>
           </div>
-
-          <!-- DATA -->
-
-          <div class="chamado-data">
-            <span>
-              Abertura
-            </span>
-
-            <strong>
-              {{
-                formatarData(
-                  chamado.data_abertura
-                )
-              }}
-            </strong>
-          </div>
-
-          <!-- AÇÕES -->
-
-          <div class="chamado-acoes">
-            <q-btn
-              flat
-              round
-              dense
-              icon="visibility"
-              color="grey-7"
-              :disable="aceitandoId !== null"
-              @click="
-                verDetalhes(
-                  chamado
-                )
-              "
-            >
-              <q-tooltip>
-                Ver detalhes
-              </q-tooltip>
-            </q-btn>
-
-            <q-btn
-              unelevated
-              no-caps
-              color="orange"
-              icon="check_circle"
-              label="Aceitar"
-              size="sm"
-              :loading="
-                aceitandoId === chamado.id_chamado
-              "
-              :disable="
-                aceitandoId !== null &&
-                aceitandoId !== chamado.id_chamado
-              "
-              @click="
-                prepararAceite(
-                  chamado
-                )
-              "
-            />
-          </div>
-        </div>
+        </article>
       </div>
-    </div>
+    </section>
 
-    <!-- =========================
+    <!-- ==================================================
          CONFIRMAÇÃO DO ACEITE
-    ========================== -->
-
+    =================================================== -->
     <q-dialog
       v-model="dialogAceite"
       persistent
@@ -442,7 +435,7 @@
           <div class="dialog-icone">
             <q-icon
               name="assignment_turned_in"
-              size="25px"
+              size="24px"
             />
           </div>
 
@@ -485,10 +478,7 @@
 
           <div class="dialog-grid">
             <div>
-              <span>
-                Produtor
-              </span>
-
+              <span>Produtor</span>
               <strong>
                 {{
                   chamadoSelecionado.nome_produtor ||
@@ -498,10 +488,7 @@
             </div>
 
             <div>
-              <span>
-                Propriedade
-              </span>
-
+              <span>Propriedade</span>
               <strong>
                 {{
                   chamadoSelecionado.nome_propriedade ||
@@ -511,10 +498,7 @@
             </div>
 
             <div>
-              <span>
-                Localização
-              </span>
-
+              <span>Localização</span>
               <strong>
                 {{
                   localChamado(
@@ -525,9 +509,7 @@
             </div>
 
             <div>
-              <span>
-                Urgência
-              </span>
+              <span>Urgência</span>
 
               <q-badge
                 rounded
@@ -549,7 +531,7 @@
           <div class="dialog-aviso">
             <q-icon
               name="info"
-              size="20px"
+              size="19px"
             />
 
             <span>
@@ -575,7 +557,7 @@
           <q-btn
             unelevated
             no-caps
-            color="orange"
+            class="botao-aceitar"
             icon="check_circle"
             label="Confirmar aceite"
             :loading="aceitandoId !== null"
@@ -584,7 +566,6 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
-
   </div>
 </template>
 
@@ -621,15 +602,50 @@ const chamados = ref([])
 const carregando = ref(false)
 const erro = ref('')
 const pesquisa = ref('')
+const filtroUrgencia = ref('TODAS')
+const ordenacao = ref('PRIORIDADE')
 
 const aceitandoId = ref(null)
-
 const dialogAceite = ref(false)
 const chamadoSelecionado = ref(null)
 
-/* =========================
+const opcoesUrgencia = [
+  {
+    label: 'Todas as urgências',
+    value: 'TODAS'
+  },
+  {
+    label: 'Alta urgência',
+    value: 'ALTA'
+  },
+  {
+    label: 'Média urgência',
+    value: 'MEDIA'
+  },
+  {
+    label: 'Baixa urgência',
+    value: 'BAIXA'
+  }
+]
+
+const opcoesOrdenacao = [
+  {
+    label: 'Maior urgência',
+    value: 'PRIORIDADE'
+  },
+  {
+    label: 'Mais antigos',
+    value: 'ANTIGOS'
+  },
+  {
+    label: 'Mais recentes',
+    value: 'RECENTES'
+  }
+]
+
+/* ==================================================
    PENDENTES
-========================= */
+=================================================== */
 
 const chamadosPendentes =
   computed(() => {
@@ -676,9 +692,9 @@ const totalBaixa =
     ).length
   )
 
-/* =========================
+/* ==================================================
    FILTRO E ORDENAÇÃO
-========================= */
+=================================================== */
 
 const chamadosFiltrados =
   computed(() => {
@@ -720,14 +736,48 @@ const chamadosFiltrados =
         )
     }
 
-    /*
-      Primeiro ordena por urgência.
-      Dentro da mesma urgência,
-      o chamado mais antigo aparece primeiro.
-    */
+    if (
+      filtroUrgencia.value !==
+      'TODAS'
+    ) {
+      lista =
+        lista.filter(
+          chamado =>
+            urgenciaNormalizada(
+              chamado.urgencia
+            ) ===
+            filtroUrgencia.value
+        )
+    }
 
     return lista.sort(
       (a, b) => {
+        const dataA =
+          new Date(
+            a.data_abertura ||
+            0
+          ).getTime()
+
+        const dataB =
+          new Date(
+            b.data_abertura ||
+            0
+          ).getTime()
+
+        if (
+          ordenacao.value ===
+          'ANTIGOS'
+        ) {
+          return dataA - dataB
+        }
+
+        if (
+          ordenacao.value ===
+          'RECENTES'
+        ) {
+          return dataB - dataA
+        }
+
         const urgenciaA =
           prioridadeUrgencia(
             a.urgencia
@@ -742,26 +792,26 @@ const chamadosFiltrados =
           urgenciaA !==
           urgenciaB
         ) {
-          return urgenciaB - urgenciaA
+          return (
+            urgenciaB -
+            urgenciaA
+          )
         }
 
-        return (
-          new Date(
-            a.data_abertura ||
-            0
-          ).getTime() -
-          new Date(
-            b.data_abertura ||
-            0
-          ).getTime()
-        )
+        return dataA - dataB
       }
     )
   })
 
-/* =========================
+function limparFiltros() {
+  pesquisa.value = ''
+  filtroUrgencia.value = 'TODAS'
+  ordenacao.value = 'PRIORIDADE'
+}
+
+/* ==================================================
    CARREGAR
-========================= */
+=================================================== */
 
 async function carregarChamados() {
   carregando.value = true
@@ -795,9 +845,9 @@ async function carregarChamados() {
   }
 }
 
-/* =========================
+/* ==================================================
    DETALHES
-========================= */
+=================================================== */
 
 async function verDetalhes(
   chamado
@@ -813,9 +863,9 @@ async function verDetalhes(
   })
 }
 
-/* =========================
+/* ==================================================
    ACEITE
-========================= */
+=================================================== */
 
 function prepararAceite(
   chamado
@@ -912,12 +962,6 @@ async function aceitarChamado(
         `Chamado #${chamado.id_chamado} aceito com sucesso.`
     })
 
-    /*
-      Depois do aceite já abre
-      o atendimento que acabou
-      de ser assumido.
-    */
-
     await router.push({
       name:
         'tecnico-atendimento-detalhes',
@@ -946,12 +990,6 @@ async function aceitarChamado(
         mensagem
     })
 
-    /*
-      Se outro técnico tiver aceitado
-      primeiro, atualizamos a lista
-      imediatamente.
-    */
-
     dialogAceite.value =
       false
 
@@ -965,9 +1003,9 @@ async function aceitarChamado(
   }
 }
 
-/* =========================
+/* ==================================================
    UTILITÁRIOS
-========================= */
+=================================================== */
 
 function normalizarStatus(
   status
@@ -1019,9 +1057,28 @@ function prioridadeUrgencia(
   return 1
 }
 
-/* =========================
+function classeCardUrgencia(
+  urgencia
+) {
+  const valor =
+    urgenciaNormalizada(
+      urgencia
+    )
+
+  if (valor === 'ALTA') {
+    return 'chamado-card--alta'
+  }
+
+  if (valor === 'MEDIA') {
+    return 'chamado-card--media'
+  }
+
+  return 'chamado-card--baixa'
+}
+
+/* ==================================================
    FORMATAÇÃO
-========================= */
+=================================================== */
 
 function formatarData(
   valor
@@ -1077,7 +1134,7 @@ function descricaoCurta(
     )
 
   if (
-    texto.length <= 70
+    texto.length <= 80
   ) {
     return texto
   }
@@ -1085,7 +1142,7 @@ function descricaoCurta(
   return (
     texto.substring(
       0,
-      70
+      80
     ) +
     '...'
   )
@@ -1143,86 +1200,207 @@ onMounted(
 </script>
 
 <style scoped>
-/* =========================
-   WRAPPER
-========================= */
-
 .pendentes-wrapper {
   width: 100%;
 }
 
-/* =========================
-   FILTROS
-========================= */
+/* ==================================================
+   CONTROLE / FILTROS
+=================================================== */
 
-.filtros-card {
-  margin-bottom: 16px;
-  padding: 18px;
+.controle-card {
+  margin-bottom: 12px;
+
+  padding: 14px;
+
   border: 1px solid #eaecf0;
   border-radius: 16px;
-  background: #ffffff;
+
+  background:
+    linear-gradient(
+      110deg,
+      #ffffff 0%,
+      #ffffff 72%,
+      #fff9f3 100%
+    );
+
+  box-shadow:
+    0 3px 12px
+    rgba(16, 24, 40, 0.035);
 }
 
-.filtros-topo {
+.controle-topo {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  gap: 20px;
+
+  gap: 14px;
 }
 
-.filtros-titulo {
-  color: #101828;
+.controle-identidade {
+  min-width: 220px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+}
+
+.controle-icone {
+  width: 39px;
+  height: 39px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  border-radius: 11px;
+
+  color: #f97316;
+
+  background: #fff1e6;
+}
+
+.controle-titulo {
+  color: #17233c;
+
   font-size: 14px;
   font-weight: 900;
 }
 
-.filtros-subtitulo {
-  margin-top: 3px;
+.controle-subtitulo {
+  margin-top: 2px;
+
   color: #98a2b3;
-  font-size: 9px;
+
+  font-size: 8px;
 }
 
-.acoes-topo {
+.controle-acoes {
+  min-width: 0;
+
   display: flex;
   align-items: center;
+
   gap: 7px;
 }
 
 .campo-pesquisa {
-  width: 285px;
+  width: 300px;
 }
 
-/* =========================
+.campo-filtro {
+  width: 170px;
+}
+
+.campo-ordenacao {
+  width: 170px;
+}
+
+.controle-card :deep(.q-field__control) {
+  min-height: 40px;
+  height: 40px;
+
+  border-radius: 11px;
+
+  background: #ffffff;
+}
+
+.controle-card :deep(.q-field__native),
+.controle-card :deep(.q-field__input) {
+  font-size: 10px;
+}
+
+.botao-atualizar {
+  width: 40px;
+  height: 40px;
+
+  color: #ffffff;
+
+  background:
+    linear-gradient(
+      135deg,
+      #ff9d1f,
+      #f97316
+    );
+
+  box-shadow:
+    0 5px 13px
+    rgba(249, 115, 22, 0.18);
+}
+
+/* ==================================================
    RESUMO
-========================= */
+=================================================== */
 
 .resumo-grid {
   display: grid;
+
   grid-template-columns:
-    repeat(
-      4,
-      minmax(0, 1fr)
-    );
-  gap: 10px;
-  margin-top: 17px;
+    repeat(4, minmax(0, 1fr));
+
+  gap: 8px;
+
+  margin-top: 12px;
 }
 
 .resumo-item {
+  appearance: none;
+
+  position: relative;
+
+  min-width: 0;
+
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 11px;
+
+  gap: 9px;
+
+  padding: 9px 10px;
+
+  border: 1px solid #eef0f3;
   border-radius: 11px;
-  background: #f9fafb;
+
+  color: inherit;
+
+  background: rgba(249, 250, 251, 0.86);
+
+  font-family: inherit;
+
+  text-align: left;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    background 0.18s ease;
+}
+
+.resumo-item:hover {
+  transform: translateY(-1px);
+
+  border-color: #fed7aa;
+}
+
+.resumo-item--ativo {
+  border-color: #fdba74;
+
+  background: #fff7ed;
 }
 
 .resumo-icone {
-  width: 36px;
-  height: 36px;
+  width: 34px;
+  height: 34px;
+
   display: flex;
   align-items: center;
   justify-content: center;
+
   flex-shrink: 0;
+
   border-radius: 10px;
 }
 
@@ -1248,79 +1426,150 @@ onMounted(
 
 .resumo-item strong {
   display: block;
+
   color: #101828;
-  font-size: 14px;
+
+  font-size: 15px;
   font-weight: 900;
+
+  line-height: 1;
 }
 
 .resumo-item span {
   display: block;
+
+  margin-top: 3px;
+
   color: #98a2b3;
+
   font-size: 7px;
 }
 
-/* =========================
+/* ==================================================
    LISTA
-========================= */
+=================================================== */
 
 .lista-card {
   overflow: hidden;
+
   border: 1px solid #eaecf0;
   border-radius: 16px;
+
   background: #ffffff;
+
+  box-shadow:
+    0 3px 12px
+    rgba(16, 24, 40, 0.035);
 }
 
 .lista-cabecalho {
+  min-height: 58px;
+
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 15px;
-  padding: 17px 20px;
+
+  gap: 14px;
+
+  padding: 12px 16px;
+
   border-bottom: 1px solid #eaecf0;
 }
 
 .lista-cabecalho strong {
   display: block;
+
   color: #101828;
+
   font-size: 12px;
+  font-weight: 900;
 }
 
 .lista-cabecalho span {
   display: block;
-  margin-top: 3px;
+
+  margin-top: 2px;
+
   color: #98a2b3;
+
   font-size: 8px;
 }
 
-.ordem-info {
+.lista-cabecalho__direita {
   display: flex;
   align-items: center;
-  gap: 6px;
-  color: #98a2b3;
-  font-size: 8px;
+
+  gap: 12px;
 }
 
-/* =========================
+.lista-legenda {
+  display: flex !important;
+  align-items: center;
+
+  gap: 5px;
+
+  margin: 0 !important;
+
+  color: #667085 !important;
+
+  font-size: 7px !important;
+}
+
+.legenda-bolinha {
+  width: 7px;
+  height: 7px;
+
+  border-radius: 50%;
+}
+
+.legenda-bolinha--alta {
+  background: #ef4444;
+}
+
+.legenda-bolinha--media {
+  background: #f59e0b;
+}
+
+.legenda-bolinha--baixa {
+  background: #3b82f6;
+}
+
+/* ==================================================
    CHAMADO
-========================= */
+=================================================== */
+
+.chamados-lista {
+  display: grid;
+
+  gap: 0;
+}
 
 .chamado-card {
+  position: relative;
+
+  min-width: 0;
+
   display: grid;
+
   grid-template-columns:
-    45px
-    minmax(190px, 1.4fr)
-    minmax(110px, 0.7fr)
-    minmax(120px, 0.8fr)
-    minmax(105px, 0.7fr)
-    75px
-    70px
-    125px;
+    58px
+    minmax(210px, 1.25fr)
+    minmax(0, 1.8fr)
+    260px;
+
   align-items: center;
-  gap: 9px;
-  padding: 14px 18px;
-  border-left: 3px solid transparent;
+
+  gap: 14px;
+
+  padding: 13px 16px 13px 19px;
+
   border-bottom: 1px solid #f2f4f7;
-  transition: background 0.2s ease;
+
+  background: #ffffff;
+
+  transition:
+    background 0.18s ease,
+    box-shadow 0.18s ease;
 }
 
 .chamado-card:last-child {
@@ -1328,16 +1577,57 @@ onMounted(
 }
 
 .chamado-card:hover {
-  background: #fafafa;
+  z-index: 1;
+
+  background: #fcfcfd;
+
+  box-shadow:
+    inset 0 0 0 1px #fed7aa;
 }
 
-.chamado-card--urgente {
-  border-left-color: #ef4444;
+.chamado-faixa {
+  position: absolute;
+
+  left: 0;
+  top: 11px;
+  bottom: 11px;
+
+  width: 4px;
+
+  border-radius: 0 999px 999px 0;
 }
 
-.chamado-numero {
+.chamado-card--alta .chamado-faixa {
+  background: #ef4444;
+}
+
+.chamado-card--media .chamado-faixa {
+  background: #f59e0b;
+}
+
+.chamado-card--baixa .chamado-faixa {
+  background: #3b82f6;
+}
+
+.chamado-id-area span {
+  display: block;
+
+  color: #98a2b3;
+
+  font-size: 6px;
+  font-weight: 800;
+
+  letter-spacing: 0.6px;
+}
+
+.chamado-id-area strong {
+  display: block;
+
+  margin-top: 2px;
+
   color: #f97316;
-  font-size: 9px;
+
+  font-size: 13px;
   font-weight: 900;
 }
 
@@ -1347,74 +1637,142 @@ onMounted(
 
 .chamado-problema {
   overflow: hidden;
+
   color: #344054;
-  font-size: 10px;
-  font-weight: 800;
+
+  font-size: 11px;
+  font-weight: 900;
+
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .chamado-descricao {
   overflow: hidden;
+
   margin-top: 3px;
+
   color: #98a2b3;
+
   font-size: 8px;
+
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.chamado-info {
+.chamado-dados {
   min-width: 0;
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+
+  gap: 9px;
+}
+
+.dado-item {
+  min-width: 0;
+
   display: flex;
   align-items: center;
+
   gap: 6px;
 }
 
-.chamado-info > .q-icon {
+.dado-item > .q-icon {
   flex-shrink: 0;
+
   color: #667085;
 }
 
-.chamado-info span,
-.chamado-status-area > span,
-.chamado-data span {
+.dado-item > div {
+  min-width: 0;
+}
+
+.dado-item span {
   display: block;
+
   color: #98a2b3;
-  font-size: 7px;
+
+  font-size: 6px;
+
   text-transform: uppercase;
 }
 
-.chamado-info strong,
-.chamado-data strong {
+.dado-item strong {
   display: block;
+
   overflow: hidden;
+
   margin-top: 2px;
+
   color: #475467;
+
   font-size: 8px;
-  font-weight: 600;
+  font-weight: 700;
+
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.chamado-status-area .q-badge {
-  margin-top: 4px;
+.chamado-lateral {
+  min-width: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+
+  gap: 10px;
 }
 
 .chamado-acoes {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  gap: 4px;
+
+  gap: 6px;
 }
 
-/* =========================
+.botao-detalhes,
+.botao-aceitar {
+  min-height: 35px;
+
+  border-radius: 10px;
+
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.botao-detalhes {
+  color: #667085;
+}
+
+.botao-aceitar {
+  color: #ffffff;
+
+  background:
+    linear-gradient(
+      135deg,
+      #ff9d1f,
+      #f97316
+    );
+
+  box-shadow:
+    0 4px 11px
+    rgba(249, 115, 22, 0.16);
+}
+
+/* ==================================================
    BADGES
-========================= */
+=================================================== */
 
 .urgencia-baixa,
 .urgencia-media,
 .urgencia-alta {
-  padding: 6px 9px;
+  padding: 5px 9px;
+
+  font-size: 8px;
+  font-weight: 800;
 }
 
 .urgencia-baixa {
@@ -1432,312 +1790,503 @@ onMounted(
   background: #fee2e2;
 }
 
-/* =========================
+/* ==================================================
    ESTADOS
-========================= */
+=================================================== */
 
 .estado-central {
   min-height: 300px;
+
   display: flex;
   flex-direction: column;
+
   align-items: center;
   justify-content: center;
+
   gap: 10px;
+
   color: #98a2b3;
+
   font-size: 9px;
 }
 
 .estado-vazio {
-  min-height: 280px;
+  min-height: 260px;
+
   display: flex;
   flex-direction: column;
+
   align-items: center;
   justify-content: center;
-  padding: 30px;
+
+  padding: 28px;
+
   color: #98a2b3;
+
   text-align: center;
 }
 
 .estado-vazio-icone {
-  width: 60px;
-  height: 60px;
+  width: 54px;
+  height: 54px;
+
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 10px;
-  border-radius: 16px;
+
+  margin-bottom: 9px;
+
+  border-radius: 15px;
+
   color: #f97316;
+
   background: #fff1e6;
 }
 
 .estado-vazio strong {
   color: #475467;
+
   font-size: 11px;
 }
 
 .estado-vazio span {
-  margin-top: 5px;
+  margin-top: 4px;
+
   font-size: 8px;
 }
 
-/* =========================
+/* ==================================================
    DIALOG
-========================= */
+=================================================== */
 
 .dialog-card {
   width: 100%;
-  max-width: 560px;
+  max-width: 540px;
+
+  overflow: hidden;
+
   border-radius: 17px;
 }
 
 .dialog-topo {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 20px;
+
+  gap: 11px;
+
+  padding: 18px;
 }
 
 .dialog-icone {
-  width: 45px;
-  height: 45px;
+  width: 43px;
+  height: 43px;
+
   display: flex;
   align-items: center;
   justify-content: center;
+
   flex-shrink: 0;
+
   border-radius: 12px;
+
   color: #f97316;
+
   background: #fff1e6;
 }
 
 .dialog-titulo {
   color: #101828;
-  font-size: 15px;
+
+  font-size: 14px;
   font-weight: 900;
 }
 
 .dialog-subtitulo {
   margin-top: 2px;
+
   color: #98a2b3;
+
   font-size: 8px;
 }
 
 .dialog-conteudo {
-  padding: 20px;
+  padding: 18px;
 }
 
 .dialog-numero {
   color: #f97316;
+
   font-size: 8px;
   font-weight: 900;
 }
 
 .dialog-chamado > strong {
   display: block;
+
   margin-top: 4px;
+
   color: #101828;
+
   font-size: 15px;
 }
 
 .dialog-chamado > span {
   display: block;
+
   margin-top: 5px;
+
   color: #667085;
+
   font-size: 9px;
   line-height: 1.5;
 }
 
 .dialog-grid {
   display: grid;
+
   grid-template-columns:
-    repeat(
-      2,
-      minmax(0, 1fr)
-    );
-  gap: 9px;
-  margin-top: 17px;
+    repeat(2, minmax(0, 1fr));
+
+  gap: 8px;
+
+  margin-top: 15px;
 }
 
 .dialog-grid > div {
-  padding: 11px;
+  padding: 10px;
+
   border-radius: 10px;
+
   background: #f9fafb;
 }
 
 .dialog-grid span {
   display: block;
+
   color: #98a2b3;
+
   font-size: 7px;
+
   text-transform: uppercase;
 }
 
 .dialog-grid strong {
   display: block;
+
   margin-top: 3px;
+
   color: #344054;
+
   font-size: 9px;
 }
 
 .dialog-aviso {
   display: flex;
   align-items: flex-start;
+
   gap: 8px;
-  margin-top: 17px;
-  padding: 11px;
+
+  margin-top: 15px;
+  padding: 10px;
+
   border-radius: 10px;
+
   color: #9a3412;
+
   background: #fff7ed;
+
   font-size: 8px;
   line-height: 1.5;
 }
 
 .dialog-acoes {
-  padding: 13px 20px;
+  padding: 12px 18px;
 }
 
-/* =========================
+/* ==================================================
    DARK
-========================= */
+=================================================== */
 
-.body--dark
-.filtros-card,
-.body--dark
-.lista-card,
-.body--dark
-.dialog-card {
+.body--dark .controle-card,
+.body--dark .lista-card,
+.body--dark .dialog-card {
   border-color: #2b2f36;
+
   background: #16191f;
 }
 
-.body--dark
-.filtros-titulo,
-.body--dark
-.lista-cabecalho strong,
-.body--dark
-.dialog-titulo,
-.body--dark
-.dialog-chamado > strong {
+.body--dark .controle-card {
+  background:
+    linear-gradient(
+      110deg,
+      #16191f 0%,
+      #16191f 72%,
+      #211b17 100%
+    );
+}
+
+.body--dark .controle-titulo,
+.body--dark .lista-cabecalho strong,
+.body--dark .dialog-titulo,
+.body--dark .dialog-chamado > strong {
   color: #f9fafb;
 }
 
-.body--dark
-.resumo-item,
-.body--dark
-.dialog-grid > div {
+.body--dark .controle-card :deep(.q-field__control) {
   background: #1b1f25;
 }
 
-.body--dark
-.resumo-item strong,
-.body--dark
-.chamado-problema,
-.body--dark
-.chamado-info strong,
-.body--dark
-.chamado-data strong,
-.body--dark
-.dialog-grid strong {
-  color: #d0d5dd;
-}
-
-.body--dark
-.lista-cabecalho,
-.body--dark
-.chamado-card {
+.body--dark .resumo-item {
   border-color: #2b2f36;
-}
 
-.body--dark
-.chamado-card:hover {
   background: #1b1f25;
 }
 
-.body--dark
-.dialog-aviso {
-  color: #fdba74;
+.body--dark .resumo-item--ativo {
+  border-color: #7c2d12;
+
   background: #292018;
 }
 
-/* =========================
+.body--dark .resumo-item strong,
+.body--dark .chamado-problema,
+.body--dark .dado-item strong,
+.body--dark .dialog-grid strong {
+  color: #d0d5dd;
+}
+
+.body--dark .lista-cabecalho,
+.body--dark .chamado-card {
+  border-color: #2b2f36;
+}
+
+.body--dark .chamado-card {
+  background: #16191f;
+}
+
+.body--dark .chamado-card:hover {
+  background: #1b1f25;
+
+  box-shadow:
+    inset 0 0 0 1px #7c2d12;
+}
+
+.body--dark .dialog-grid > div {
+  background: #1b1f25;
+}
+
+.body--dark .dialog-aviso {
+  color: #fdba74;
+
+  background: #292018;
+}
+
+/* ==================================================
    RESPONSIVO
-========================= */
+=================================================== */
 
-@media (max-width: 1250px) {
-  .chamado-card {
-    grid-template-columns:
-      42px
-      minmax(180px, 1.4fr)
-      minmax(110px, 0.8fr)
-      minmax(115px, 0.8fr)
-      75px
-      70px
-      120px;
+@media (max-width: 1350px) {
+  .controle-topo {
+    align-items: flex-start;
   }
 
-  .chamado-card
-  > .chamado-info:nth-of-type(5) {
-    display: none;
+  .controle-acoes {
+    flex-wrap: wrap;
+    justify-content: flex-end;
   }
-}
 
-@media (max-width: 950px) {
-  .resumo-grid {
-    grid-template-columns:
-      repeat(
-        2,
-        minmax(0, 1fr)
-      );
+  .campo-pesquisa {
+    width: 260px;
   }
 
   .chamado-card {
     grid-template-columns:
-      42px
-      minmax(170px, 1fr)
-      minmax(115px, 0.8fr)
-      75px
-      120px;
+      55px
+      minmax(180px, 1fr)
+      minmax(0, 1.3fr)
+      245px;
   }
 
-  .chamado-info:nth-of-type(3),
-  .chamado-info:nth-of-type(4),
-  .chamado-data {
-    display: none;
+  .chamado-dados {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
   }
 }
 
-@media (max-width: 700px) {
-  .filtros-topo {
+@media (max-width: 1100px) {
+  .controle-topo {
     flex-direction: column;
   }
 
-  .acoes-topo {
+  .controle-acoes {
     width: 100%;
+    justify-content: flex-start;
   }
 
   .campo-pesquisa {
     flex: 1;
     width: auto;
-  }
-
-  .resumo-grid {
-    grid-template-columns: 1fr;
+    min-width: 240px;
   }
 
   .chamado-card {
     grid-template-columns:
-      38px
+      55px
       minmax(0, 1fr)
-      95px;
+      230px;
   }
 
-  .chamado-info,
-  .chamado-data,
-  .chamado-status-area {
+  .chamado-dados {
+    grid-column:
+      2 / 4;
+
+    grid-row: 2;
+
+    margin-top: -3px;
+  }
+
+  .chamado-lateral {
+    grid-column: 3;
+    grid-row: 1;
+  }
+}
+
+@media (max-width: 800px) {
+  .resumo-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .campo-pesquisa,
+  .campo-filtro,
+  .campo-ordenacao {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .controle-acoes {
+    display: grid;
+
+    grid-template-columns:
+      1fr
+      1fr
+      40px;
+  }
+
+  .campo-pesquisa {
+    grid-column:
+      1 / 4;
+  }
+
+  .lista-cabecalho__direita {
     display: none;
   }
 
-  .chamado-acoes {
+  .chamado-card {
+    grid-template-columns:
+      54px
+      minmax(0, 1fr);
+
+    gap: 10px;
+  }
+
+  .chamado-id-area {
+    align-self: start;
+  }
+
+  .chamado-dados {
     grid-column:
-      2 / 4;
+      1 / 3;
+
+    grid-row: auto;
+
+    padding-left: 0;
+  }
+
+  .chamado-lateral {
+    grid-column:
+      1 / 3;
+
+    grid-row: auto;
+
+    justify-content: space-between;
+  }
+
+  .chamado-acoes {
+    flex: 1;
+
+    justify-content: flex-end;
+  }
+}
+
+@media (max-width: 560px) {
+  .controle-card {
+    padding: 12px;
+  }
+
+  .controle-identidade {
+    min-width: 0;
+  }
+
+  .controle-subtitulo {
+    display: none;
+  }
+
+  .resumo-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .resumo-item {
+    padding: 8px;
+  }
+
+  .controle-acoes {
+    grid-template-columns:
+      1fr
+      40px;
+  }
+
+  .campo-pesquisa,
+  .campo-filtro,
+  .campo-ordenacao {
+    grid-column:
+      1 / 3;
+  }
+
+  .botao-atualizar {
+    grid-column: 2;
+  }
+
+  .chamado-card {
+    padding:
+      12px
+      12px
+      12px
+      17px;
+  }
+
+  .chamado-dados {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .dado-item:nth-child(1),
+  .dado-item:nth-child(4) {
+    display: none;
+  }
+
+  .chamado-lateral {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .chamado-acoes {
+    width: 100%;
+  }
+
+  .botao-detalhes,
+  .botao-aceitar {
+    flex: 1;
   }
 
   .dialog-grid {

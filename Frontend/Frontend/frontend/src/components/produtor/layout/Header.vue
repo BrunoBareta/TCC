@@ -1,712 +1,218 @@
 <template>
   <div class="header-produtor">
-    <!-- ==================================================
-         IDENTIDADE
-    =================================================== -->
+    <div class="header-conteudo">
+      <div class="header-detalhe"></div>
 
-    <div class="header-identidade">
-      <img
-        :src="logoAvicola"
-        alt="Avícola Pinhal"
-        class="logo-avicola"
-      />
+      <div>
+        <div class="header-titulo">
+          {{ configuracao.titulo }}
+        </div>
 
-      <div class="header-boas-vindas">
-        Bem-vindo, {{ primeiroNome }}
-      </div>
-
-      <div class="header-subtitulo">
-        Portal do Produtor
+        <div class="header-subtitulo">
+          {{ configuracao.subtitulo }}
+        </div>
       </div>
     </div>
 
-    <!-- ==================================================
-         AÇÕES
-    =================================================== -->
-
-    <div class="header-acoes">
-      <q-btn
-        outline
-        no-caps
-        :color="
-          modoEscuro
-            ? 'orange'
-            : 'dark'
-        "
-        icon="assessment"
-        label="Relatórios"
-        :to="{
-          name:
-            'produtor-relatorios'
-        }"
-      />
-
-      <!-- TEMA -->
-
-      <q-btn
-        flat
-        round
-        :icon="iconeTema"
-        :color="
-          modoEscuro
-            ? 'orange'
-            : 'dark'
-        "
-        @click="alternarTema"
-      >
-        <q-tooltip>
-          {{ textoTema }}
-        </q-tooltip>
-      </q-btn>
-
-      <!-- NOTIFICAÇÕES -->
-
-      <q-btn
-        flat
-        round
-        icon="notifications_none"
-        :color="
-          modoEscuro
-            ? 'orange'
-            : 'dark'
-        "
-      />
-
-      <!-- ==================================================
-           PROPRIEDADE DO PRODUTOR LOGADO
-      =================================================== -->
-
-      <div
-        class="propriedade-dados"
-      >
-        <template v-if="carregandoPropriedade">
-          <q-skeleton
-            type="text"
-            width="130px"
-          />
-
-          <q-skeleton
-            type="text"
-            width="90px"
-            class="q-ml-auto"
-          />
-        </template>
-
-        <template
-          v-else-if="propriedade"
-        >
-          <div class="propriedade-nome">
-            {{
-              propriedade.nome_propriedade
-            }}
-          </div>
-
-          <div class="propriedade-local">
-            {{ localPropriedade }}
-          </div>
-        </template>
-
-        <template v-else>
-          <div class="propriedade-nome">
-            Sem propriedade
-          </div>
-
-          <div class="propriedade-local">
-            Nenhuma propriedade cadastrada
-          </div>
-        </template>
-      </div>
-
-      <!-- ==================================================
-           PERFIL
-      =================================================== -->
-
-      <q-btn
-        flat
-        round
-        class="q-pa-none"
-      >
-        <q-avatar
-          :color="
-            modoEscuro
-              ? 'grey-9'
-              : 'grey-3'
-          "
-          :text-color="
-            modoEscuro
-              ? 'orange'
-              : 'dark'
-          "
-        >
-          {{ iniciais }}
-        </q-avatar>
-
-        <q-menu>
-          <q-list
-            style="
-              min-width: 220px
-            "
-          >
-            <q-item>
-              <q-item-section>
-                <div
-                  class="
-                    text-weight-bold
-                  "
-                >
-                  {{
-                    auth.nomeUsuario
-                  }}
-                </div>
-
-                <div
-                  class="
-                    text-caption
-                    text-grey
-                  "
-                >
-                  {{
-                    auth.tipoUsuario
-                  }}
-                </div>
-              </q-item-section>
-            </q-item>
-
-            <q-separator />
-
-            <q-item
-              clickable
-              v-close-popup
-              :to="{
-                name:
-                  'produtor-perfil'
-              }"
-            >
-              <q-item-section avatar>
-                <q-icon
-                  name="person"
-                />
-              </q-item-section>
-
-              <q-item-section>
-                Perfil
-              </q-item-section>
-            </q-item>
-
-            <q-item
-              clickable
-              v-close-popup
-              @click="alternarTema"
-            >
-              <q-item-section avatar>
-                <q-icon
-                  :name="iconeTema"
-                  color="orange"
-                />
-              </q-item-section>
-
-              <q-item-section>
-                {{ textoTema }}
-              </q-item-section>
-            </q-item>
-
-            <q-separator />
-
-            <q-item
-              clickable
-              v-close-popup
-              @click="sair"
-            >
-              <q-item-section avatar>
-                <q-icon
-                  name="logout"
-                  color="negative"
-                />
-              </q-item-section>
-
-              <q-item-section
-                class="text-negative"
-              >
-                Sair
-              </q-item-section>
-            </q-item>
-          </q-list>
-        </q-menu>
-      </q-btn>
+    <div class="header-marca">
+      <span class="header-marca-ponto"></span>
+      AVIOESTE
     </div>
   </div>
 </template>
 
 <script setup>
 import {
-  computed,
-  onMounted,
-  ref,
-  watch
+  computed
 } from 'vue'
 
 import {
-  useRouter
+  useRoute
 } from 'vue-router'
 
-import {
-  useAuthStore
-} from 'src/stores/auth'
+const route = useRoute()
 
-import {
-  useTheme
-} from 'src/composables/useTheme'
+const configuracao =
+  computed(() => {
+    const nome =
+      route.name
 
-import propriedadeService from
-  'src/services/propriedadeService'
-
-import logoAvicola from
-  'src/assets/logo/logo-avicola-pinhal.png'
-
-const router =
-  useRouter()
-
-const auth =
-  useAuthStore()
-
-const {
-  modoEscuro,
-  iconeTema,
-  textoTema,
-  alternarTema
-} = useTheme()
-
-/* ==================================================
-   PROPRIEDADE
-=================================================== */
-
-const propriedade =
-  ref(null)
-
-const carregandoPropriedade =
-  ref(false)
-
-/* ==================================================
-   USUÁRIO LOGADO
-=================================================== */
-
-function obterUsuarioLocal() {
-  const chaves = [
-    'usuario',
-    'user',
-    'authUser'
-  ]
-
-  for (
-    const chave of chaves
-  ) {
-    try {
-      const valor =
-        localStorage.getItem(
-          chave
-        )
-
-      if (!valor) {
-        continue
+    if (
+      nome ===
+      'produtor-chamados'
+    ) {
+      return {
+        titulo:
+          'Meus chamados',
+        subtitulo:
+          'Acompanhe suas solicitações e o andamento dos atendimentos.'
       }
+    }
 
-      const usuario =
-        JSON.parse(valor)
-
-      if (usuario) {
-        return usuario
+    if (
+      nome ===
+      'produtor-novo-chamado'
+    ) {
+      return {
+        titulo:
+          'Novo chamado',
+        subtitulo:
+          'Registre uma nova solicitação de assistência técnica.'
       }
-    } catch {
-      // Continua procurando
     }
-  }
-
-  return {}
-}
-
-const idUsuario =
-  computed(() => {
-    const usuarioLocal =
-      obterUsuarioLocal()
-
-    const id =
-      auth.usuario?.id_usuario ||
-      auth.idUsuario ||
-      usuarioLocal.id_usuario ||
-      usuarioLocal.idUsuario ||
-      usuarioLocal.id
-
-    const numero =
-      Number(id)
 
     if (
-      !Number.isInteger(numero) ||
-      numero <= 0
+      nome ===
+      'produtor-detalhes-chamado'
     ) {
-      return null
+      return {
+        titulo:
+          'Detalhes do chamado',
+        subtitulo:
+          'Consulte todas as informações e atualizações da solicitação.'
+      }
     }
-
-    return numero
-  })
-
-/* ==================================================
-   PRIMEIRO NOME
-=================================================== */
-
-const primeiroNome =
-  computed(() => {
-    if (
-      !auth.nomeUsuario
-    ) {
-      const usuarioLocal =
-        obterUsuarioLocal()
-
-      const nome =
-        usuarioLocal.nome ||
-        usuarioLocal.nome_usuario ||
-        usuarioLocal.name ||
-        'Produtor'
-
-      return nome
-        .trim()
-        .split(/\s+/)[0]
-    }
-
-    return auth.nomeUsuario
-      .trim()
-      .split(/\s+/)[0]
-  })
-
-/* ==================================================
-   INICIAIS
-=================================================== */
-
-const iniciais =
-  computed(() => {
-    let nome =
-      auth.nomeUsuario
-
-    if (!nome) {
-      const usuarioLocal =
-        obterUsuarioLocal()
-
-      nome =
-        usuarioLocal.nome ||
-        usuarioLocal.nome_usuario ||
-        usuarioLocal.name ||
-        ''
-    }
-
-    if (!nome) {
-      return '?'
-    }
-
-    return nome
-      .split(' ')
-      .filter(Boolean)
-      .slice(0, 2)
-      .map(
-        parte =>
-          parte[0]
-      )
-      .join('')
-      .toUpperCase()
-  })
-
-/* ==================================================
-   LOCAL
-=================================================== */
-
-const localPropriedade =
-  computed(() => {
-    if (
-      !propriedade.value
-    ) {
-      return ''
-    }
-
-    const cidade =
-      propriedade.value.cidade ||
-      ''
-
-    const estado =
-      propriedade.value.estado ||
-      ''
 
     if (
-      cidade &&
-      estado
+      nome ===
+      'produtor-relatorios'
     ) {
-      return `${cidade} - ${estado}`
+      return {
+        titulo:
+          'Relatórios',
+        subtitulo:
+          'Consulte informações e histórico dos seus atendimentos.'
+      }
     }
 
-    return (
-      cidade ||
-      estado ||
-      'Local não informado'
-    )
+    if (
+      nome ===
+      'produtor-perfil'
+    ) {
+      return {
+        titulo:
+          'Meu perfil',
+        subtitulo:
+          'Consulte e mantenha seus dados atualizados.'
+      }
+    }
+
+    return {
+      titulo:
+        'Portal do Produtor',
+      subtitulo:
+        'Acompanhe seus chamados e atendimentos.'
+    }
   })
-
-/* ==================================================
-   CARREGAR PROPRIEDADE
-=================================================== */
-
-async function carregarPropriedade() {
-  if (!idUsuario.value) {
-    propriedade.value =
-      null
-
-    return
-  }
-
-  carregandoPropriedade.value =
-    true
-
-  try {
-    const dados =
-      await propriedadeService
-        .buscarPorUsuario(
-          idUsuario.value
-        )
-
-    propriedade.value =
-      dados || null
-  } catch (error) {
-    console.error(
-      'Erro ao buscar propriedade do produtor:',
-      error
-    )
-
-    propriedade.value =
-      null
-  } finally {
-    carregandoPropriedade.value =
-      false
-  }
-}
-
-onMounted(
-  carregarPropriedade
-)
-
-watch(
-  idUsuario,
-  carregarPropriedade
-)
-
-/* ==================================================
-   SAIR
-=================================================== */
-
-async function sair() {
-  auth.logout()
-
-  await router.replace('/')
-}
 </script>
 
 <style scoped>
 .header-produtor {
-  min-height: 112px;
-
-  padding:
-    12px
-    32px;
+  min-height: 68px;
 
   display: flex;
-
   align-items: center;
+  justify-content: space-between;
 
-  justify-content:
-    space-between;
+  gap: 18px;
 
-  gap: 30px;
+  padding: 10px 24px;
 
-  border-bottom:
-    1px solid #eaecf0;
+  border-bottom: 1px solid #eaecf0;
 
-  background: #ffffff;
-
-  transition:
-    background 0.25s,
-    border-color 0.25s;
+  background:
+    linear-gradient(
+      90deg,
+      #ffffff 0%,
+      #ffffff 72%,
+      #fffaf5 100%
+    );
 }
 
-/* ==================================================
-   IDENTIDADE
-=================================================== */
+.header-conteudo {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
 
-.header-identidade {
-  width: 250px;
+.header-detalhe {
+  width: 4px;
+  height: 36px;
 
   flex-shrink: 0;
 
-  display: flex;
+  border-radius: 999px;
 
-  flex-direction: column;
-
-  align-items: center;
-
-  justify-content: center;
+  background:
+    linear-gradient(
+      180deg,
+      #ff9d1f,
+      #f97316
+    );
 }
 
-.logo-avicola {
-  display: block;
+.header-titulo {
+  color: #17233c;
 
-  width: 230px;
+  font-size: 20px;
+  font-weight: 900;
 
-  max-width: 100%;
-
-  height: auto;
-
-  margin-bottom: 3px;
-
-  object-fit: contain;
-}
-
-.header-boas-vindas {
-  width: 100%;
-
-  color: #101828;
-
-  font-size: 17px;
-
-  font-weight: 800;
-
-  line-height: 1.2;
-
-  text-align: center;
+  line-height: 1.1;
 }
 
 .header-subtitulo {
-  width: 100%;
+  margin-top: 3px;
 
-  margin-top: 2px;
+  color: #667085;
 
-  color: #98a2b3;
-
-  font-size: 11px;
-
-  font-weight: 500;
-
-  text-align: center;
+  font-size: 10px;
 }
 
-/* ==================================================
-   AÇÕES
-=================================================== */
-
-.header-acoes {
+.header-marca {
   display: flex;
-
   align-items: center;
 
-  gap: 14px;
-}
-
-/* ==================================================
-   PROPRIEDADE
-=================================================== */
-
-.propriedade-dados {
-  min-width: 150px;
-
-  text-align: right;
-}
-
-.propriedade-nome {
-  max-width: 210px;
-
-  overflow: hidden;
-
-  color: #101828;
-
-  font-size: 14px;
-
-  font-weight: 700;
-
-  text-overflow:
-    ellipsis;
-
-  white-space: nowrap;
-}
-
-.propriedade-local {
-  max-width: 210px;
-
-  margin-top: 2px;
-
-  overflow: hidden;
+  gap: 7px;
 
   color: #98a2b3;
 
-  font-size: 12px;
+  font-size: 8px;
+  font-weight: 900;
 
-  text-overflow:
-    ellipsis;
-
-  white-space: nowrap;
+  letter-spacing: 1.5px;
 }
 
-/* ==================================================
-   DARK
-=================================================== */
+.header-marca-ponto {
+  width: 7px;
+  height: 7px;
 
-.body--dark
-.header-produtor {
-  border-bottom-color:
-    #2b2f36;
+  border-radius: 50%;
 
-  background: #16191f;
+  background: #f97316;
+
+  box-shadow:
+    0 0 0 4px
+    rgba(249, 115, 22, 0.12);
 }
 
-.body--dark
-.header-boas-vindas,
+.body--dark .header-produtor {
+  border-color: #292d33;
 
-.body--dark
-.propriedade-nome {
+  background:
+    linear-gradient(
+      90deg,
+      #16191f 0%,
+      #16191f 72%,
+      #1f1b18 100%
+    );
+}
+
+.body--dark .header-titulo {
   color: #f9fafb;
 }
 
-.body--dark
-.header-subtitulo,
-
-.body--dark
-.propriedade-local {
+.body--dark .header-subtitulo,
+.body--dark .header-marca {
   color: #98a2b3;
-}
-
-/* ==================================================
-   RESPONSIVO
-=================================================== */
-
-@media (
-  max-width: 1200px
-) {
-  .header-produtor {
-    padding:
-      12px
-      22px;
-  }
-
-  .header-identidade {
-    width: 220px;
-  }
-
-  .logo-avicola {
-    width: 205px;
-  }
-
-  .header-acoes {
-    gap: 9px;
-  }
-}
-
-@media (
-  max-width: 1023px
-) {
-  .header-acoes {
-    display: none;
-  }
 }
 </style>

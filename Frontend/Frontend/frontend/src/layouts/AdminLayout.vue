@@ -7,216 +7,197 @@
     }"
   >
     <!-- ==================================================
-         DESKTOP - MENU LATERAL
+         SIDEBAR DESKTOP
     =================================================== -->
 
     <q-drawer
       v-if="!isMobile"
       v-model="drawerAberto"
       show-if-above
-      :width="270"
+      :width="240"
       bordered
       class="admin-drawer"
     >
       <div class="drawer-conteudo">
-        <div class="admin-brand">
-          <div class="brand-icon">
-            <q-icon
-              name="admin_panel_settings"
-              size="27px"
-            />
-          </div>
-
-          <div>
-            <div class="brand-nome">
-              Avioeste
-            </div>
-
-            <div class="brand-subtitulo">
-              Painel Administrativo
-            </div>
-          </div>
-        </div>
-
-        <div class="menu-titulo">
-          MENU PRINCIPAL
-        </div>
-
-        <nav class="menu-lista">
-          <router-link
-            :to="{ name: 'admin-dashboard' }"
-            class="menu-item"
-            active-class="menu-item--ativo"
-          >
-            <q-icon name="dashboard" size="22px" />
-            <span>Dashboard</span>
-          </router-link>
-
-          <router-link
-            :to="{ name: 'admin-chamados' }"
-            class="menu-item"
-            active-class="menu-item--ativo"
-          >
-            <q-icon name="confirmation_number" size="22px" />
-            <span>Chamados</span>
-          </router-link>
-
-          <router-link
-            :to="{ name: 'admin-tecnicos' }"
-            class="menu-item"
-            active-class="menu-item--ativo"
-          >
-            <q-icon name="engineering" size="22px" />
-            <span>Técnicos</span>
-          </router-link>
-
-          <router-link
-            :to="{ name: 'admin-produtores' }"
-            class="menu-item"
-            active-class="menu-item--ativo"
-          >
-            <q-icon name="agriculture" size="22px" />
-            <span>Produtores</span>
-          </router-link>
-
-          <router-link
-            :to="{ name: 'admin-relatorios' }"
-            class="menu-item"
-            active-class="menu-item--ativo"
-          >
-            <q-icon name="assessment" size="22px" />
-            <span>Relatórios</span>
-          </router-link>
-
-          <router-link
-            :to="{ name: 'admin-perfil' }"
-            class="menu-item"
-            active-class="menu-item--ativo"
-          >
-            <q-icon name="person" size="22px" />
-            <span>Perfil</span>
-          </router-link>
-        </nav>
-      </div>
-    </q-drawer>
-
-    <!-- ==================================================
-         HEADER DESKTOP
-    =================================================== -->
-
-    <q-header
-      v-if="!isMobile"
-      bordered
-      class="admin-header"
-    >
-      <q-toolbar class="admin-toolbar">
         <div>
-          <div class="header-titulo">
-            {{ tituloPagina }}
+          <div class="admin-brand">
+            <div class="brand-icon">
+              <q-icon
+                name="admin_panel_settings"
+                size="25px"
+              />
+            </div>
+
+            <div>
+              <div class="brand-nome">
+                Avioeste
+              </div>
+
+              <div class="brand-subtitulo">
+                Painel Administrativo
+              </div>
+            </div>
           </div>
 
-          <div class="header-subtitulo">
-            {{ subtituloPagina }}
-          </div>
+          <nav class="menu-lista">
+            <router-link
+              :to="{ name: 'admin-dashboard' }"
+              class="menu-item"
+              exact-active-class="menu-item--ativo"
+            >
+              <q-icon name="dashboard" size="22px" />
+              <span>Dashboard</span>
+            </router-link>
+
+            <router-link
+              :to="{ name: 'admin-chamados' }"
+              class="menu-item"
+              exact-active-class="menu-item--ativo"
+            >
+              <q-icon name="confirmation_number" size="22px" />
+              <span>Chamados</span>
+            </router-link>
+
+            <router-link
+              :to="{ name: 'admin-tecnicos' }"
+              class="menu-item"
+              exact-active-class="menu-item--ativo"
+            >
+              <q-icon name="engineering" size="22px" />
+              <span>Técnicos</span>
+            </router-link>
+
+            <router-link
+              :to="{ name: 'admin-produtores' }"
+              class="menu-item"
+              exact-active-class="menu-item--ativo"
+            >
+              <q-icon name="agriculture" size="22px" />
+              <span>Produtores</span>
+            </router-link>
+
+            <router-link
+              :to="{ name: 'admin-relatorios' }"
+              class="menu-item"
+              exact-active-class="menu-item--ativo"
+            >
+              <q-icon name="assessment" size="22px" />
+              <span>Relatórios</span>
+            </router-link>
+
+            <router-link
+              :to="{ name: 'admin-perfil' }"
+              class="menu-item"
+              exact-active-class="menu-item--ativo"
+            >
+              <q-icon name="person" size="22px" />
+              <span>Perfil</span>
+            </router-link>
+          </nav>
         </div>
 
-        <q-space />
+        <!-- RODAPÉ DA SIDEBAR -->
 
-        <div class="header-acoes">
-          <q-btn
-            flat
-            round
-            :icon="$q.dark.isActive ? 'light_mode' : 'dark_mode'"
-            @click="alternarTema"
-          />
-
-          <q-btn
-            flat
-            round
-            icon="notifications_none"
+        <div class="sidebar-rodape">
+          <div
+            class="usuario-resumo"
+            @click="irPara('admin-perfil')"
           >
-            <q-badge
-              floating
-              color="red"
-              rounded
-            />
-          </q-btn>
+            <div class="usuario-avatar">
+              {{ iniciaisUsuario }}
+            </div>
 
-          <button
-            type="button"
-            class="header-usuario"
-          >
-            <div class="header-usuario-texto">
+            <div class="usuario-dados">
               <strong>
                 {{ nomeUsuario }}
               </strong>
 
               <span>
-                Administrador
+                ADMINISTRADOR
               </span>
             </div>
 
-            <div class="header-avatar">
-              {{ iniciaisUsuario }}
-            </div>
-
             <q-icon
-              name="keyboard_arrow_down"
-              size="19px"
+              name="chevron_right"
+              size="18px"
+              class="usuario-seta"
+            />
+          </div>
+
+          <button
+            type="button"
+            class="rodape-acao"
+            @click="alternarTema"
+          >
+            <q-icon
+              :name="
+                $q.dark.isActive
+                  ? 'light_mode'
+                  : 'dark_mode'
+              "
+              size="21px"
             />
 
-            <q-menu>
-              <q-list style="min-width: 220px">
-                <q-item>
-                  <q-item-section>
-                    <div class="text-weight-bold">
-                      {{ nomeUsuario }}
-                    </div>
-
-                    <div class="text-caption text-grey">
-                      Administrador
-                    </div>
-                  </q-item-section>
-                </q-item>
-
-                <q-separator />
-
-                <q-item
-                  clickable
-                  v-close-popup
-                  @click="irPara('admin-perfil')"
-                >
-                  <q-item-section avatar>
-                    <q-icon name="person" />
-                  </q-item-section>
-
-                  <q-item-section>
-                    Perfil
-                  </q-item-section>
-                </q-item>
-
-                <q-separator />
-
-                <q-item
-                  clickable
-                  v-close-popup
-                  class="text-negative"
-                  @click="sair"
-                >
-                  <q-item-section avatar>
-                    <q-icon
-                      name="logout"
-                      color="negative"
-                    />
-                  </q-item-section>
-
-                  <q-item-section>
-                    Sair
-                  </q-item-section>
-                </q-item>
-              </q-list>
-            </q-menu>
+            <span>
+              {{
+                $q.dark.isActive
+                  ? 'Modo claro'
+                  : 'Modo escuro'
+              }}
+            </span>
           </button>
+
+          <button
+            type="button"
+            class="rodape-acao rodape-acao--sair"
+            @click="sair"
+          >
+            <q-icon
+              name="logout"
+              size="21px"
+            />
+
+            <span>
+              Sair do sistema
+            </span>
+          </button>
+        </div>
+      </div>
+    </q-drawer>
+
+    <!-- ==================================================
+         HEADER DESKTOP
+         Na dashboard o próprio conteúdo possui o topo.
+    =================================================== -->
+
+    <q-header
+      v-if="
+        !isMobile &&
+        route.name !== 'admin-dashboard'
+      "
+      bordered
+      class="admin-header"
+    >
+      <q-toolbar class="admin-toolbar">
+        <div class="header-conteudo">
+          <div class="header-detalhe"></div>
+
+          <div>
+            <div class="header-titulo">
+              {{ tituloPagina }}
+            </div>
+
+            <div class="header-subtitulo">
+              {{ subtituloPagina }}
+            </div>
+          </div>
+        </div>
+
+        <q-space />
+
+        <div class="header-marca">
+          <span class="header-marca-ponto"></span>
+          AVIOESTE
         </div>
       </q-toolbar>
     </q-header>
@@ -248,10 +229,6 @@
               class="mobile-logo-avicola"
             />
 
-            <div class="mobile-header__boas-vindas">
-              Bem-vindo, {{ primeiroNome }}
-            </div>
-
             <div class="mobile-header__portal">
               Painel Administrativo
             </div>
@@ -270,14 +247,6 @@
             mobile-header__lado--direita
           "
         >
-          <q-btn
-            flat
-            round
-            dense
-            icon="notifications_none"
-            class="mobile-header__acao"
-          />
-
           <q-btn
             flat
             round
@@ -333,11 +302,15 @@
           }"
           @click="irPara('admin-chamados')"
         >
-          <q-icon name="confirmation_number" size="23px" />
-          <span>Chamados</span>
-        </button>
+          <q-icon
+            name="confirmation_number"
+            size="23px"
+          />
 
-        <!-- GESTÃO -->
+          <span>
+            Chamados
+          </span>
+        </button>
 
         <div class="mobile-nav__novo-container">
           <button
@@ -511,13 +484,6 @@ const nomeUsuario =
     'Administrador'
   )
 
-const primeiroNome =
-  computed(() =>
-    nomeUsuario.value
-      .trim()
-      .split(/\s+/)[0]
-  )
-
 const iniciaisUsuario =
   computed(() => {
     const partes =
@@ -628,7 +594,8 @@ function alternarTema() {
 async function sair() {
   try {
     if (
-      typeof authStore.logout === 'function'
+      typeof authStore.logout ===
+      'function'
     ) {
       await authStore.logout()
     }
@@ -653,7 +620,9 @@ async function sair() {
   background: #f5f6f8;
 }
 
-/* DESKTOP */
+/* =========================================================
+   SIDEBAR
+========================================================= */
 
 .admin-drawer {
   background: #ffffff;
@@ -661,25 +630,34 @@ async function sair() {
 
 .drawer-conteudo {
   min-height: 100%;
-  padding: 25px 18px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  padding: 28px 20px 20px;
 }
 
 .admin-brand {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 5px 8px 28px;
+
+  gap: 13px;
+
+  padding: 4px 8px 32px;
 }
 
 .brand-icon {
-  width: 48px;
-  height: 48px;
+  width: 54px;
+  height: 54px;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
-  border-radius: 14px;
+  flex-shrink: 0;
+
+  border-radius: 15px;
 
   color: #ffffff;
 
@@ -689,45 +667,46 @@ async function sair() {
       #ff9500,
       #f97316
     );
+
+  box-shadow:
+    0 8px 18px
+    rgba(249, 115, 22, 0.18);
 }
 
 .brand-nome {
   color: #101828;
+
   font-size: 20px;
   font-weight: 900;
 }
 
 .brand-subtitulo {
+  margin-top: 2px;
+
   color: #98a2b3;
+
   font-size: 10px;
   font-weight: 600;
-}
-
-.menu-titulo {
-  padding: 0 12px 10px;
-
-  color: #98a2b3;
-
-  font-size: 9px;
-  font-weight: 800;
 }
 
 .menu-lista {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+
+  gap: 7px;
 }
 
 .menu-item {
-  min-height: 48px;
+  min-height: 52px;
 
   display: flex;
   align-items: center;
+
   gap: 13px;
 
   padding: 0 14px;
 
-  border-radius: 12px;
+  border-radius: 13px;
 
   color: #475467;
 
@@ -735,6 +714,10 @@ async function sair() {
 
   font-size: 13px;
   font-weight: 700;
+
+  transition:
+    color 0.18s ease,
+    background 0.18s ease;
 }
 
 .menu-item:hover {
@@ -744,80 +727,46 @@ async function sair() {
 
 .menu-item--ativo {
   color: #f97316;
+
   background: #fff1e6;
+
+  box-shadow:
+    inset 3px 0 0 #f97316;
 }
 
-.admin-header {
-  color: #101828;
-  background: #ffffff;
+/* RODAPÉ */
+
+.sidebar-rodape {
+  padding-top: 16px;
+
+  border-top: 1px solid #eaecf0;
 }
 
-.admin-toolbar {
-  min-height: 78px;
-  padding: 0 30px;
-}
+.usuario-resumo {
+  display: grid;
 
-.header-titulo {
-  color: #101828;
-  font-size: 20px;
-  font-weight: 900;
-}
+  grid-template-columns:
+    42px
+    minmax(0, 1fr)
+    18px;
 
-.header-subtitulo {
-  margin-top: 2px;
-
-  color: #98a2b3;
-
-  font-size: 10px;
-}
-
-.header-acoes {
-  display: flex;
   align-items: center;
-  gap: 7px;
-}
 
-.header-usuario {
-  display: flex;
-  align-items: center;
-  gap: 9px;
+  gap: 10px;
 
-  margin-left: 7px;
+  margin-bottom: 8px;
+  padding: 9px 10px;
 
-  padding: 4px 5px 4px 15px;
+  border-radius: 12px;
 
-  border: 0;
-  border-left: 1px solid #eaecf0;
-
-  color: inherit;
-  background: transparent;
+  background: #f9fafb;
 
   cursor: pointer;
 }
 
-.header-usuario-texto {
-  text-align: right;
-}
-
-.header-usuario-texto strong {
-  display: block;
-
-  color: #344054;
-
-  font-size: 11px;
-}
-
-.header-usuario-texto span {
-  display: block;
-
-  color: #98a2b3;
-
-  font-size: 9px;
-}
-
-.header-avatar {
-  width: 40px;
-  height: 40px;
+.usuario-avatar {
+  width: 42px;
+  height: 42px;
 
   display: flex;
   align-items: center;
@@ -825,14 +774,177 @@ async function sair() {
 
   border-radius: 50%;
 
-  color: #f97316;
-  background: #fff1e6;
+  color: #17233c;
 
-  font-size: 12px;
+  background: #ffedd5;
+
+  font-size: 14px;
   font-weight: 900;
 }
 
-/* MOBILE */
+.usuario-dados {
+  min-width: 0;
+}
+
+.usuario-dados strong {
+  display: block;
+
+  overflow: hidden;
+
+  color: #101828;
+
+  font-size: 10px;
+  font-weight: 800;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.usuario-dados span {
+  display: block;
+
+  margin-top: 2px;
+
+  color: #98a2b3;
+
+  font-size: 7px;
+  font-weight: 800;
+
+  letter-spacing: 0.6px;
+}
+
+.usuario-seta {
+  color: #98a2b3;
+}
+
+.rodape-acao {
+  width: 100%;
+  min-height: 42px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+
+  padding: 0 11px;
+
+  border: 0;
+  border-radius: 10px;
+
+  color: #667085;
+
+  background: transparent;
+
+  font-family: inherit;
+
+  font-size: 10px;
+  font-weight: 700;
+
+  text-align: left;
+
+  cursor: pointer;
+}
+
+.rodape-acao:hover {
+  color: #f97316;
+  background: #fff7ed;
+}
+
+.rodape-acao--sair:hover {
+  color: #d92d20;
+  background: #fef3f2;
+}
+
+/* =========================================================
+   HEADER DESKTOP
+========================================================= */
+
+.admin-header {
+  color: #101828;
+
+  background:
+    linear-gradient(
+      90deg,
+      #ffffff 0%,
+      #ffffff 72%,
+      #fffaf5 100%
+    );
+}
+
+.admin-toolbar {
+  min-height: 68px;
+
+  padding: 0 24px;
+}
+
+.header-conteudo {
+  display: flex;
+  align-items: center;
+
+  gap: 11px;
+}
+
+.header-detalhe {
+  width: 4px;
+  height: 36px;
+
+  border-radius: 999px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #ff9d1f,
+      #f97316
+    );
+}
+
+.header-titulo {
+  color: #17233c;
+
+  font-size: 20px;
+  font-weight: 900;
+
+  line-height: 1.1;
+}
+
+.header-subtitulo {
+  margin-top: 3px;
+
+  color: #667085;
+
+  font-size: 10px;
+}
+
+.header-marca {
+  display: flex;
+  align-items: center;
+
+  gap: 7px;
+
+  color: #98a2b3;
+
+  font-size: 8px;
+  font-weight: 900;
+
+  letter-spacing: 1.5px;
+}
+
+.header-marca-ponto {
+  width: 7px;
+  height: 7px;
+
+  border-radius: 50%;
+
+  background: #f97316;
+
+  box-shadow:
+    0 0 0 4px
+    rgba(249, 115, 22, 0.12);
+}
+
+/* =========================================================
+   MOBILE
+========================================================= */
 
 .conteudo-mobile {
   min-height: 100vh;
@@ -852,26 +964,24 @@ async function sair() {
 
   z-index: 1000;
 
-  min-height: 60px;
+  min-height: 58px;
 
   display: grid;
 
   grid-template-columns:
-    76px
+    54px
     minmax(0, 1fr)
-    76px;
+    54px;
 
   align-items: center;
 
-  gap: 4px;
-
   padding:
     calc(
-      7px +
+      6px +
       env(safe-area-inset-top)
     )
     8px
-    8px;
+    7px;
 
   border-bottom: 1px solid #eaecf0;
 
@@ -882,19 +992,16 @@ async function sair() {
 }
 
 .mobile-header--dashboard {
-  min-height: 110px;
+  min-height: 78px;
 }
 
 .mobile-header__lado {
-  width: 76px;
-
-  display: flex;
-  align-items: center;
+  width: 54px;
 }
 
 .mobile-header__lado--direita {
+  display: flex;
   justify-content: flex-end;
-  gap: 0;
 }
 
 .mobile-header__centro {
@@ -908,29 +1015,12 @@ async function sair() {
 }
 
 .mobile-logo-avicola {
-  display: block;
-
-  width: 175px;
+  width: 150px;
   max-width: 100%;
 
   height: auto;
 
-  margin-bottom: 3px;
-
   object-fit: contain;
-}
-
-.mobile-header__boas-vindas {
-  color: #101828;
-
-  font-size: 16px;
-  font-weight: 800;
-
-  line-height: 1.15;
-
-  text-align: center;
-
-  white-space: nowrap;
 }
 
 .mobile-header__portal {
@@ -938,10 +1028,8 @@ async function sair() {
 
   color: #98a2b3;
 
-  font-size: 10px;
-  font-weight: 500;
-
-  text-align: center;
+  font-size: 9px;
+  font-weight: 600;
 }
 
 .mobile-header__titulo {
@@ -951,10 +1039,6 @@ async function sair() {
   font-weight: 800;
 
   text-align: center;
-}
-
-.mobile-header__acao {
-  color: #344054;
 }
 
 .mobile-header__sair {
@@ -1017,6 +1101,7 @@ async function sair() {
   border: 0;
 
   color: #98a2b3;
+
   background: transparent;
 
   font-family: inherit;
@@ -1058,7 +1143,6 @@ async function sair() {
   justify-content: center;
 
   border: 5px solid #ffffff;
-
   border-radius: 50%;
 
   color: #ffffff;
@@ -1128,10 +1212,13 @@ async function sair() {
 
 .gestao-item {
   min-height: 68px;
+
   border-radius: 13px;
 }
 
-/* DARK */
+/* =========================================================
+   DARK
+========================================================= */
 
 .admin-layout--dark {
   background: #0d0f12;
@@ -1139,7 +1226,55 @@ async function sair() {
 
 .admin-layout--dark .admin-drawer,
 .admin-layout--dark .admin-header {
+  border-color: #2b2f36;
+
   background: #15181d;
+}
+
+.admin-layout--dark .brand-nome,
+.admin-layout--dark .usuario-dados strong,
+.admin-layout--dark .header-titulo {
+  color: #f9fafb;
+}
+
+.admin-layout--dark .menu-item {
+  color: #cbd5e1;
+}
+
+.admin-layout--dark .menu-item:hover {
+  color: #fb923c;
+  background: #1b1f25;
+}
+
+.admin-layout--dark .menu-item--ativo {
+  color: #fb923c;
+
+  background: #292018;
+
+  box-shadow:
+    inset 3px 0 0 #f97316;
+}
+
+.admin-layout--dark .sidebar-rodape {
+  border-color: #2b2f36;
+}
+
+.admin-layout--dark .usuario-resumo {
+  background: #1b1f25;
+}
+
+.admin-layout--dark .rodape-acao {
+  color: #cbd5e1;
+}
+
+.admin-layout--dark .admin-header {
+  background:
+    linear-gradient(
+      90deg,
+      #16191f 0%,
+      #16191f 72%,
+      #1f1b18 100%
+    );
 }
 
 .admin-layout--dark .mobile-header {
@@ -1149,7 +1284,6 @@ async function sair() {
     rgba(22, 25, 31, 0.96);
 }
 
-.admin-layout--dark .mobile-header__boas-vindas,
 .admin-layout--dark .mobile-header__titulo {
   color: #f9fafb;
 }

@@ -1,43 +1,76 @@
 <template>
-  <q-page class="dashboard-page">
-    <!-- =========================================
-         CABEÇALHO DESKTOP
-    ========================================== -->
+  <q-page
+    class="dashboard-page"
+    :class="{ 'dashboard-page--dark': $q.dark.isActive }"
+  >
+    <!-- HERO -->
+    <section class="dashboard-hero">
+      <div class="dashboard-hero__identidade">
+        <div class="dashboard-hero__barra"></div>
 
-    <div class="pagina-cabecalho">
-      <div>
-        <div class="pagina-titulo">
-          Dashboard
-        </div>
+        <div>
+          <div class="dashboard-hero__label">
+            PAINEL DO PRODUTOR
+          </div>
 
-        <div class="pagina-subtitulo">
-          Acompanhe um resumo dos chamados da sua propriedade.
+          <div class="dashboard-hero__titulo">
+            Olá, {{ primeiroNome }} 👋
+          </div>
+
+          <div class="dashboard-hero__descricao">
+            Acompanhe os indicadores e a evolução dos seus chamados.
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- =========================================
-         CARREGANDO
-    ========================================== -->
+      <div class="dashboard-hero__acoes">
+        <div class="data-card">
+          <div class="data-card__icone">
+            <q-icon
+              name="calendar_month"
+              size="19px"
+            />
+          </div>
 
+          <div>
+            <span>Hoje</span>
+            <strong>
+              {{ dataAtual }}
+            </strong>
+          </div>
+        </div>
+
+        <q-btn
+          unelevated
+          round
+          class="botao-atualizar"
+          icon="refresh"
+          :loading="carregando"
+          @click="carregarDados"
+        >
+          <q-tooltip>
+            Atualizar dashboard
+          </q-tooltip>
+        </q-btn>
+      </div>
+    </section>
+
+    <!-- CARREGANDO -->
     <div
       v-if="carregando"
       class="estado-central"
     >
       <q-spinner
         color="orange"
-        size="48px"
+        size="42px"
       />
 
-      <div class="text-grey-7 q-mt-md">
+      <span>
         Carregando dashboard...
-      </div>
+      </span>
     </div>
 
-    <!-- =========================================
-         ERRO
-    ========================================== -->
-
+    <!-- ERRO -->
     <q-banner
       v-else-if="erro"
       rounded
@@ -55,515 +88,387 @@
       </template>
     </q-banner>
 
-    <!-- =========================================
-         CONTEÚDO
-    ========================================== -->
-
-    <div
-      v-else
-      class="dashboard-conteudo"
-    >
-      <!-- =======================================
-           INDICADORES
-      ======================================== -->
-
-      <div class="cards-grid">
-        <!-- TOTAL -->
-
-        <div
+    <template v-else>
+      <!-- INDICADORES -->
+      <section class="cards-grid">
+        <button
+          type="button"
           class="indicador-card"
           @click="abrirChamados()"
         >
-          <div class="indicador-topo">
-            <div class="icone-wrapper total">
-              <q-icon
-                name="confirmation_number"
-                size="24px"
-              />
-            </div>
-
+          <div class="icone-wrapper total">
             <q-icon
-              name="arrow_forward"
-              color="grey-5"
-              size="20px"
-              class="indicador-seta"
+              name="confirmation_number"
+              size="21px"
             />
           </div>
 
-          <div class="indicador-numero">
-            {{ totalChamados }}
+          <div class="indicador-conteudo">
+            <div class="indicador-numero">
+              {{ totalChamados }}
+            </div>
+
+            <div class="indicador-titulo">
+              Total de chamados
+            </div>
+
+            <div class="indicador-descricao">
+              Todos os registros
+            </div>
           </div>
 
-          <div class="indicador-titulo">
-            Total de chamados
-          </div>
+          <q-icon
+            name="arrow_forward"
+            class="indicador-seta"
+            size="18px"
+          />
+        </button>
 
-          <div class="indicador-descricao">
-            Todos os chamados registrados
-          </div>
-        </div>
-
-        <!-- PENDENTES -->
-
-        <div
+        <button
+          type="button"
           class="indicador-card"
           @click="abrirChamados('PENDENTE')"
         >
-          <div class="indicador-topo">
-            <div class="icone-wrapper pendente">
-              <q-icon
-                name="schedule"
-                size="24px"
-              />
-            </div>
-
+          <div class="icone-wrapper pendente">
             <q-icon
-              name="arrow_forward"
-              color="grey-5"
-              size="20px"
-              class="indicador-seta"
+              name="schedule"
+              size="21px"
             />
           </div>
 
-          <div class="indicador-numero">
-            {{ totalPendentes }}
+          <div class="indicador-conteudo">
+            <div class="indicador-numero">
+              {{ totalPendentes }}
+            </div>
+
+            <div class="indicador-titulo">
+              Pendentes
+            </div>
+
+            <div class="indicador-descricao">
+              Aguardando atendimento
+            </div>
           </div>
 
-          <div class="indicador-titulo">
-            Pendentes
-          </div>
+          <q-icon
+            name="arrow_forward"
+            class="indicador-seta"
+            size="18px"
+          />
+        </button>
 
-          <div class="indicador-descricao">
-            Aguardando atendimento
-          </div>
-        </div>
-
-        <!-- EM ANDAMENTO -->
-
-        <div
+        <button
+          type="button"
           class="indicador-card"
           @click="abrirChamados('EM_ATENDIMENTO')"
         >
-          <div class="indicador-topo">
-            <div class="icone-wrapper atendimento">
-              <q-icon
-                name="engineering"
-                size="24px"
-              />
-            </div>
-
+          <div class="icone-wrapper atendimento">
             <q-icon
-              name="arrow_forward"
-              color="grey-5"
-              size="20px"
-              class="indicador-seta"
+              name="engineering"
+              size="21px"
             />
           </div>
 
-          <div class="indicador-numero">
-            {{ totalEmAndamento }}
+          <div class="indicador-conteudo">
+            <div class="indicador-numero">
+              {{ totalEmAndamento }}
+            </div>
+
+            <div class="indicador-titulo">
+              Em andamento
+            </div>
+
+            <div class="indicador-descricao">
+              Aceitos, em rota ou atendimento
+            </div>
           </div>
 
-          <div class="indicador-titulo">
-            Em andamento
-          </div>
+          <q-icon
+            name="arrow_forward"
+            class="indicador-seta"
+            size="18px"
+          />
+        </button>
 
-          <div class="indicador-descricao">
-            Aceitos, em rota ou atendimento
-          </div>
-        </div>
-
-        <!-- FINALIZADOS -->
-
-        <div
+        <button
+          type="button"
           class="indicador-card"
           @click="abrirChamados('FINALIZADO')"
         >
-          <div class="indicador-topo">
-            <div class="icone-wrapper finalizado">
-              <q-icon
-                name="task_alt"
-                size="24px"
-              />
-            </div>
-
+          <div class="icone-wrapper finalizado">
             <q-icon
-              name="arrow_forward"
-              color="grey-5"
-              size="20px"
-              class="indicador-seta"
+              name="task_alt"
+              size="21px"
             />
           </div>
 
-          <div class="indicador-numero">
-            {{ totalFinalizados }}
+          <div class="indicador-conteudo">
+            <div class="indicador-numero">
+              {{ totalFinalizados }}
+            </div>
+
+            <div class="indicador-titulo">
+              Finalizados
+            </div>
+
+            <div class="indicador-descricao">
+              Atendimentos concluídos
+            </div>
           </div>
 
-          <div class="indicador-titulo">
-            Finalizados
-          </div>
+          <q-icon
+            name="arrow_forward"
+            class="indicador-seta"
+            size="18px"
+          />
+        </button>
 
-          <div class="indicador-descricao">
-            Atendimentos concluídos
-          </div>
-        </div>
-
-        <!-- CANCELADOS -->
-
-        <div
-          class="indicador-card indicador-card--cancelado"
+        <button
+          type="button"
+          class="indicador-card"
           @click="abrirChamados('CANCELADO')"
         >
-          <div class="indicador-topo">
-            <div class="icone-wrapper cancelado">
-              <q-icon
-                name="cancel"
-                size="24px"
-              />
-            </div>
-
+          <div class="icone-wrapper cancelado">
             <q-icon
-              name="arrow_forward"
-              color="grey-5"
-              size="20px"
-              class="indicador-seta"
+              name="cancel"
+              size="21px"
             />
           </div>
 
-          <div class="indicador-numero">
-            {{ totalCancelados }}
+          <div class="indicador-conteudo">
+            <div class="indicador-numero">
+              {{ totalCancelados }}
+            </div>
+
+            <div class="indicador-titulo">
+              Cancelados
+            </div>
+
+            <div class="indicador-descricao">
+              Chamados cancelados
+            </div>
           </div>
 
-          <div class="indicador-titulo">
-            Cancelados
+          <q-icon
+            name="arrow_forward"
+            class="indicador-seta"
+            size="18px"
+          />
+        </button>
+      </section>
+
+      <!-- LINHA 1 DE GRÁFICOS -->
+      <section class="dashboard-grid dashboard-grid--principal">
+        <article class="dashboard-card">
+          <div class="card-header">
+            <div>
+              <div class="card-titulo">
+                Evolução dos chamados
+              </div>
+
+              <div class="card-subtitulo">
+                Abertos e finalizados nos últimos 6 meses
+              </div>
+            </div>
+
+            <div class="card-icone">
+              <q-icon
+                name="show_chart"
+                size="19px"
+              />
+            </div>
           </div>
 
-          <div class="indicador-descricao">
-            Chamados cancelados
+          <div class="grafico grafico--linha">
+            <Line
+              :data="dadosGraficoMensal"
+              :options="opcoesGraficoMensal"
+            />
           </div>
-        </div>
-      </div>
+        </article>
 
-      <!-- =======================================
-           VISÃO PRINCIPAL
-      ======================================== -->
-
-      <div class="dashboard-grid">
-        <!-- CHAMADOS POR STATUS -->
-
-        <div class="painel-card status-card">
-          <div class="card-cabecalho">
+        <article class="dashboard-card">
+          <div class="card-header card-header--compacto">
             <div>
               <div class="card-titulo">
                 Chamados por status
               </div>
 
               <div class="card-subtitulo">
-                Distribuição atual dos seus chamados.
+                Distribuição atual dos seus chamados
               </div>
             </div>
 
             <div class="card-icone">
               <q-icon
-                name="bar_chart"
-                size="23px"
+                name="donut_large"
+                size="19px"
               />
             </div>
           </div>
 
-          <div class="status-lista">
-            <div
-              v-for="item in resumoStatus"
-              :key="item.status"
-              class="status-item"
-              @click="
-                item.status === 'ANDAMENTO'
-                  ? abrirChamados('EM_ATENDIMENTO')
-                  : abrirChamados(item.status)
-              "
-            >
-              <div class="status-item-topo">
-                <div class="status-info">
-                  <span
-                    class="status-bolinha"
-                    :class="item.classe"
-                  ></span>
+          <div class="doughnut-area">
+            <div class="doughnut-wrapper">
+              <Doughnut
+                :data="dadosGraficoStatus"
+                :options="opcoesGraficoStatus"
+              />
 
-                  <span class="status-nome">
-                    {{ item.label }}
-                  </span>
-                </div>
+              <div class="doughnut-centro">
+                <strong>
+                  {{ totalChamados }}
+                </strong>
 
-                <div class="status-lateral">
-                  <strong class="status-quantidade">
-                    {{ item.total }}
-                  </strong>
+                <span>
+                  chamados
+                </span>
+              </div>
+            </div>
 
-                  <span class="status-percentual">
-                    {{ calcularPercentual(item.total) }}%
-                  </span>
+            <div class="legenda-status">
+              <div class="legenda-item">
+                <span class="ponto ponto--pendente"></span>
+
+                <div>
+                  <strong>{{ totalPendentes }}</strong>
+                  <span>Pendentes</span>
                 </div>
               </div>
 
-              <div class="barra-fundo">
-                <div
-                  class="barra-preenchimento"
-                  :class="item.classe"
-                  :style="{
-                    width: `${calcularPercentual(item.total)}%`
-                  }"
-                ></div>
+              <div class="legenda-item">
+                <span class="ponto ponto--andamento"></span>
+
+                <div>
+                  <strong>{{ totalEmAndamento }}</strong>
+                  <span>Em andamento</span>
+                </div>
+              </div>
+
+              <div class="legenda-item">
+                <span class="ponto ponto--finalizado"></span>
+
+                <div>
+                  <strong>{{ totalFinalizados }}</strong>
+                  <span>Finalizados</span>
+                </div>
+              </div>
+
+              <div class="legenda-item">
+                <span class="ponto ponto--cancelado"></span>
+
+                <div>
+                  <strong>{{ totalCancelados }}</strong>
+                  <span>Cancelados</span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        </article>
+      </section>
 
-        <!-- ATENÇÃO NECESSÁRIA -->
-
-        <div class="painel-card atencao-card">
-          <div class="card-cabecalho">
+      <!-- LINHA 2 DE GRÁFICOS -->
+      <section class="dashboard-grid dashboard-grid--secundario">
+        <article class="dashboard-card">
+          <div class="card-header">
             <div>
               <div class="card-titulo">
-                Atenção necessária
+                Chamados por urgência
               </div>
 
               <div class="card-subtitulo">
-                Chamados de maior urgência.
+                Distribuição das prioridades registradas
               </div>
             </div>
 
-            <div class="card-icone card-icone--alerta">
+            <div class="card-icone">
               <q-icon
                 name="priority_high"
-                size="23px"
+                size="19px"
               />
             </div>
           </div>
 
           <div
-            v-if="chamadosUrgentes.length === 0"
-            class="estado-vazio estado-vazio--compacto"
+            v-if="totalComUrgencia > 0"
+            class="grafico grafico--barra"
           >
-            <div class="estado-ok">
-              <q-icon
-                name="check"
-                size="21px"
-              />
-            </div>
-
-            <div>
-              <div class="estado-vazio-titulo">
-                Tudo tranquilo por aqui
-              </div>
-
-              <div class="estado-vazio-texto">
-                Nenhum chamado de alta urgência em aberto.
-              </div>
-            </div>
+            <Bar
+              :data="dadosGraficoUrgencia"
+              :options="opcoesGraficoUrgencia"
+            />
           </div>
 
           <div
             v-else
-            class="urgencias-lista"
+            class="estado-vazio"
           >
-            <div
-              v-for="chamado in chamadosUrgentes"
-              :key="chamado.id_chamado"
-              class="urgencia-item"
-              @click="verDetalhes(chamado)"
-            >
-              <div class="urgencia-conteudo">
-                <div class="urgencia-numero">
-                  #{{ chamado.id_chamado }}
-                </div>
+            <q-icon
+              name="bar_chart"
+              size="30px"
+              color="grey-5"
+            />
 
-                <div class="urgencia-problema">
-                  {{
-                    chamado.problema ||
-                    'Solicitação de atendimento'
-                  }}
-                </div>
+            <strong>
+              Sem dados de urgência
+            </strong>
 
-                <div class="urgencia-data">
-                  {{ formatarData(chamado.data_abertura) }}
-                </div>
+            <span>
+              O gráfico será preenchido conforme novos chamados forem registrados.
+            </span>
+          </div>
+        </article>
+
+        <article class="dashboard-card">
+          <div class="card-header">
+            <div>
+              <div class="card-titulo">
+                Tipos de chamado
               </div>
 
-              <div class="urgencia-lateral">
-                <q-badge
-                  rounded
-                  class="badge-alta"
-                >
-                  Alta
-                </q-badge>
-
-                <q-icon
-                  name="chevron_right"
-                  color="grey-5"
-                  size="22px"
-                />
+              <div class="card-subtitulo">
+                Motivos mais frequentes das suas solicitações
               </div>
             </div>
-          </div>
-        </div>
-      </div>
 
-      <!-- =======================================
-           ÚLTIMOS CHAMADOS
-      ======================================== -->
-
-      <div class="painel-card ultimos-card">
-        <div class="card-cabecalho ultimos-cabecalho">
-          <div>
-            <div class="card-titulo">
-              Últimos chamados
-            </div>
-
-            <div class="card-subtitulo">
-              Suas solicitações mais recentes.
-            </div>
-          </div>
-
-          <q-btn
-            flat
-            no-caps
-            dense
-            color="orange"
-            label="Ver todos"
-            :to="{
-              name: 'produtor-chamados'
-            }"
-          />
-        </div>
-
-        <!-- VAZIO -->
-
-        <div
-          v-if="ultimosChamados.length === 0"
-          class="estado-vazio"
-        >
-          <q-icon
-            name="inbox"
-            size="42px"
-            color="grey-5"
-          />
-
-          <div class="estado-vazio-titulo">
-            Nenhum chamado registrado
-          </div>
-
-          <div class="estado-vazio-texto">
-            Seus chamados recentes aparecerão aqui.
-          </div>
-        </div>
-
-        <!-- DESKTOP -->
-
-        <div
-          v-else
-          class="ultimos-container ultimos-desktop"
-        >
-          <div class="tabela-cabecalho">
-            <div>Número</div>
-            <div>Problema</div>
-            <div>Data</div>
-            <div>Status</div>
-
-            <div class="text-right">
-              Ação
+            <div class="card-icone">
+              <q-icon
+                name="category"
+                size="19px"
+              />
             </div>
           </div>
 
           <div
-            v-for="chamado in ultimosChamados"
-            :key="chamado.id_chamado"
-            class="tabela-linha"
+            v-if="tiposChamado.length > 0"
+            class="grafico grafico--barra"
           >
-            <div class="numero-chamado">
-              #{{ chamado.id_chamado }}
-            </div>
-
-            <div class="problema-chamado">
-              {{
-                chamado.problema ||
-                'Não informado'
-              }}
-            </div>
-
-            <div class="data-chamado">
-              {{ formatarData(chamado.data_abertura) }}
-            </div>
-
-            <div>
-              <q-badge
-                rounded
-                :class="classeStatus(chamado.status)"
-              >
-                {{ formatarStatus(chamado.status) }}
-              </q-badge>
-            </div>
-
-            <div class="acao-chamado">
-              <q-btn
-                outline
-                no-caps
-                color="orange"
-                size="sm"
-                label="Ver detalhes"
-                @click="verDetalhes(chamado)"
-              />
-            </div>
+            <Bar
+              :data="dadosGraficoTipos"
+              :options="opcoesGraficoTipos"
+            />
           </div>
-        </div>
 
-        <!-- MOBILE -->
-
-        <div
-          v-if="ultimosChamados.length"
-          class="ultimos-mobile"
-        >
-          <button
-            v-for="chamado in ultimosChamados"
-            :key="`mobile-${chamado.id_chamado}`"
-            type="button"
-            class="chamado-mobile"
-            @click="verDetalhes(chamado)"
+          <div
+            v-else
+            class="estado-vazio"
           >
-            <div class="chamado-mobile__principal">
-              <div class="chamado-mobile__linha">
-                <span class="chamado-mobile__numero">
-                  #{{ chamado.id_chamado }}
-                </span>
-
-                <q-badge
-                  rounded
-                  :class="classeStatus(chamado.status)"
-                >
-                  {{ formatarStatus(chamado.status) }}
-                </q-badge>
-              </div>
-
-              <strong>
-                {{
-                  chamado.problema ||
-                  'Solicitação de atendimento'
-                }}
-              </strong>
-
-              <span class="chamado-mobile__data">
-                {{ formatarData(chamado.data_abertura) }}
-              </span>
-            </div>
-
             <q-icon
-              name="chevron_right"
-              size="22px"
+              name="category"
+              size="30px"
               color="grey-5"
             />
-          </button>
-        </div>
-      </div>
-    </div>
+
+            <strong>
+              Sem tipos de chamado para comparar
+            </strong>
+
+            <span>
+              O gráfico aparecerá conforme os chamados forem registrados.
+            </span>
+          </div>
+        </article>
+      </section>
+    </template>
   </q-page>
 </template>
 
@@ -578,11 +483,51 @@ import {
   useRouter
 } from 'vue-router'
 
+import {
+  useQuasar
+} from 'quasar'
+
+import {
+  Bar,
+  Doughnut,
+  Line
+} from 'vue-chartjs'
+
+import {
+  ArcElement,
+  BarElement,
+  CategoryScale,
+  Chart as ChartJS,
+  Filler,
+  Legend,
+  LineElement,
+  LinearScale,
+  PointElement,
+  Tooltip
+} from 'chart.js'
+
+import {
+  useAuthStore
+} from 'src/stores/auth'
+
 import chamadoService from
   'src/services/chamadoService'
 
-const router =
-  useRouter()
+ChartJS.register(
+  ArcElement,
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Filler,
+  Tooltip,
+  Legend
+)
+
+const $q = useQuasar()
+const router = useRouter()
+const authStore = useAuthStore()
 
 const chamados =
   ref([])
@@ -593,9 +538,39 @@ const carregando =
 const erro =
   ref('')
 
-/* =========================================
-   CONTADORES
-========================================= */
+const primeiroNome =
+  computed(() => {
+    const nome =
+      String(
+        authStore.usuario?.nome ||
+        authStore.nomeUsuario ||
+        'Produtor'
+      ).trim()
+
+    return (
+      nome.split(/\s+/)[0] ||
+      'Produtor'
+    )
+  })
+
+const dataAtual =
+  computed(() => {
+    return new Intl.DateTimeFormat(
+      'pt-BR',
+      {
+        weekday:
+          'long',
+        day:
+          '2-digit',
+        month:
+          'long'
+      }
+    ).format(
+      new Date()
+    )
+  })
+
+/* CONTADORES */
 
 const totalChamados =
   computed(() =>
@@ -634,120 +609,690 @@ const totalCancelados =
     ])
   )
 
-/* =========================================
-   RESUMO POR STATUS
-========================================= */
+/* GRÁFICO STATUS */
 
-const resumoStatus =
-  computed(() => [
-    {
-      status: 'PENDENTE',
-      label: 'Pendentes',
-      total: totalPendentes.value,
-      classe: 'pendente'
-    },
+const dadosGraficoStatus =
+  computed(() => ({
+    labels: [
+      'Pendentes',
+      'Em andamento',
+      'Finalizados',
+      'Cancelados'
+    ],
 
-    {
-      status: 'ANDAMENTO',
-      label: 'Em andamento',
-      total: totalEmAndamento.value,
-      classe: 'andamento'
-    },
+    datasets: [
+      {
+        data: [
+          totalPendentes.value,
+          totalEmAndamento.value,
+          totalFinalizados.value,
+          totalCancelados.value
+        ],
 
-    {
-      status: 'FINALIZADO',
-      label: 'Finalizados',
-      total: totalFinalizados.value,
-      classe: 'finalizado'
-    },
+        backgroundColor: [
+          '#f97316',
+          '#3b82f6',
+          '#22c55e',
+          '#ef4444'
+        ],
 
-    {
-      status: 'CANCELADO',
-      label: 'Cancelados',
-      total: totalCancelados.value,
-      classe: 'cancelado'
+        borderWidth:
+          0,
+
+        hoverOffset:
+          6
+      }
+    ]
+  }))
+
+const opcoesGraficoStatus =
+  computed(() => ({
+    responsive:
+      true,
+
+    maintainAspectRatio:
+      false,
+
+    cutout:
+      '72%',
+
+    plugins: {
+      legend: {
+        display:
+          false
+      }
     }
-  ])
+  }))
 
-/* =========================================
-   ÚLTIMOS
-========================================= */
+/* GRÁFICO MENSAL */
 
-const ultimosChamados =
+const mesesGrafico =
   computed(() => {
-    return [...chamados.value]
-      .sort(
-        (a, b) => {
-          const dataA =
-            new Date(
-              a.data_abertura
-            ).getTime()
+    const meses = []
+    const hoje =
+      new Date()
 
-          const dataB =
-            new Date(
-              b.data_abertura
-            ).getTime()
+    for (
+      let i = 5;
+      i >= 0;
+      i--
+    ) {
+      const data =
+        new Date(
+          hoje.getFullYear(),
+          hoje.getMonth() - i,
+          1
+        )
 
-          return dataB - dataA
-        }
-      )
-      .slice(0, 5)
-  })
+      meses.push({
+        ano:
+          data.getFullYear(),
 
-/* =========================================
-   URGENTES
-========================================= */
+        mes:
+          data.getMonth(),
 
-const chamadosUrgentes =
-  computed(() => {
-    return chamados.value
-      .filter(
-        chamado => {
-          const urgencia =
-            String(
-              chamado.urgencia ||
-              ''
-            ).toUpperCase()
-
-          const status =
-            String(
-              chamado.status ||
-              ''
-            ).toUpperCase()
-
-          return (
-            urgencia === 'ALTA' &&
-            ![
-              'FINALIZADO',
-              'CONCLUIDO',
-              'CANCELADO'
-            ].includes(
-              status
-            )
+        label:
+          new Intl.DateTimeFormat(
+            'pt-BR',
+            {
+              month:
+                'short'
+            }
           )
-        }
-      )
-      .sort(
-        (a, b) => {
-          const dataA =
-            new Date(
-              a.data_abertura
-            ).getTime()
+            .format(data)
+            .replace(
+              '.',
+              ''
+            )
+      })
+    }
 
-          const dataB =
-            new Date(
-              b.data_abertura
-            ).getTime()
-
-          return dataA - dataB
-        }
-      )
-      .slice(0, 4)
+    return meses
   })
 
-/* =========================================
-   CONTAR STATUS
-========================================= */
+const chamadosAbertosPorMes =
+  computed(() =>
+    mesesGrafico.value.map(
+      periodo =>
+        chamados.value.filter(
+          item => {
+            const data =
+              new Date(
+                item.data_abertura ||
+                0
+              )
+
+            return (
+              !Number.isNaN(
+                data.getTime()
+              ) &&
+              data.getFullYear() ===
+                periodo.ano &&
+              data.getMonth() ===
+                periodo.mes
+            )
+          }
+        ).length
+    )
+  )
+
+const finalizadosPorMes =
+  computed(() =>
+    mesesGrafico.value.map(
+      periodo =>
+        chamados.value.filter(
+          item => {
+            if (
+              ![
+                'FINALIZADO',
+                'CONCLUIDO'
+              ].includes(
+                normalizarStatus(
+                  item.status
+                )
+              )
+            ) {
+              return false
+            }
+
+            const valorData =
+              item.data_fechamento ||
+              item.data_finalizacao ||
+              item.data_abertura
+
+            const data =
+              new Date(
+                valorData ||
+                0
+              )
+
+            return (
+              !Number.isNaN(
+                data.getTime()
+              ) &&
+              data.getFullYear() ===
+                periodo.ano &&
+              data.getMonth() ===
+                periodo.mes
+            )
+          }
+        ).length
+    )
+  )
+
+const dadosGraficoMensal =
+  computed(() => ({
+    labels:
+      mesesGrafico.value.map(
+        item =>
+          item.label
+      ),
+
+    datasets: [
+      {
+        label:
+          'Abertos',
+
+        data:
+          chamadosAbertosPorMes.value,
+
+        borderColor:
+          '#f97316',
+
+        backgroundColor:
+          'rgba(249, 115, 22, 0.12)',
+
+        pointBackgroundColor:
+          '#f97316',
+
+        pointBorderColor:
+          '#ffffff',
+
+        pointBorderWidth:
+          2,
+
+        pointRadius:
+          3,
+
+        borderWidth:
+          3,
+
+        tension:
+          0.35,
+
+        fill:
+          true
+      },
+      {
+        label:
+          'Finalizados',
+
+        data:
+          finalizadosPorMes.value,
+
+        borderColor:
+          '#22c55e',
+
+        backgroundColor:
+          'rgba(34, 197, 94, 0.04)',
+
+        pointBackgroundColor:
+          '#22c55e',
+
+        pointBorderColor:
+          '#ffffff',
+
+        pointBorderWidth:
+          2,
+
+        pointRadius:
+          3,
+
+        borderWidth:
+          2,
+
+        tension:
+          0.35,
+
+        fill:
+          false
+      }
+    ]
+  }))
+
+const opcoesGraficoMensal =
+  computed(() => ({
+    responsive:
+      true,
+
+    maintainAspectRatio:
+      false,
+
+    interaction: {
+      intersect:
+        false,
+
+      mode:
+        'index'
+    },
+
+    plugins: {
+      legend: {
+        display:
+          true,
+
+        position:
+          'top',
+
+        align:
+          'end',
+
+        labels: {
+          usePointStyle:
+            true,
+
+          boxWidth:
+            7,
+
+          color:
+            $q.dark.isActive
+              ? '#cbd5e1'
+              : '#667085',
+
+          font: {
+            size:
+              9
+          }
+        }
+      }
+    },
+
+    scales: {
+      x: {
+        ticks: {
+          color:
+            $q.dark.isActive
+              ? '#98a2b3'
+              : '#667085'
+        },
+
+        grid: {
+          display:
+            false
+        },
+
+        border: {
+          display:
+            false
+        }
+      },
+
+      y: {
+        beginAtZero:
+          true,
+
+        ticks: {
+          precision:
+            0,
+
+          color:
+            $q.dark.isActive
+              ? '#98a2b3'
+              : '#667085'
+        },
+
+        grid: {
+          color:
+            $q.dark.isActive
+              ? 'rgba(255,255,255,0.06)'
+              : 'rgba(16,24,40,0.06)'
+        },
+
+        border: {
+          display:
+            false
+        }
+      }
+    }
+  }))
+
+/* GRÁFICO URGÊNCIA */
+
+const totaisUrgencia =
+  computed(() => {
+    const totais = {
+      BAIXA:
+        0,
+      MEDIA:
+        0,
+      ALTA:
+        0
+    }
+
+    chamados.value.forEach(
+      item => {
+        const valor =
+          normalizarTexto(
+            item.urgencia
+          )
+
+        if (
+          Object.prototype
+            .hasOwnProperty.call(
+              totais,
+              valor
+            )
+        ) {
+          totais[
+            valor
+          ] += 1
+        }
+      }
+    )
+
+    return totais
+  })
+
+const totalComUrgencia =
+  computed(() =>
+    totaisUrgencia.value.BAIXA +
+    totaisUrgencia.value.MEDIA +
+    totaisUrgencia.value.ALTA
+  )
+
+const dadosGraficoUrgencia =
+  computed(() => ({
+    labels: [
+      'Baixa',
+      'Média',
+      'Alta'
+    ],
+
+    datasets: [
+      {
+        data: [
+          totaisUrgencia.value.BAIXA,
+          totaisUrgencia.value.MEDIA,
+          totaisUrgencia.value.ALTA
+        ],
+
+        backgroundColor: [
+          '#3b82f6',
+          '#f59e0b',
+          '#ef4444'
+        ],
+
+        borderRadius:
+          8,
+
+        borderSkipped:
+          false,
+
+        barThickness:
+          25
+      }
+    ]
+  }))
+
+const opcoesGraficoUrgencia =
+  computed(() => ({
+    responsive:
+      true,
+
+    maintainAspectRatio:
+      false,
+
+    plugins: {
+      legend: {
+        display:
+          false
+      }
+    },
+
+    scales: {
+      x: {
+        ticks: {
+          color:
+            $q.dark.isActive
+              ? '#98a2b3'
+              : '#667085'
+        },
+
+        grid: {
+          display:
+            false
+        },
+
+        border: {
+          display:
+            false
+        }
+      },
+
+      y: {
+        beginAtZero:
+          true,
+
+        ticks: {
+          precision:
+            0,
+
+          color:
+            $q.dark.isActive
+              ? '#98a2b3'
+              : '#667085'
+        },
+
+        grid: {
+          color:
+            $q.dark.isActive
+              ? 'rgba(255,255,255,0.06)'
+              : 'rgba(16,24,40,0.06)'
+        },
+
+        border: {
+          display:
+            false
+        }
+      }
+    }
+  }))
+
+/* TIPOS DE CHAMADO */
+
+const tiposChamado =
+  computed(() => {
+    const mapa =
+      new Map()
+
+    chamados.value.forEach(
+      item => {
+        const tipo =
+          String(
+            item.tipo_chamado ||
+            item.tipo_cultura ||
+            'Não informado'
+          ).trim()
+
+        if (
+          !tipo ||
+          tipo ===
+          'Não informado'
+        ) {
+          return
+        }
+
+        mapa.set(
+          tipo,
+          (mapa.get(tipo) || 0) + 1
+        )
+      }
+    )
+
+    return Array.from(
+      mapa.entries()
+    )
+      .map(
+        ([nome, total]) => ({
+          nome,
+          total
+        })
+      )
+      .sort(
+        (a, b) =>
+          b.total - a.total
+      )
+      .slice(0, 6)
+  })
+
+const dadosGraficoTipos =
+  computed(() => ({
+    labels:
+      tiposChamado.value.map(
+        item =>
+          formatarRotulo(
+            item.nome
+          )
+      ),
+
+    datasets: [
+      {
+        data:
+          tiposChamado.value.map(
+            item =>
+              item.total
+          ),
+
+        backgroundColor:
+          tiposChamado.value.map(
+            (_, index) => {
+              const cores = [
+                '#f97316',
+                '#fb923c',
+                '#fdba74',
+                '#3b82f6',
+                '#8b5cf6',
+                '#22c55e'
+              ]
+
+              return cores[index]
+            }
+          ),
+
+        borderRadius:
+          8,
+
+        borderSkipped:
+          false,
+
+        barThickness:
+          20
+      }
+    ]
+  }))
+
+const opcoesGraficoTipos =
+  computed(() => ({
+    responsive:
+      true,
+
+    maintainAspectRatio:
+      false,
+
+    indexAxis:
+      'y',
+
+    plugins: {
+      legend: {
+        display:
+          false
+      }
+    },
+
+    scales: {
+      x: {
+        beginAtZero:
+          true,
+
+        ticks: {
+          precision:
+            0,
+
+          color:
+            $q.dark.isActive
+              ? '#98a2b3'
+              : '#667085'
+        },
+
+        grid: {
+          color:
+            $q.dark.isActive
+              ? 'rgba(255,255,255,0.06)'
+              : 'rgba(16,24,40,0.06)'
+        },
+
+        border: {
+          display:
+            false
+        }
+      },
+
+      y: {
+        ticks: {
+          color:
+            $q.dark.isActive
+              ? '#cbd5e1'
+              : '#475467',
+
+          font: {
+            size:
+              10,
+            weight:
+              700
+          }
+        },
+
+        grid: {
+          display:
+            false
+        },
+
+        border: {
+          display:
+            false
+        }
+      }
+    }
+  }))
+
+/* UTILITÁRIOS */
+
+function normalizarStatus(
+  status
+) {
+  return String(
+    status ||
+    ''
+  )
+    .trim()
+    .toUpperCase()
+}
+
+function normalizarTexto(
+  valor
+) {
+  return String(
+    valor ||
+    ''
+  )
+    .trim()
+    .toUpperCase()
+    .normalize('NFD')
+    .replace(
+      /[\u0300-\u036f]/g,
+      ''
+    )
+}
 
 function contarStatus(
   statusPermitidos
@@ -755,176 +1300,30 @@ function contarStatus(
   return chamados.value.filter(
     chamado =>
       statusPermitidos.includes(
-        String(
-          chamado.status ||
-          ''
-        ).toUpperCase()
+        normalizarStatus(
+          chamado.status
+        )
       )
   ).length
 }
 
-/* =========================================
-   PERCENTUAL
-========================================= */
-
-function calcularPercentual(
-  total
-) {
-  if (
-    totalChamados.value === 0
-  ) {
-    return 0
-  }
-
-  return Math.round(
-    (
-      total /
-      totalChamados.value
-    ) * 100
-  )
-}
-
-/* =========================================
-   DATA
-========================================= */
-
-function formatarData(
+function formatarRotulo(
   valor
 ) {
-  if (!valor) {
-    return 'Não informada'
-  }
-
-  const data =
-    new Date(valor)
-
-  if (
-    Number.isNaN(
-      data.getTime()
+  return String(valor || '')
+    .replaceAll(
+      '_',
+      ' '
     )
-  ) {
-    return valor
-  }
-
-  return data.toLocaleDateString(
-    'pt-BR'
-  )
+    .toLowerCase()
+    .replace(
+      /^\w/,
+      letra =>
+        letra.toUpperCase()
+    )
 }
 
-/* =========================================
-   STATUS
-========================================= */
-
-function formatarStatus(
-  status
-) {
-  const valor =
-    String(
-      status ||
-      ''
-    ).toUpperCase()
-
-  const nomes = {
-    PENDENTE:
-      'Pendente',
-
-    AGUARDANDO_CONFIRMACAO:
-      'Aguardando confirmação',
-
-    ACEITO:
-      'Aceito',
-
-    EM_ROTA:
-      'Em rota',
-
-    EM_ATENDIMENTO:
-      'Em atendimento',
-
-    FINALIZADO:
-      'Finalizado',
-
-    CONCLUIDO:
-      'Concluído',
-
-    CANCELADO:
-      'Cancelado'
-  }
-
-  return (
-    nomes[valor] ||
-    'Não informado'
-  )
-}
-
-function classeStatus(
-  status
-) {
-  const valor =
-    String(
-      status ||
-      ''
-    ).toUpperCase()
-
-  if (
-    valor === 'PENDENTE'
-  ) {
-    return 'status-pendente'
-  }
-
-  if (
-    valor === 'ACEITO'
-  ) {
-    return 'status-aceito'
-  }
-
-  if (
-    valor === 'EM_ROTA'
-  ) {
-    return 'status-rota'
-  }
-
-  if (
-    valor === 'EM_ATENDIMENTO' ||
-    valor === 'AGUARDANDO_CONFIRMACAO'
-  ) {
-    return 'status-atendimento'
-  }
-
-  if (
-    [
-      'FINALIZADO',
-      'CONCLUIDO'
-    ].includes(valor)
-  ) {
-    return 'status-finalizado'
-  }
-
-  if (
-    valor === 'CANCELADO'
-  ) {
-    return 'status-cancelado'
-  }
-
-  return 'status-padrao'
-}
-
-/* =========================================
-   NAVEGAÇÃO
-========================================= */
-
-async function verDetalhes(
-  chamado
-) {
-  await router.push({
-    name:
-      'produtor-detalhes-chamado',
-
-    params: {
-      id:
-        chamado.id_chamado
-    }
-  })
-}
+/* NAVEGAÇÃO */
 
 async function abrirChamados(
   status = null
@@ -948,9 +1347,7 @@ async function abrirChamados(
   })
 }
 
-/* =========================================
-   CARREGAR
-========================================= */
+/* CARREGAR */
 
 async function carregarDados() {
   carregando.value =
@@ -994,132 +1391,274 @@ onMounted(
 </script>
 
 <style scoped>
-/* =========================================
-   PÁGINA
-========================================= */
-
 .dashboard-page {
   min-height: 100%;
-  padding: 28px 32px 48px;
-  background: #f7f8fa;
+
+  padding: 14px 20px 26px;
+
+  background: #f5f6f8;
 }
 
-.pagina-cabecalho {
+/* HERO */
+
+.dashboard-hero {
+  min-height: 82px;
+
   display: flex;
   align-items: center;
   justify-content: space-between;
 
-  gap: 20px;
+  gap: 16px;
 
-  margin-bottom: 26px;
+  margin-bottom: 12px;
+  padding: 13px 16px;
+
+  border: 1px solid #eaecf0;
+  border-radius: 16px;
+
+  background:
+    linear-gradient(
+      110deg,
+      #ffffff 0%,
+      #ffffff 62%,
+      #fff6ed 100%
+    );
+
+  box-shadow:
+    0 3px 12px
+    rgba(16, 24, 40, 0.035);
 }
 
-.pagina-titulo {
-  color: #101828;
+.dashboard-hero__identidade {
+  min-width: 0;
 
-  font-size: 30px;
-  font-weight: 800;
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
 }
 
-.pagina-subtitulo {
-  margin-top: 5px;
+.dashboard-hero__barra {
+  width: 4px;
+  height: 47px;
+
+  flex-shrink: 0;
+
+  border-radius: 999px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #ff9d1f,
+      #f97316
+    );
+}
+
+.dashboard-hero__label {
+  color: #f97316;
+
+  font-size: 10px;
+  font-weight: 900;
+
+  letter-spacing: 1px;
+}
+
+.dashboard-hero__titulo {
+  margin-top: 2px;
+
+  color: #17233c;
+
+  font-size: 24px;
+  font-weight: 900;
+
+  line-height: 1.05;
+}
+
+.dashboard-hero__descricao {
+  margin-top: 4px;
 
   color: #667085;
 
-  font-size: 14px;
+  font-size: 11px;
 }
 
-.estado-central {
-  padding: 60px;
-  text-align: center;
-}
-
-/* =========================================
-   CONTEÚDO
-========================================= */
-
-.dashboard-conteudo {
-  width: 100%;
-}
-
-/* =========================================
-   INDICADORES
-========================================= */
-
-.cards-grid {
-  display: grid;
-
-  grid-template-columns:
-    repeat(
-      5,
-      minmax(0, 1fr)
-    );
-
-  gap: 16px;
-}
-
-.indicador-card {
-  min-width: 0;
-
-  padding: 20px;
-
-  border:
-    1px solid #eaecf0;
-
-  border-radius: 18px;
-
-  background: #ffffff;
-
-  box-shadow:
-    0 2px 8px
-    rgba(
-      16,
-      24,
-      40,
-      0.04
-    );
-
-  cursor: pointer;
-
-  transition:
-    transform 0.2s,
-    box-shadow 0.2s,
-    border-color 0.2s;
-}
-
-.indicador-card:hover {
-  transform:
-    translateY(-2px);
-
-  border-color:
-    #d0d5dd;
-
-  box-shadow:
-    0 8px 20px
-    rgba(
-      16,
-      24,
-      40,
-      0.08
-    );
-}
-
-.indicador-topo {
+.dashboard-hero__acoes {
   display: flex;
   align-items: center;
-  justify-content:
-    space-between;
+
+  gap: 8px;
 }
 
-.icone-wrapper {
-  width: 44px;
-  height: 44px;
+.data-card {
+  min-width: 205px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+
+  padding: 8px 11px;
+
+  border: 1px solid #eaecf0;
+  border-radius: 12px;
+
+  background:
+    rgba(
+      255,
+      255,
+      255,
+      0.92
+    );
+}
+
+.data-card__icone {
+  width: 34px;
+  height: 34px;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
-  border-radius: 13px;
+  flex-shrink: 0;
+
+  border-radius: 10px;
+
+  color: #f97316;
+
+  background: #fff1e6;
+}
+
+.data-card span {
+  display: block;
+
+  color: #98a2b3;
+
+  font-size: 8px;
+  font-weight: 700;
+}
+
+.data-card strong {
+  display: block;
+
+  margin-top: 1px;
+
+  color: #344054;
+
+  font-size: 10px;
+  font-weight: 800;
+
+  text-transform: capitalize;
+}
+
+.botao-atualizar {
+  width: 42px;
+  height: 42px;
+
+  color: #ffffff;
+
+  background:
+    linear-gradient(
+      135deg,
+      #ff9d1f,
+      #f97316
+    );
+
+  box-shadow:
+    0 5px 13px
+    rgba(249, 115, 22, 0.2);
+}
+
+/* CARREGAMENTO */
+
+.estado-central {
+  min-height: 360px;
+
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 10px;
+
+  color: #98a2b3;
+
+  font-size: 11px;
+}
+
+/* INDICADORES */
+
+.cards-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(5, minmax(0, 1fr));
+
+  gap: 10px;
+
+  margin-bottom: 12px;
+}
+
+.indicador-card {
+  appearance: none;
+
+  min-width: 0;
+  min-height: 105px;
+
+  display: grid;
+
+  grid-template-columns:
+    40px
+    minmax(0, 1fr)
+    18px;
+
+  align-items: center;
+
+  gap: 10px;
+
+  padding: 12px 13px;
+
+  border: 1px solid #eaecf0;
+  border-radius: 15px;
+
+  color: inherit;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 3px 12px
+    rgba(16, 24, 40, 0.035);
+
+  font-family: inherit;
+  text-align: left;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.indicador-card:hover {
+  transform: translateY(-2px);
+
+  border-color: #fed7aa;
+
+  box-shadow:
+    0 8px 22px
+    rgba(16, 24, 40, 0.075);
+}
+
+.icone-wrapper {
+  width: 40px;
+  height: 40px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 12px;
 }
 
 .icone-wrapper.total {
@@ -1134,115 +1673,124 @@ onMounted(
 
 .icone-wrapper.atendimento {
   color: #2563eb;
-  background: #dbeafe;
+  background: #eff6ff;
 }
 
 .icone-wrapper.finalizado {
-  color: #059669;
-  background: #d1fae5;
+  color: #16a34a;
+  background: #f0fdf4;
 }
 
 .icone-wrapper.cancelado {
   color: #dc2626;
-  background: #fee2e2;
+  background: #fef2f2;
 }
 
 .indicador-numero {
-  margin-top: 20px;
-
   color: #101828;
 
-  font-size: 29px;
-  font-weight: 800;
+  font-size: 25px;
+  font-weight: 900;
+
+  line-height: 1;
 }
 
 .indicador-titulo {
-  margin-top: 3px;
+  margin-top: 4px;
 
   color: #344054;
 
-  font-size: 14px;
-  font-weight: 700;
+  font-size: 10px;
+  font-weight: 800;
 }
 
 .indicador-descricao {
-  margin-top: 4px;
-
   overflow: hidden;
+
+  margin-top: 3px;
 
   color: #98a2b3;
 
-  font-size: 11px;
+  font-size: 7px;
 
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-/* =========================================
-   PAINÉIS
-========================================= */
+.indicador-seta {
+  color: #c5c9d0;
+}
+
+/* CARDS DE GRÁFICOS */
 
 .dashboard-grid {
   display: grid;
 
-  grid-template-columns:
-    minmax(0, 1.2fr)
-    minmax(0, 0.8fr);
+  gap: 12px;
 
-  gap: 20px;
-
-  margin-top: 20px;
+  margin-bottom: 12px;
 }
 
-.painel-card {
-  padding: 24px;
+.dashboard-grid--principal {
+  grid-template-columns:
+    minmax(0, 1.45fr)
+    minmax(330px, 0.55fr);
+}
 
-  border:
-    1px solid #eaecf0;
+.dashboard-grid--secundario {
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+}
 
-  border-radius: 20px;
+.dashboard-card {
+  min-width: 0;
+
+  overflow: hidden;
+
+  border: 1px solid #eaecf0;
+  border-radius: 16px;
 
   background: #ffffff;
 
   box-shadow:
-    0 2px 8px
-    rgba(
-      16,
-      24,
-      40,
-      0.04
-    );
+    0 3px 12px
+    rgba(16, 24, 40, 0.035);
 }
 
-.card-cabecalho {
+.card-header {
+  min-height: 57px;
+
   display: flex;
-  align-items: flex-start;
-  justify-content:
-    space-between;
+  align-items: center;
+  justify-content: space-between;
 
-  gap: 16px;
+  gap: 10px;
 
-  margin-bottom: 24px;
+  padding: 13px 16px 9px;
+}
+
+.card-header--compacto {
+  padding-bottom: 4px;
 }
 
 .card-titulo {
   color: #101828;
 
-  font-size: 18px;
-  font-weight: 800;
+  font-size: 13px;
+  font-weight: 900;
 }
 
 .card-subtitulo {
-  margin-top: 4px;
+  margin-top: 2px;
 
-  color: #667085;
+  color: #98a2b3;
 
-  font-size: 12px;
+  font-size: 8px;
 }
 
 .card-icone {
-  width: 40px;
-  height: 40px;
+  width: 34px;
+  height: 34px;
 
   display: flex;
   align-items: center;
@@ -1250,863 +1798,262 @@ onMounted(
 
   flex-shrink: 0;
 
-  border-radius: 12px;
+  border-radius: 10px;
 
-  color: #2563eb;
-  background: #eff6ff;
+  color: #f97316;
+
+  background: #fff1e6;
 }
 
-.card-icone--alerta {
-  color: #dc2626;
-  background: #fef2f2;
+.grafico {
+  height: 245px;
+
+  padding: 4px 15px 14px;
 }
 
-/* =========================================
-   STATUS
-========================================= */
+/* DOUGHNUT */
 
-.status-lista {
+.doughnut-area {
+  min-height: 245px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 16px;
+
+  padding: 2px 13px 13px;
+}
+
+.doughnut-wrapper {
+  position: relative;
+
+  width: 155px;
+  height: 155px;
+
+  flex-shrink: 0;
+}
+
+.doughnut-centro {
+  position: absolute;
+
+  inset: 0;
+
   display: flex;
   flex-direction: column;
 
-  gap: 20px;
-}
-
-.status-item {
-  cursor: pointer;
-}
-
-.status-item-topo {
-  display: flex;
   align-items: center;
-  justify-content:
-    space-between;
+  justify-content: center;
 
-  margin-bottom: 8px;
+  pointer-events: none;
 }
 
-.status-info {
-  display: flex;
-  align-items: center;
+.doughnut-centro strong {
+  color: #101828;
+
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.doughnut-centro span {
+  color: #98a2b3;
+
+  font-size: 7px;
+}
+
+.legenda-status {
+  display: grid;
 
   gap: 9px;
 }
 
-.status-bolinha {
-  width: 9px;
-  height: 9px;
-
-  flex-shrink: 0;
-
-  border-radius: 50%;
-}
-
-.status-nome {
-  color: #475467;
-
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.status-lateral {
+.legenda-item {
   display: flex;
   align-items: center;
 
   gap: 7px;
 }
 
-.status-quantidade {
-  color: #344054;
-
-  font-size: 13px;
-  font-weight: 800;
-}
-
-.status-percentual {
-  color: #98a2b3;
-
-  font-size: 10px;
-}
-
-.barra-fundo {
-  width: 100%;
+.ponto {
+  width: 8px;
   height: 8px;
-
-  overflow: hidden;
-
-  border-radius: 20px;
-
-  background: #f2f4f7;
-}
-
-.barra-preenchimento {
-  height: 100%;
-
-  min-width: 0;
-
-  border-radius: 20px;
-
-  transition:
-    width 0.4s;
-}
-
-.status-bolinha.pendente,
-.barra-preenchimento.pendente {
-  background: #f97316;
-}
-
-.status-bolinha.andamento,
-.barra-preenchimento.andamento {
-  background: #2563eb;
-}
-
-.status-bolinha.finalizado,
-.barra-preenchimento.finalizado {
-  background: #10b981;
-}
-
-.status-bolinha.cancelado,
-.barra-preenchimento.cancelado {
-  background: #ef4444;
-}
-
-/* =========================================
-   ATENÇÃO
-========================================= */
-
-.urgencias-lista {
-  display: flex;
-  flex-direction: column;
-}
-
-.urgencia-item {
-  display: flex;
-  align-items: center;
-  justify-content:
-    space-between;
-
-  gap: 15px;
-
-  padding: 15px 0;
-
-  border-bottom:
-    1px solid #f2f4f7;
-
-  cursor: pointer;
-}
-
-.urgencia-item:first-child {
-  padding-top: 0;
-}
-
-.urgencia-item:last-child {
-  padding-bottom: 0;
-  border-bottom: 0;
-}
-
-.urgencia-conteudo {
-  min-width: 0;
-}
-
-.urgencia-numero {
-  color: #f97316;
-
-  font-size: 10px;
-  font-weight: 800;
-}
-
-.urgencia-problema {
-  margin-top: 4px;
-
-  overflow: hidden;
-
-  color: #344054;
-
-  font-size: 13px;
-  font-weight: 700;
-
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.urgencia-data {
-  margin-top: 3px;
-
-  color: #98a2b3;
-
-  font-size: 11px;
-}
-
-.urgencia-lateral {
-  display: flex;
-  align-items: center;
-
-  gap: 8px;
-
-  flex-shrink: 0;
-}
-
-.badge-alta {
-  padding: 6px 9px;
-
-  color: #dc2626;
-
-  background: #fee2e2;
-}
-
-/* =========================================
-   ÚLTIMOS CHAMADOS
-========================================= */
-
-.ultimos-card {
-  margin-top: 20px;
-}
-
-.ultimos-container {
-  overflow-x: auto;
-}
-
-.tabela-cabecalho,
-.tabela-linha {
-  display: grid;
-
-  grid-template-columns:
-    100px
-    minmax(220px, 1fr)
-    160px
-    160px
-    130px;
-
-  align-items: center;
-
-  gap: 12px;
-}
-
-.tabela-cabecalho {
-  padding:
-    12px 10px;
-
-  border-bottom:
-    1px solid #eaecf0;
-
-  color: #667085;
-
-  font-size: 11px;
-  font-weight: 700;
-}
-
-.tabela-linha {
-  min-width: 820px;
-
-  padding:
-    14px 10px;
-
-  border-bottom:
-    1px solid #f2f4f7;
-}
-
-.tabela-linha:last-child {
-  border-bottom: 0;
-}
-
-.numero-chamado {
-  color: #344054;
-
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.problema-chamado {
-  overflow: hidden;
-
-  color: #344054;
-
-  font-size: 13px;
-
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.data-chamado {
-  color: #667085;
-  font-size: 12px;
-}
-
-.acao-chamado {
-  display: flex;
-  justify-content:
-    flex-end;
-}
-
-/* MOBILE ESCONDIDO NO DESKTOP */
-
-.ultimos-mobile {
-  display: none;
-}
-
-/* =========================================
-   STATUS BADGES
-========================================= */
-
-.status-pendente,
-.status-aceito,
-.status-rota,
-.status-atendimento,
-.status-finalizado,
-.status-cancelado,
-.status-padrao {
-  padding: 6px 10px;
-}
-
-.status-pendente {
-  color: #f97316;
-  background: #fff1df;
-}
-
-.status-aceito {
-  color: #2563eb;
-  background: #dbeafe;
-}
-
-.status-rota {
-  color: #7c3aed;
-  background: #ede9fe;
-}
-
-.status-atendimento {
-  color: #d97706;
-  background: #fef3c7;
-}
-
-.status-finalizado {
-  color: #059669;
-  background: #d1fae5;
-}
-
-.status-cancelado {
-  color: #dc2626;
-  background: #fee2e2;
-}
-
-.status-padrao {
-  color: #475467;
-  background: #f2f4f7;
-}
-
-/* =========================================
-   VAZIO
-========================================= */
-
-.estado-vazio {
-  padding: 35px 15px;
-  text-align: center;
-}
-
-.estado-vazio--compacto {
-  min-height: 110px;
-
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-
-  gap: 12px;
-
-  padding: 18px;
-
-  border-radius: 14px;
-
-  background: #f9fafb;
-
-  text-align: left;
-}
-
-.estado-ok {
-  width: 42px;
-  height: 42px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
 
   flex-shrink: 0;
 
   border-radius: 50%;
-
-  color: #059669;
-  background: #d1fae5;
 }
 
-.estado-vazio-titulo {
-  color: #475467;
-
-  font-size: 14px;
-  font-weight: 700;
+.ponto--pendente {
+  background: #f97316;
 }
 
-.estado-vazio-texto {
-  margin-top: 4px;
+.ponto--andamento {
+  background: #3b82f6;
+}
+
+.ponto--finalizado {
+  background: #22c55e;
+}
+
+.ponto--cancelado {
+  background: #ef4444;
+}
+
+.legenda-item strong {
+  display: block;
+
+  color: #344054;
+
+  font-size: 10px;
+}
+
+.legenda-item span:not(.ponto) {
+  display: block;
 
   color: #98a2b3;
 
-  font-size: 12px;
+  font-size: 7px;
 }
 
-/* =========================================
-   RESPONSIVO
-========================================= */
+/* VAZIO */
 
-@media (max-width: 1250px) {
-  .cards-grid {
-    grid-template-columns:
-      repeat(
-        3,
-        minmax(0, 1fr)
-      );
-  }
+.estado-vazio {
+  min-height: 245px;
+
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 5px;
+
+  padding: 20px;
+
+  color: #98a2b3;
+
+  text-align: center;
 }
 
-@media (max-width: 1000px) {
-  .dashboard-grid {
-    grid-template-columns:
-      1fr;
-  }
+.estado-vazio strong {
+  color: #475467;
+
+  font-size: 10px;
 }
 
-/* =========================================
-   MOBILE / APP
-========================================= */
+.estado-vazio span {
+  max-width: 300px;
 
-@media (max-width: 750px) {
-  .dashboard-page {
-    padding:
-      14px
-      14px
-      30px;
-  }
-
-  /*
-    O layout mobile já possui
-    o cabeçalho do aplicativo.
-  */
-
-  .pagina-cabecalho {
-    display: none;
-  }
-
-  /*
-    No celular alteramos a ordem:
-    1 - gráficos
-    2 - últimos chamados
-    3 - indicadores
-  */
-
-  .dashboard-conteudo {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .dashboard-grid {
-    order: 1;
-
-    display: flex;
-    flex-direction: column;
-
-    gap: 12px;
-
-    margin-top: 0;
-  }
-
-  .status-card {
-    order: 1;
-  }
-
-  .atencao-card {
-    order: 2;
-  }
-
-  .ultimos-card {
-    order: 2;
-
-    margin-top: 12px;
-  }
-
-  .cards-grid {
-    order: 3;
-
-    grid-template-columns:
-      repeat(
-        2,
-        minmax(0, 1fr)
-      );
-
-    gap: 10px;
-
-    margin-top: 12px;
-  }
-
-  /*
-    Cards gerais menores,
-    porque no celular são
-    informações complementares.
-  */
-
-  .indicador-card {
-    min-height: 112px;
-
-    padding: 13px;
-
-    border-radius: 15px;
-  }
-
-  .indicador-card--cancelado {
-    grid-column:
-      1 / -1;
-
-    min-height: auto;
-
-    display: grid;
-
-    grid-template-columns:
-      auto 1fr;
-
-    column-gap: 11px;
-
-    align-items: center;
-  }
-
-  .indicador-card--cancelado
-  .indicador-topo {
-    grid-row:
-      1 / span 3;
-  }
-
-  .indicador-card--cancelado
-  .indicador-seta {
-    display: none;
-  }
-
-  .icone-wrapper {
-    width: 36px;
-    height: 36px;
-
-    border-radius: 10px;
-  }
-
-  .icone-wrapper
-  :deep(.q-icon) {
-    font-size: 20px !important;
-  }
-
-  .indicador-seta {
-    font-size: 17px !important;
-  }
-
-  .indicador-numero {
-    margin-top: 10px;
-
-    font-size: 24px;
-    line-height: 1;
-  }
-
-  .indicador-card--cancelado
-  .indicador-numero {
-    margin-top: 0;
-
-    grid-column: 2;
-    grid-row: 1;
-  }
-
-  .indicador-titulo {
-    margin-top: 4px;
-
-    font-size: 12px;
-  }
-
-  .indicador-card--cancelado
-  .indicador-titulo {
-    grid-column: 2;
-    grid-row: 2;
-  }
-
-  .indicador-descricao {
-    display: none;
-  }
-
-  /*
-    Painéis principais mais compactos.
-  */
-
-  .painel-card {
-    padding: 17px;
-
-    border-radius: 17px;
-  }
-
-  .card-cabecalho {
-    margin-bottom: 17px;
-  }
-
-  .card-titulo {
-    font-size: 16px;
-  }
-
-  .card-subtitulo {
-    margin-top: 2px;
-
-    font-size: 10px;
-  }
-
-  .card-icone {
-    width: 36px;
-    height: 36px;
-
-    border-radius: 10px;
-  }
-
-  /*
-    Gráfico aparece logo no começo
-    e fica compacto.
-  */
-
-  .status-lista {
-    gap: 14px;
-  }
-
-  .status-item {
-    padding: 2px 0;
-  }
-
-  .status-item-topo {
-    margin-bottom: 6px;
-  }
-
-  .status-nome {
-    font-size: 12px;
-  }
-
-  .status-quantidade {
-    font-size: 12px;
-  }
-
-  .status-percentual {
-    font-size: 9px;
-  }
-
-  .barra-fundo {
-    height: 6px;
-  }
-
-  /*
-    Urgências compactas
-  */
-
-  .urgencia-item {
-    padding: 11px 0;
-  }
-
-  .urgencia-problema {
-    max-width: 210px;
-
-    font-size: 12px;
-  }
-
-  .urgencia-data {
-    font-size: 9px;
-  }
-
-  /*
-    Últimos chamados passam de
-    tabela para lista de aplicativo.
-  */
-
-  .ultimos-desktop {
-    display: none;
-  }
-
-  .ultimos-mobile {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .ultimos-cabecalho {
-    margin-bottom: 8px;
-  }
-
-  .chamado-mobile {
-    width: 100%;
-
-    display: flex;
-    align-items: center;
-    justify-content:
-      space-between;
-
-    gap: 12px;
-
-    padding: 12px 2px;
-
-    border: 0;
-    border-bottom:
-      1px solid #f2f4f7;
-
-    color: inherit;
-    background: transparent;
-
-    font-family: inherit;
-    text-align: left;
-
-    cursor: pointer;
-  }
-
-  .chamado-mobile:last-child {
-    border-bottom: 0;
-  }
-
-  .chamado-mobile__principal {
-    min-width: 0;
-    flex: 1;
-  }
-
-  .chamado-mobile__linha {
-    display: flex;
-    align-items: center;
-    justify-content:
-      space-between;
-
-    gap: 8px;
-
-    margin-bottom: 5px;
-  }
-
-  .chamado-mobile__numero {
-    color: #f97316;
-
-    font-size: 10px;
-    font-weight: 800;
-  }
-
-  .chamado-mobile strong {
-    display: block;
-
-    overflow: hidden;
-
-    color: #344054;
-
-    font-size: 12px;
-    font-weight: 700;
-
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .chamado-mobile__data {
-    display: block;
-
-    margin-top: 4px;
-
-    color: #98a2b3;
-
-    font-size: 9px;
-  }
-
-  /*
-    Badges menores no app.
-  */
-
-  .status-pendente,
-  .status-aceito,
-  .status-rota,
-  .status-atendimento,
-  .status-finalizado,
-  .status-cancelado,
-  .status-padrao {
-    padding: 4px 7px;
-
-    font-size: 8px;
-  }
+  font-size: 8px;
 }
 
-/* =========================================
-   CELULAR PEQUENO
-========================================= */
+/* DARK */
 
-@media (max-width: 380px) {
-  .dashboard-page {
-    padding:
-      12px
-      10px
-      26px;
-  }
-
-  .cards-grid {
-    gap: 8px;
-  }
-
-  .indicador-card {
-    padding: 11px;
-  }
-
-  .painel-card {
-    padding: 15px;
-  }
-}
-
-/* =========================================
-   DARK
-========================================= */
-
-.body--dark
-.dashboard-page {
+.dashboard-page--dark {
   background: #0d0f12;
 }
 
-.body--dark
-.indicador-card,
-.body--dark
-.painel-card {
-  border-color: #2b2f36;
-  background: #16191f;
+.dashboard-page--dark .dashboard-hero {
+  border-color: #292d33;
+
+  background:
+    linear-gradient(
+      110deg,
+      #15181d 0%,
+      #15181d 62%,
+      #211b17 100%
+    );
 }
 
-.body--dark
-.pagina-titulo,
-.body--dark
-.indicador-numero,
-.body--dark
-.indicador-titulo,
-.body--dark
-.card-titulo,
-.body--dark
-.status-quantidade,
-.body--dark
-.urgencia-problema,
-.body--dark
-.numero-chamado,
-.body--dark
-.problema-chamado,
-.body--dark
-.chamado-mobile strong {
+.dashboard-page--dark .dashboard-hero__titulo,
+.dashboard-page--dark .indicador-numero,
+.dashboard-page--dark .card-titulo,
+.dashboard-page--dark .doughnut-centro strong {
   color: #f9fafb;
 }
 
-.body--dark
-.status-nome,
-.body--dark
-.data-chamado {
-  color: #d0d5dd;
+.dashboard-page--dark .dashboard-hero__descricao {
+  color: #98a2b3;
 }
 
-.body--dark
-.barra-fundo {
-  background: #2b2f36;
+.dashboard-page--dark .data-card,
+.dashboard-page--dark .indicador-card,
+.dashboard-page--dark .dashboard-card {
+  border-color: #292d33;
+
+  background: #15181d;
 }
 
-.body--dark
-.chamado-mobile {
-  border-color: #2b2f36;
+.dashboard-page--dark .data-card {
+  background: #191d23;
 }
 
-.body--dark
-.estado-vazio--compacto {
-  background: #1b1f25;
+.dashboard-page--dark .data-card strong,
+.dashboard-page--dark .indicador-titulo,
+.dashboard-page--dark .legenda-item strong,
+.dashboard-page--dark .estado-vazio strong {
+  color: #f2f4f7;
+}
+
+/* RESPONSIVO */
+
+@media (max-width: 1350px) {
+  .cards-grid {
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+  }
+
+  .dashboard-grid--principal,
+  .dashboard-grid--secundario {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 1023px) {
+  .dashboard-page {
+    padding: 14px 14px 34px;
+  }
+
+  .cards-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .dashboard-hero {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .dashboard-hero__label,
+  .dashboard-hero__descricao {
+    display: none;
+  }
+
+  .dashboard-hero__titulo {
+    font-size: 20px;
+  }
+
+  .dashboard-hero__acoes {
+    width: 100%;
+  }
+
+  .data-card {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .cards-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .indicador-card {
+    min-height: 92px;
+  }
+
+  .doughnut-area {
+    flex-direction: column;
+  }
 }
 </style>

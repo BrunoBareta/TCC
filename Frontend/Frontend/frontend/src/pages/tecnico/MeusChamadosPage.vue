@@ -1,16 +1,9 @@
 <template>
   <q-page class="meus-chamados-page">
-    <div class="pagina-cabecalho">
-      <div>
-        <div class="pagina-titulo">
-          Meus chamados
-        </div>
-
-        <div class="pagina-subtitulo">
-          Acompanhe os chamados vinculados ao seu atendimento.
-        </div>
-      </div>
-    </div>
+    <!--
+      O título e o subtítulo já são exibidos pelo HeaderTecnico.
+      Aqui deixamos apenas o conteúdo da tela.
+    -->
 
     <TabelaMeusChamados />
   </q-page>
@@ -22,33 +15,30 @@ import TabelaMeusChamados from 'src/components/tecnico/chamados/meus/TabelaMeusC
 
 <style scoped>
 .meus-chamados-page {
-  padding: 28px 32px 48px;
-  background: #f7f8fa;
+  min-height: 100%;
+  padding: 14px 20px 28px;
+  background: #f5f6f8;
 }
 
-.pagina-cabecalho {
-  margin-bottom: 24px;
+/* DARK */
+
+.body--dark .meus-chamados-page {
+  background: #0d0f12;
 }
 
-.pagina-titulo {
-  color: #101828;
-  font-size: 30px;
-  font-weight: 800;
+/* TABLET */
+
+@media (max-width: 1023px) {
+  .meus-chamados-page {
+    padding: 14px 14px 30px;
+  }
 }
 
-.pagina-subtitulo {
-  margin-top: 5px;
-  color: #667085;
-  font-size: 14px;
-}
+/* MOBILE */
 
 @media (max-width: 700px) {
   .meus-chamados-page {
-    padding: 22px 16px 40px;
-  }
-
-  .pagina-titulo {
-    font-size: 25px;
+    padding: 12px 12px 28px;
   }
 }
 </style>

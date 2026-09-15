@@ -6,34 +6,6 @@
     }"
   >
     <!-- =====================================================
-         CABEÇALHO DA PÁGINA
-    ====================================================== -->
-
-    <div class="pagina-topo">
-      <div>
-        <h1>
-          Chamados
-        </h1>
-
-        <p>
-          Acompanhe todos os atendimentos registrados no sistema.
-        </p>
-      </div>
-
-      <q-btn
-        flat
-        round
-        icon="refresh"
-        :loading="carregando"
-        @click="carregarChamados"
-      >
-        <q-tooltip>
-          Atualizar
-        </q-tooltip>
-      </q-btn>
-    </div>
-
-    <!-- =====================================================
          RESUMO
     ====================================================== -->
 
@@ -142,11 +114,11 @@
       <div class="lista-cabecalho">
         <div>
           <div class="lista-titulo">
-            Todos os chamados
+            Lista de chamados
           </div>
 
           <div class="lista-subtitulo">
-            Consulte e filtre os atendimentos da Avioeste.
+            Consulte e filtre os atendimentos registrados.
           </div>
         </div>
 
@@ -188,6 +160,19 @@
             label="Urgência"
             class="filtro-select"
           />
+
+          <q-btn
+            flat
+            round
+            icon="refresh"
+            class="botao-atualizar-lista"
+            :loading="carregando"
+            @click="carregarChamados"
+          >
+            <q-tooltip>
+              Atualizar chamados
+            </q-tooltip>
+          </q-btn>
         </div>
       </div>
 
@@ -4053,4 +4038,385 @@ onMounted(
     display: none;
   }
 }
+
+/* =====================================================
+   AJUSTE FINAL - TELA DE CHAMADOS ADMIN
+   O AdminLayout já exibe o título "Chamados".
+===================================================== */
+
+.chamados-admin-page {
+  min-height: 100%;
+  padding: 14px 20px 28px;
+  background: #f5f6f8;
+}
+
+/* Remove qualquer impacto visual do antigo cabeçalho duplicado */
+.pagina-topo {
+  display: none !important;
+}
+
+/* =====================================================
+   RESUMO MAIS PRÓXIMO DO TOPO
+===================================================== */
+
+.resumo-grid {
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.resumo-card {
+  min-height: 96px;
+  gap: 12px;
+  padding: 14px 15px;
+  border-radius: 15px;
+}
+
+.resumo-icone {
+  width: 43px;
+  height: 43px;
+  border-radius: 12px;
+}
+
+.resumo-numero {
+  font-size: 25px;
+  line-height: 1;
+}
+
+.resumo-label {
+  margin-top: 5px;
+  color: #475467;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+/* =====================================================
+   CARD DA LISTA
+===================================================== */
+
+.lista-card {
+  padding: 0;
+  overflow: hidden;
+  border-radius: 16px;
+}
+
+.lista-cabecalho {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+
+  padding: 14px 18px 12px;
+
+  border-bottom: 1px solid #eaecf0;
+}
+
+.lista-titulo {
+  font-size: 14px;
+}
+
+.lista-subtitulo {
+  margin-top: 3px;
+  font-size: 9px;
+}
+
+.filtros {
+  flex-wrap: nowrap;
+  gap: 7px;
+}
+
+.pesquisa-input {
+  width: 300px;
+}
+
+.filtro-select {
+  width: 165px;
+}
+
+.pesquisa-input :deep(.q-field__control),
+.filtro-select :deep(.q-field__control) {
+  min-height: 40px;
+  height: 40px;
+  border-radius: 10px;
+}
+
+.pesquisa-input :deep(.q-field__native),
+.pesquisa-input :deep(.q-field__input),
+.filtro-select :deep(.q-field__native),
+.filtro-select :deep(.q-field__input),
+.filtro-select :deep(.q-field__label) {
+  font-size: 11px;
+}
+
+.botao-atualizar-lista {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  color: #f97316;
+}
+
+.resultado-info {
+  margin-top: 0;
+  padding: 9px 18px;
+  border-bottom: 1px solid #eaecf0;
+  color: #667085;
+  font-size: 10px;
+}
+
+.limpar-filtros {
+  font-size: 10px;
+}
+
+/* =====================================================
+   TABELA - LETRAS MAIORES
+===================================================== */
+
+.tabela-container {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.chamados-tabela {
+  width: 100%;
+  min-width: 1180px;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+
+.chamados-tabela th {
+  padding: 11px 10px;
+  border-bottom: 1px solid #eaecf0;
+
+  color: #667085;
+
+  font-size: 9px;
+  font-weight: 900;
+
+  text-align: left;
+  text-transform: uppercase;
+  letter-spacing: 0.35px;
+  white-space: nowrap;
+}
+
+.chamados-tabela td {
+  min-width: 0;
+
+  padding: 13px 10px;
+
+  border-bottom: 1px solid #f2f4f7;
+
+  color: #475467;
+
+  font-size: 10.5px;
+  line-height: 1.35;
+
+  vertical-align: middle;
+  overflow: hidden;
+}
+
+.chamados-tabela tbody tr {
+  min-height: 74px;
+}
+
+.chamados-tabela tbody tr:hover {
+  background: #fffaf5;
+}
+
+.chamado-id {
+  color: #f97316;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.solicitacao-info strong {
+  display: block;
+
+  overflow: hidden;
+
+  color: #24324a;
+
+  font-size: 12px;
+  font-weight: 800;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.solicitacao-info span {
+  display: block;
+
+  overflow: hidden;
+
+  margin-top: 4px;
+
+  color: #98a2b3;
+
+  font-size: 9px;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pessoa-info,
+.tecnico-info {
+  gap: 7px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.pessoa-info .q-icon,
+.tecnico-info .q-icon {
+  font-size: 19px !important;
+}
+
+.chamados-tabela :deep(.q-badge) {
+  padding: 6px 10px;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+/* Colunas um pouco melhor distribuídas */
+.chamados-tabela .col-chamado {
+  width: 6%;
+}
+
+.chamados-tabela .col-solicitacao {
+  width: 22%;
+}
+
+.chamados-tabela .col-produtor {
+  width: 12%;
+}
+
+.chamados-tabela .col-propriedade {
+  width: 12%;
+}
+
+.chamados-tabela .col-tecnico {
+  width: 13%;
+}
+
+.chamados-tabela .col-urgencia {
+  width: 8%;
+}
+
+.chamados-tabela .col-status {
+  width: 10%;
+}
+
+.chamados-tabela .col-data {
+  width: 9%;
+}
+
+.chamados-tabela .col-acoes {
+  width: 8%;
+}
+
+.acao-btn {
+  min-width: 70px;
+  min-height: 34px;
+  border-radius: 8px;
+}
+
+.acao-btn :deep(.q-btn__content) {
+  font-size: 10px;
+  font-weight: 800;
+}
+
+/* =====================================================
+   DARK
+===================================================== */
+
+.chamados-admin-page--dark
+.lista-cabecalho,
+.chamados-admin-page--dark
+.resultado-info {
+  border-color: #292d33;
+}
+
+.chamados-admin-page--dark
+.solicitacao-info strong {
+  color: #f2f4f7;
+}
+
+.chamados-admin-page--dark
+.resumo-label {
+  color: #cbd5e1;
+}
+
+/* =====================================================
+   RESPONSIVO
+===================================================== */
+
+@media (max-width: 1250px) {
+  .resumo-grid {
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+  }
+
+  .lista-cabecalho {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .filtros {
+    width: 100%;
+  }
+
+  .pesquisa-input {
+    flex: 1;
+    width: auto;
+  }
+}
+
+@media (max-width: 850px) {
+  .chamados-admin-page {
+    padding: 14px 14px 30px;
+  }
+
+  .resumo-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .filtros {
+    flex-wrap: wrap;
+  }
+
+  .pesquisa-input {
+    width: 100%;
+    flex: none;
+  }
+
+  .filtro-select {
+    flex: 1;
+    width: auto;
+    min-width: 150px;
+  }
+}
+
+@media (max-width: 560px) {
+  .chamados-admin-page {
+    padding: 12px 12px 28px;
+  }
+
+  .resumo-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .filtros {
+    flex-direction: column;
+  }
+
+  .pesquisa-input,
+  .filtro-select,
+  .botao-atualizar-lista {
+    width: 100%;
+  }
+
+  .botao-atualizar-lista {
+    border: 1px solid #fed7aa;
+    border-radius: 10px;
+  }
+}
+
 </style>

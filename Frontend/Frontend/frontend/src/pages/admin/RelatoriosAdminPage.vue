@@ -9,28 +9,6 @@
          CABEÇALHO
     ====================================================== -->
 
-    <div class="pagina-cabecalho">
-      <div>
-        <div class="pagina-titulo">
-          Relatórios
-        </div>
-
-        <div class="pagina-subtitulo">
-          Consulte os atendimentos e gere relatórios administrativos em PDF.
-        </div>
-      </div>
-
-      <q-btn
-        outline
-        no-caps
-        color="orange"
-        icon="refresh"
-        label="Atualizar"
-        :loading="carregando"
-        @click="carregarDados"
-      />
-    </div>
-
     <!-- =====================================================
          ERRO
     ====================================================== -->
@@ -120,6 +98,19 @@
           "
         />
 
+        <q-btn
+          flat
+          round
+          icon="refresh"
+          class="botao-atualizar-lista"
+          :loading="carregando"
+          @click="carregarDados"
+        >
+          <q-tooltip>
+            Atualizar relatórios
+          </q-tooltip>
+        </q-btn>
+
         <!-- LIMPAR -->
 
         <q-btn
@@ -193,7 +184,7 @@
       <div class="chamados-topo">
         <div>
           <div class="secao-titulo">
-            Chamados para o relatório
+            Atendimentos para o relatório
           </div>
 
           <div class="secao-subtitulo">
@@ -3460,4 +3451,297 @@ onMounted(
     flex-direction: column;
   }
 }
+
+/* =========================================================
+   AJUSTE FINAL - RELATÓRIOS ADMIN
+   O AdminLayout já exibe o título "Relatórios".
+========================================================= */
+
+.relatorios-admin-page {
+  min-height: 100%;
+  padding: 14px 20px 28px;
+  background: #f5f6f8;
+}
+
+.pagina-cabecalho {
+  display: none !important;
+}
+
+/* =========================================================
+   FILTROS MAIS COMPACTOS
+========================================================= */
+
+.filtros-card {
+  margin-bottom: 12px;
+  padding: 12px 14px;
+  border-radius: 15px;
+}
+
+.filtros-principais {
+  grid-template-columns:
+    minmax(300px, 1fr)
+    165px
+    175px
+    auto
+    40px
+    auto;
+
+  gap: 8px;
+}
+
+.filtros-principais :deep(.q-field__control) {
+  min-height: 40px;
+  height: 40px;
+  border-radius: 10px;
+}
+
+.filtros-principais :deep(.q-field__native),
+.filtros-principais :deep(.q-field__input),
+.filtros-principais :deep(.q-field__label) {
+  font-size: 11px;
+}
+
+.filtros-principais .q-btn {
+  min-height: 40px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.botao-atualizar-lista {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  color: #f97316;
+}
+
+.filtros-avancados {
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
+}
+
+/* =========================================================
+   CARD PRINCIPAL
+========================================================= */
+
+.chamados-card {
+  border-radius: 16px;
+}
+
+.chamados-topo {
+  min-height: 64px;
+
+  align-items: center;
+
+  padding: 13px 18px;
+}
+
+.secao-titulo {
+  font-size: 14px;
+}
+
+.secao-subtitulo {
+  margin-top: 3px;
+  font-size: 9px;
+}
+
+.chamados-acoes .q-btn {
+  min-height: 38px;
+  border-radius: 9px;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+/* =========================================================
+   SELEÇÃO GERAL
+========================================================= */
+
+.selecao-geral {
+  min-height: 42px;
+  padding: 4px 18px;
+  font-size: 10px;
+}
+
+.selecao-geral :deep(.q-checkbox__label) {
+  font-size: 10px;
+  font-weight: 700;
+}
+
+/* =========================================================
+   CABEÇALHO E LINHAS - LETRAS MAIORES
+========================================================= */
+
+.lista-cabecalho,
+.chamado-item {
+  grid-template-columns:
+    36px
+    58px
+    minmax(210px, 1.6fr)
+    minmax(175px, 1.15fr)
+    minmax(120px, 0.85fr)
+    90px
+    120px
+    95px;
+
+  gap: 12px;
+}
+
+.lista-cabecalho {
+  min-height: 44px;
+
+  padding: 0 18px;
+
+  color: #667085;
+
+  font-size: 8.5px;
+  font-weight: 900;
+
+  letter-spacing: 0.3px;
+}
+
+.chamado-item {
+  min-height: 78px;
+
+  padding: 11px 18px;
+}
+
+.chamado-id {
+  font-size: 11px;
+}
+
+.chamado-solicitacao strong,
+.chamado-produtor strong {
+  font-size: 12px;
+  line-height: 1.25;
+}
+
+.chamado-solicitacao span,
+.chamado-produtor span {
+  margin-top: 4px;
+  font-size: 9px;
+  line-height: 1.3;
+}
+
+.chamado-tecnico,
+.chamado-data {
+  font-size: 10px;
+  line-height: 1.3;
+}
+
+.chamado-item :deep(.q-checkbox__inner) {
+  font-size: 36px;
+}
+
+/* Badges mais fáceis de ler */
+.urgencia-alta,
+.urgencia-media,
+.urgencia-baixa,
+.status-pendente,
+.status-andamento,
+.status-finalizado,
+.status-cancelado {
+  padding: 6px 10px;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+/* =========================================================
+   VAZIO / CARREGANDO
+========================================================= */
+
+.estado-vazio {
+  min-height: 220px;
+}
+
+/* =========================================================
+   DARK
+========================================================= */
+
+.relatorios-admin-page--dark
+.secao-titulo,
+.relatorios-admin-page--dark
+.chamado-solicitacao strong,
+.relatorios-admin-page--dark
+.chamado-produtor strong {
+  color: #f9fafb;
+}
+
+/* =========================================================
+   RESPONSIVO
+========================================================= */
+
+@media (max-width: 1300px) {
+  .filtros-principais {
+    grid-template-columns:
+      minmax(260px, 1fr)
+      155px
+      165px
+      auto
+      40px;
+  }
+
+  .filtros-principais > :last-child {
+    grid-column: auto;
+  }
+
+  .lista-cabecalho,
+  .chamado-item {
+    grid-template-columns:
+      36px
+      54px
+      minmax(190px, 1.4fr)
+      minmax(160px, 1fr)
+      minmax(110px, 0.8fr)
+      84px
+      110px
+      88px;
+  }
+}
+
+@media (max-width: 1000px) {
+  .filtros-principais {
+    grid-template-columns:
+      1fr
+      150px
+      160px
+      auto
+      40px;
+  }
+
+  .filtros-avancados {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 850px) {
+  .relatorios-admin-page {
+    padding: 14px 14px 30px;
+  }
+
+  .filtros-principais,
+  .filtros-avancados {
+    grid-template-columns: 1fr;
+  }
+
+  .filtros-principais > :last-child {
+    grid-column: auto;
+  }
+
+  .botao-atualizar-lista {
+    width: 100%;
+    border: 1px solid #fed7aa;
+  }
+
+  .chamados-topo {
+    align-items: stretch;
+  }
+
+  .chamados-acoes {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
+
 </style>

@@ -1,253 +1,186 @@
 <template>
   <div class="header-tecnico">
-    <div>
-      <div class="header-titulo">
-        Painel do Técnico
-      </div>
+    <div class="header-conteudo">
+      <div class="header-detalhe"></div>
 
-      <div class="header-subtitulo">
-        Gerencie seus chamados e atendimentos.
+      <div>
+        <div class="header-titulo">
+          {{ titulo }}
+        </div>
+
+        <div class="header-subtitulo">
+          {{ subtitulo }}
+        </div>
       </div>
     </div>
 
-    <div class="header-acoes">
-      <!-- MODO ESCURO -->
-      <q-btn
-        flat
-        round
-        :icon="iconeTema"
-        :color="modoEscuro ? 'orange' : 'dark'"
-        @click="alternarTema"
-      >
-        <q-tooltip>
-          {{ textoTema }}
-        </q-tooltip>
-      </q-btn>
-
-      <q-btn
-        flat
-        round
-        icon="notifications_none"
-        :color="modoEscuro ? 'orange' : 'dark'"
-      />
-
-      <q-btn
-        flat
-        no-caps
-        class="usuario-botao"
-      >
-        <q-avatar
-          :color="modoEscuro ? 'grey-9' : 'grey-3'"
-          :text-color="modoEscuro ? 'orange' : 'dark'"
-        >
-          {{ iniciais }}
-        </q-avatar>
-
-        <div class="usuario-dados">
-          <div class="usuario-nome">
-            {{ nomeUsuario }}
-          </div>
-
-          <div class="usuario-tipo">
-            TÉCNICO
-          </div>
-        </div>
-
-        <q-icon
-          name="keyboard_arrow_down"
-          size="18px"
-          :color="modoEscuro ? 'grey-5' : 'grey-7'"
-        />
-
-        <q-menu
-          anchor="bottom right"
-          self="top right"
-        >
-          <q-list style="min-width: 220px">
-            <q-item>
-              <q-item-section>
-                <div class="text-weight-bold">
-                  {{ nomeUsuario }}
-                </div>
-
-                <div class="text-caption text-grey">
-                  {{ authStore.tipoUsuario }}
-                </div>
-              </q-item-section>
-            </q-item>
-
-            <q-separator />
-
-            <q-item
-              clickable
-              v-close-popup
-              @click="alternarTema"
-            >
-              <q-item-section avatar>
-                <q-icon
-                  :name="iconeTema"
-                  color="orange"
-                />
-              </q-item-section>
-
-              <q-item-section>
-                {{ textoTema }}
-              </q-item-section>
-            </q-item>
-
-            <q-separator />
-
-            <q-item
-              clickable
-              v-close-popup
-              @click="sair"
-            >
-              <q-item-section avatar>
-                <q-icon
-                  name="logout"
-                  color="negative"
-                />
-              </q-item-section>
-
-              <q-item-section class="text-negative">
-                Sair
-              </q-item-section>
-            </q-item>
-          </q-list>
-        </q-menu>
-      </q-btn>
+    <div class="header-marca">
+      <span class="header-marca-ponto"></span>
+      AVIOESTE
     </div>
   </div>
 </template>
 
 <script setup>
 import { computed } from 'vue'
-import { useRouter } from 'vue-router'
-import { useAuthStore } from 'src/stores/auth'
-import { useTheme } from 'src/composables/useTheme'
+import { useRoute } from 'vue-router'
 
-const router = useRouter()
-const authStore = useAuthStore()
+const route = useRoute()
 
-const {
-  modoEscuro,
-  iconeTema,
-  textoTema,
-  alternarTema
-} = useTheme()
+const configuracao = computed(() => {
+  const path = route.path
 
-const nomeUsuario = computed(
-  () =>
-    authStore.usuario?.nome ||
-    'Técnico'
-)
+  if (path === '/tecnico/chamados-pendentes') {
+    return {
+      titulo: 'Chamados pendentes',
+      subtitulo: 'Analise as solicitações disponíveis e escolha o próximo atendimento.'
+    }
+  }
 
-const iniciais = computed(() => {
-  const partes = nomeUsuario.value
-    .trim()
-    .split(' ')
-    .filter(Boolean)
+  if (path === '/tecnico/meus-chamados') {
+    return {
+      titulo: 'Meus chamados',
+      subtitulo: 'Acompanhe os atendimentos vinculados ao seu usuário.'
+    }
+  }
 
-  return partes
-    .slice(0, 2)
-    .map(
-      (parte) =>
-        parte.charAt(0)
-    )
-    .join('')
-    .toUpperCase()
+  if (path.startsWith('/tecnico/atendimento')) {
+    return {
+      titulo: 'Atendimento',
+      subtitulo: 'Gerencie o andamento dos seus atendimentos em campo.'
+    }
+  }
+
+  if (path.startsWith('/tecnico/chamados/')) {
+    return {
+      titulo: 'Detalhes do chamado',
+      subtitulo: 'Consulte todas as informações da solicitação.'
+    }
+  }
+
+  if (path === '/tecnico/perfil') {
+    return {
+      titulo: 'Meu perfil',
+      subtitulo: 'Consulte e mantenha seus dados atualizados.'
+    }
+  }
+
+  return {
+    titulo: 'Portal do Técnico',
+    subtitulo: 'Gerencie seus chamados e atendimentos.'
+  }
 })
 
-async function sair() {
-  authStore.logout()
-
-  await router.replace('/')
-}
+const titulo = computed(() => configuracao.value.titulo)
+const subtitulo = computed(() => configuracao.value.subtitulo)
 </script>
 
 <style scoped>
 .header-tecnico {
-  min-height: 94px;
+  min-height: 68px;
+
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
-  padding: 18px 32px;
+
+  gap: 18px;
+
+  padding: 10px 24px;
+
   border-bottom: 1px solid #eaecf0;
-  background: #ffffff;
-  transition:
-    background 0.25s,
-    border-color 0.25s;
+
+  background:
+    linear-gradient(
+      90deg,
+      #ffffff 0%,
+      #ffffff 72%,
+      #fffaf5 100%
+    );
+}
+
+.header-conteudo {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.header-detalhe {
+  width: 4px;
+  height: 36px;
+
+  flex-shrink: 0;
+
+  border-radius: 999px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #ff9d1f,
+      #f97316
+    );
 }
 
 .header-titulo {
-  color: #101828;
-  font-size: 25px;
-  font-weight: 800;
+  color: #17233c;
+
+  font-size: 20px;
+  font-weight: 900;
+
+  line-height: 1.1;
 }
 
 .header-subtitulo {
   margin-top: 3px;
+
   color: #667085;
-  font-size: 14px;
+
+  font-size: 10px;
 }
 
-.header-acoes {
+.header-marca {
   display: flex;
   align-items: center;
-  gap: 13px;
-}
+  gap: 7px;
 
-.usuario-botao {
-  padding: 4px 6px;
-  border-radius: 12px;
-}
-
-.usuario-dados {
-  margin-left: 10px;
-  margin-right: 4px;
-  text-align: left;
-}
-
-.usuario-nome {
-  color: #101828;
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.usuario-tipo {
-  margin-top: 2px;
   color: #98a2b3;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 1px;
+
+  font-size: 8px;
+  font-weight: 900;
+
+  letter-spacing: 1.5px;
 }
 
-/* MODO ESCURO */
+.header-marca-ponto {
+  width: 7px;
+  height: 7px;
+
+  border-radius: 50%;
+
+  background: #f97316;
+
+  box-shadow:
+    0 0 0 4px
+    rgba(249, 115, 22, 0.12);
+}
 
 .body--dark .header-tecnico {
-  border-bottom-color: #2b2f36;
-  background: #16191f;
+  border-color: #292d33;
+
+  background:
+    linear-gradient(
+      90deg,
+      #16191f 0%,
+      #16191f 72%,
+      #1f1b18 100%
+    );
 }
 
-.body--dark .header-titulo,
-.body--dark .usuario-nome {
+.body--dark .header-titulo {
   color: #f9fafb;
 }
 
 .body--dark .header-subtitulo,
-.body--dark .usuario-tipo {
+.body--dark .header-marca {
   color: #98a2b3;
-}
-
-@media (max-width: 700px) {
-  .header-tecnico {
-    padding: 14px 16px;
-  }
-
-  .header-subtitulo,
-  .usuario-dados {
-    display: none;
-  }
 }
 </style>

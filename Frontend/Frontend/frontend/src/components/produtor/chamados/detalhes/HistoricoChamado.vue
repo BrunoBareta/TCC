@@ -10,7 +10,7 @@
     >
       <q-spinner
         color="orange"
-        size="36px"
+        size="34px"
       />
 
       <div class="estado-texto">
@@ -24,7 +24,7 @@
     >
       <q-icon
         name="history"
-        size="34px"
+        size="32px"
         color="grey-5"
       />
 
@@ -57,12 +57,14 @@
           </div>
 
           <div class="evento-conteudo">
-            <div class="evento-titulo">
-              {{ tituloEvento(evento) }}
-            </div>
+            <div class="evento-topo">
+              <div class="evento-titulo">
+                {{ tituloEvento(evento) }}
+              </div>
 
-            <div class="evento-data">
-              {{ formatarData(evento.data_alteracao) }}
+              <div class="evento-data">
+                {{ formatarData(evento.data_alteracao) }}
+              </div>
             </div>
 
             <div
@@ -76,12 +78,18 @@
               v-if="evento.status_anterior"
               class="evento-transicao"
             >
-              {{ formatarTexto(evento.status_anterior) }}
+              <span>
+                {{ formatarTexto(evento.status_anterior) }}
+              </span>
+
               <q-icon
                 name="arrow_forward"
                 size="14px"
               />
-              {{ formatarTexto(evento.status_novo) }}
+
+              <span>
+                {{ formatarTexto(evento.status_novo) }}
+              </span>
             </div>
           </div>
         </div>
@@ -120,21 +128,30 @@ const eventos = computed(() => {
     ? [...props.historicos]
     : []
 
-  if (lista.length === 0 && props.chamado) {
+  if (
+    lista.length === 0 &&
+    props.chamado
+  ) {
     return [
       {
-        id_historico: `abertura-${props.chamado.id_chamado}`,
+        id_historico:
+          `abertura-${props.chamado.id_chamado}`,
         status_anterior: null,
         status_novo: 'PENDENTE',
-        observacao: 'Chamado aberto pelo produtor.',
-        data_alteracao: props.chamado.data_abertura
+        observacao:
+          'Chamado aberto pelo produtor.',
+        data_alteracao:
+          props.chamado.data_abertura
       }
     ]
   }
 
   return lista.sort((a, b) => {
-    const dataA = new Date(a.data_alteracao).getTime()
-    const dataB = new Date(b.data_alteracao).getTime()
+    const dataA =
+      new Date(a.data_alteracao).getTime()
+
+    const dataB =
+      new Date(b.data_alteracao).getTime()
 
     return dataA - dataB
   })
@@ -158,7 +175,11 @@ function formatarData(valor) {
 
   const data = new Date(valor)
 
-  if (Number.isNaN(data.getTime())) {
+  if (
+    Number.isNaN(
+      data.getTime()
+    )
+  ) {
     return valor
   }
 
@@ -169,24 +190,35 @@ function formatarData(valor) {
 }
 
 function tituloEvento(evento) {
-  const status = String(evento.status_novo || '').toUpperCase()
+  const status =
+    String(
+      evento.status_novo || ''
+    ).toUpperCase()
 
   const titulos = {
     PENDENTE: 'Chamado aberto',
-    AGUARDANDO_CONFIRMACAO: 'Aguardando confirmação',
+    AGUARDANDO_CONFIRMACAO:
+      'Aguardando confirmação',
     ACEITO: 'Chamado aceito',
     EM_ROTA: 'Técnico em deslocamento',
-    EM_ATENDIMENTO: 'Atendimento iniciado',
+    EM_ATENDIMENTO:
+      'Atendimento iniciado',
     CONCLUIDO: 'Chamado concluído',
     FINALIZADO: 'Chamado finalizado',
     CANCELADO: 'Chamado cancelado'
   }
 
-  return titulos[status] || formatarTexto(status)
+  return (
+    titulos[status] ||
+    formatarTexto(status)
+  )
 }
 
 function iconeStatus(status) {
-  const valor = String(status || '').toUpperCase()
+  const valor =
+    String(
+      status || ''
+    ).toUpperCase()
 
   const icones = {
     PENDENTE: 'add_task',
@@ -199,21 +231,38 @@ function iconeStatus(status) {
     CANCELADO: 'cancel'
   }
 
-  return icones[valor] || 'history'
+  return (
+    icones[valor] ||
+    'history'
+  )
 }
 
 function classeMarcador(status) {
-  const valor = String(status || '').toUpperCase()
+  const valor =
+    String(
+      status || ''
+    ).toUpperCase()
 
-  if (['CONCLUIDO', 'FINALIZADO'].includes(valor)) {
+  if (
+    ['CONCLUIDO', 'FINALIZADO']
+      .includes(valor)
+  ) {
     return 'marcador-concluido'
   }
 
-  if (['ACEITO', 'EM_ROTA', 'EM_ATENDIMENTO'].includes(valor)) {
+  if (
+    [
+      'ACEITO',
+      'EM_ROTA',
+      'EM_ATENDIMENTO'
+    ].includes(valor)
+  ) {
     return 'marcador-atendimento'
   }
 
-  if (valor === 'CANCELADO') {
+  if (
+    valor === 'CANCELADO'
+  ) {
     return 'marcador-cancelado'
   }
 
@@ -223,116 +272,178 @@ function classeMarcador(status) {
 
 <style scoped>
 .historico-card {
-  align-self: start;
-  padding: 26px;
+  height: 100%;
+
+  padding: 20px;
+
   border: 1px solid #eaecf0;
-  border-radius: 22px;
+  border-radius: 18px;
+
   background: #ffffff;
-  box-shadow: 0 3px 10px rgba(16, 24, 40, 0.05);
+
+  box-shadow:
+    0 3px 10px
+    rgba(16, 24, 40, 0.045);
 }
 
 .card-titulo {
-  margin-bottom: 24px;
+  margin-bottom: 15px;
+
   color: #101828;
+
   font-size: 19px;
-  font-weight: 800;
+  font-weight: 900;
 }
 
 .estado-central,
 .estado-vazio {
-  padding: 36px 16px;
+  padding: 28px 12px;
   text-align: center;
 }
 
 .estado-texto,
 .estado-vazio-texto {
-  margin-top: 10px;
+  margin-top: 8px;
+
   color: #98a2b3;
+
   font-size: 13px;
 }
 
 .estado-vazio-titulo {
-  margin-top: 12px;
+  margin-top: 10px;
+
   color: #475467;
+
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .evento {
   display: flex;
   align-items: flex-start;
-  gap: 13px;
+
+  gap: 11px;
 }
 
 .evento-marcador {
-  width: 40px;
-  height: 40px;
+  width: 38px;
+  height: 38px;
+
   display: flex;
-  flex-shrink: 0;
   align-items: center;
   justify-content: center;
+
+  flex-shrink: 0;
+
   border-radius: 50%;
 }
 
 .marcador-pendente {
-  background: #fff1e6;
   color: #f97316;
+  background: #fff1e6;
 }
 
 .marcador-atendimento {
-  background: #dbeafe;
   color: #2563eb;
+  background: #dbeafe;
 }
 
 .marcador-concluido {
-  background: #d1fae5;
   color: #059669;
+  background: #d1fae5;
 }
 
 .marcador-cancelado {
-  background: #fee2e2;
   color: #dc2626;
+  background: #fee2e2;
 }
 
 .evento-conteudo {
   min-width: 0;
   flex: 1;
-  padding-top: 2px;
+
+  padding-top: 1px;
+}
+
+.evento-topo {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 10px;
 }
 
 .evento-titulo {
   color: #344054;
-  font-size: 14px;
-  font-weight: 700;
+
+  font-size: 15px;
+  font-weight: 800;
 }
 
 .evento-data {
-  margin-top: 3px;
+  flex-shrink: 0;
+
   color: #98a2b3;
-  font-size: 12px;
+
+  font-size: 11px;
+  font-weight: 600;
 }
 
 .evento-observacao {
-  margin-top: 9px;
+  margin-top: 5px;
+
   color: #667085;
+
   font-size: 13px;
-  line-height: 1.5;
+  line-height: 1.45;
 }
 
 .evento-transicao {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-top: 9px;
+
+  gap: 5px;
+
+  margin-top: 6px;
+
   color: #98a2b3;
+
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .linha {
   width: 2px;
-  height: 38px;
-  margin: 5px 0 5px 19px;
+  height: 24px;
+
+  margin: 4px 0 4px 18px;
+
   background: #eaecf0;
+}
+
+.body--dark .historico-card {
+  border-color: #2b2f36;
+  background: #16191f;
+}
+
+.body--dark .card-titulo,
+.body--dark .evento-titulo {
+  color: #f9fafb;
+}
+
+.body--dark .linha {
+  background: #2b2f36;
+}
+
+@media (max-width: 650px) {
+  .historico-card {
+    padding: 16px;
+  }
+
+  .evento-topo {
+    flex-direction: column;
+    gap: 2px;
+  }
 }
 </style>

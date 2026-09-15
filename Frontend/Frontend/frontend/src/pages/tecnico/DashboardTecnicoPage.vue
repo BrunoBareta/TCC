@@ -3,17 +3,34 @@
     class="dashboard-page"
     :class="{ 'dashboard-page--dark': $q.dark.isActive }"
   >
-    <div class="dashboard-header">
-      <div>
-        <div class="saudacao">Olá, {{ primeiroNome }} 👋</div>
-        <div class="descricao">
-          Veja seus atendimentos, chamados disponíveis e evolução recente.
+    <!-- ==================================================
+         TOPO COMPACTO
+    =================================================== -->
+    <section class="dashboard-hero">
+      <div class="dashboard-hero__identidade">
+        <div class="dashboard-hero__barra"></div>
+
+        <div>
+          <div class="dashboard-hero__label">
+            Painel do Técnico
+          </div>
+
+          <div class="dashboard-hero__titulo">
+            Olá, {{ primeiroNome }} 👋
+          </div>
+
+          <div class="dashboard-hero__descricao">
+            Acompanhe seus chamados, atendimentos e prioridades do dia.
+          </div>
         </div>
       </div>
 
-      <div class="header-actions">
+      <div class="dashboard-hero__acoes">
         <div class="data-card">
-          <q-icon name="calendar_month" size="19px" />
+          <div class="data-card__icone">
+            <q-icon name="calendar_month" size="19px" />
+          </div>
+
           <div>
             <span>Hoje</span>
             <strong>{{ dataAtual }}</strong>
@@ -21,8 +38,9 @@
         </div>
 
         <q-btn
-          flat
+          unelevated
           round
+          class="botao-atualizar"
           icon="refresh"
           :loading="carregando"
           @click="carregarDashboard"
@@ -30,12 +48,12 @@
           <q-tooltip>Atualizar dashboard</q-tooltip>
         </q-btn>
       </div>
-    </div>
+    </section>
 
     <q-banner
       v-if="erro"
       rounded
-      class="bg-red-1 text-negative q-mb-lg"
+      class="bg-red-1 text-negative q-mb-md"
     >
       {{ erro }}
 
@@ -53,108 +71,148 @@
       v-if="carregando && !carregadoUmaVez"
       class="carregamento-inicial"
     >
-      <q-spinner color="orange" size="46px" />
+      <q-spinner color="orange" size="42px" />
       <span>Carregando seus atendimentos...</span>
     </div>
 
     <template v-else>
-      <div class="indicadores-grid">
+      <!-- ==================================================
+           INDICADORES
+      =================================================== -->
+      <section class="indicadores-grid">
         <button
           type="button"
-          class="indicador-card indicador-card--clicavel"
+          class="indicador-card indicador-card--pendentes"
           @click="irPendentes"
         >
-          <div class="indicador-topo">
-            <div class="indicador-icone indicador-icone--laranja">
-              <q-icon name="pending_actions" size="25px" />
+          <div class="indicador-icone indicador-icone--laranja">
+            <q-icon name="pending_actions" size="22px" />
+          </div>
+
+          <div class="indicador-conteudo">
+            <div class="indicador-numero">
+              {{ totalPendentes }}
             </div>
-            <div class="indicador-tag">Disponíveis</div>
+
+            <div class="indicador-label">
+              Chamados pendentes
+            </div>
+
+            <div class="indicador-rodape">
+              Disponíveis para aceite
+            </div>
           </div>
-          <div class="indicador-numero">{{ totalPendentes }}</div>
-          <div class="indicador-label">Chamados pendentes</div>
-          <div class="indicador-rodape">
-            Solicitações disponíveis para aceite
-          </div>
+
+          <q-icon
+            name="arrow_forward"
+            class="indicador-seta"
+            size="18px"
+          />
         </button>
 
         <button
           type="button"
-          class="indicador-card indicador-card--clicavel"
+          class="indicador-card indicador-card--andamento"
           @click="irEmAndamento"
         >
-          <div class="indicador-topo">
-            <div class="indicador-icone indicador-icone--azul">
-              <q-icon name="engineering" size="25px" />
+          <div class="indicador-icone indicador-icone--azul">
+            <q-icon name="engineering" size="22px" />
+          </div>
+
+          <div class="indicador-conteudo">
+            <div class="indicador-numero">
+              {{ totalEmAndamento }}
             </div>
-            <div class="indicador-tag">Ativos</div>
+
+            <div class="indicador-label">
+              Em andamento
+            </div>
+
+            <div class="indicador-rodape">
+              Aceitos, em rota ou atendimento
+            </div>
           </div>
-          <div class="indicador-numero">{{ totalEmAndamento }}</div>
-          <div class="indicador-label">Em andamento</div>
-          <div class="indicador-rodape">
-            Aceitos, em rota ou em atendimento
-          </div>
+
+          <q-icon
+            name="arrow_forward"
+            class="indicador-seta"
+            size="18px"
+          />
         </button>
 
         <button
           type="button"
-          class="indicador-card indicador-card--clicavel"
+          class="indicador-card indicador-card--finalizados"
           @click="irFinalizados"
         >
-          <div class="indicador-topo">
-            <div class="indicador-icone indicador-icone--verde">
-              <q-icon name="task_alt" size="25px" />
+          <div class="indicador-icone indicador-icone--verde">
+            <q-icon name="task_alt" size="22px" />
+          </div>
+
+          <div class="indicador-conteudo">
+            <div class="indicador-numero">
+              {{ totalFinalizados }}
             </div>
-            <div class="indicador-tag">Concluídos</div>
+
+            <div class="indicador-label">
+              Finalizados
+            </div>
+
+            <div class="indicador-rodape">
+              Concluídos por você
+            </div>
           </div>
-          <div class="indicador-numero">{{ totalFinalizados }}</div>
-          <div class="indicador-label">Finalizados</div>
-          <div class="indicador-rodape">
-            Atendimentos concluídos por você
-          </div>
+
+          <q-icon
+            name="arrow_forward"
+            class="indicador-seta"
+            size="18px"
+          />
         </button>
 
         <button
           type="button"
-          class="indicador-card indicador-card--clicavel"
+          class="indicador-card indicador-card--meus"
           @click="irMeusChamados"
         >
-          <div class="indicador-topo">
-            <div class="indicador-icone indicador-icone--roxo">
-              <q-icon name="assignment_ind" size="25px" />
+          <div class="indicador-icone indicador-icone--roxo">
+            <q-icon name="assignment_ind" size="22px" />
+          </div>
+
+          <div class="indicador-conteudo">
+            <div class="indicador-numero">
+              {{ totalMeusChamados }}
             </div>
-            <div class="indicador-tag">Histórico</div>
+
+            <div class="indicador-label">
+              Meus chamados
+            </div>
+
+            <div class="indicador-rodape">
+              Histórico vinculado ao usuário
+            </div>
           </div>
-          <div class="indicador-numero">{{ totalMeusChamados }}</div>
-          <div class="indicador-label">Meus chamados</div>
-          <div class="indicador-rodape">
-            Total vinculado ao seu usuário
-          </div>
+
+          <q-icon
+            name="arrow_forward"
+            class="indicador-seta"
+            size="18px"
+          />
         </button>
-      </div>
+      </section>
 
-      <div class="dashboard-grid-principal">
-        <div class="dashboard-card atendimento-card">
-          <div class="card-header">
-            <div>
-              <div class="card-titulo">Atendimento atual</div>
-              <div class="card-subtitulo">
-                Continue rapidamente de onde parou.
-              </div>
-            </div>
-            <div class="card-icone">
-              <q-icon name="engineering" size="21px" />
-            </div>
-          </div>
-
-          <div
-            v-if="chamadoAtual"
-            class="atendimento-atual"
-          >
-            <div class="atendimento-topo">
+      <!-- ==================================================
+           ATENDIMENTO + DISTRIBUIÇÃO
+      =================================================== -->
+      <section class="dashboard-grid-principal">
+        <article class="dashboard-card atendimento-card">
+          <template v-if="chamadoAtual">
+            <div class="atendimento-cabecalho">
               <div>
-                <div class="chamado-numero">
-                  CHAMADO #{{ chamadoAtual.id_chamado }}
+                <div class="card-kicker">
+                  Atendimento atual · Chamado #{{ chamadoAtual.id_chamado }}
                 </div>
+
                 <div class="chamado-problema">
                   {{ chamadoAtual.problema || 'Solicitação de atendimento' }}
                 </div>
@@ -173,6 +231,7 @@
                 <div class="info-icone">
                   <q-icon name="agriculture" size="18px" />
                 </div>
+
                 <div>
                   <span>Propriedade</span>
                   <strong>
@@ -185,6 +244,7 @@
                 <div class="info-icone">
                   <q-icon name="location_on" size="18px" />
                 </div>
+
                 <div>
                   <span>Localização</span>
                   <strong>{{ localChamado(chamadoAtual) }}</strong>
@@ -195,6 +255,7 @@
                 <div class="info-icone">
                   <q-icon name="priority_high" size="18px" />
                 </div>
+
                 <div>
                   <span>Urgência</span>
                   <strong>{{ formatarTexto(chamadoAtual.urgencia) }}</strong>
@@ -205,6 +266,7 @@
                 <div class="info-icone">
                   <q-icon name="event" size="18px" />
                 </div>
+
                 <div>
                   <span>Abertura</span>
                   <strong>{{ formatarData(chamadoAtual.data_abertura) }}</strong>
@@ -212,99 +274,106 @@
               </div>
             </div>
 
-            <div class="progresso-atendimento">
-              <div
-                v-for="(etapa, index) in etapasAtendimento"
-                :key="etapa.status"
-                class="progresso-etapa"
-              >
-                <div class="progresso-linha-area">
-                  <div
-                    class="progresso-circulo"
-                    :class="{
-                      'progresso-circulo--concluido':
-                        indiceEtapaChamadoAtual >= index,
-                      'progresso-circulo--atual':
-                        indiceEtapaChamadoAtual === index
-                    }"
-                  >
-                    <q-icon
-                      :name="
-                        indiceEtapaChamadoAtual > index
-                          ? 'check'
-                          : etapa.icone
-                      "
-                      size="15px"
-                    />
+            <div class="atendimento-rodape">
+              <div class="progresso-atendimento">
+                <div
+                  v-for="(etapa, index) in etapasAtendimento"
+                  :key="etapa.status"
+                  class="progresso-etapa"
+                >
+                  <div class="progresso-linha-area">
+                    <div
+                      class="progresso-circulo"
+                      :class="{
+                        'progresso-circulo--concluido':
+                          indiceEtapaChamadoAtual >= index,
+                        'progresso-circulo--atual':
+                          indiceEtapaChamadoAtual === index
+                      }"
+                    >
+                      <q-icon
+                        :name="
+                          indiceEtapaChamadoAtual > index
+                            ? 'check'
+                            : etapa.icone
+                        "
+                        size="14px"
+                      />
+                    </div>
+
+                    <div
+                      v-if="index < etapasAtendimento.length - 1"
+                      class="progresso-linha"
+                      :class="{
+                        'progresso-linha--concluida':
+                          indiceEtapaChamadoAtual > index
+                      }"
+                    ></div>
                   </div>
 
                   <div
-                    v-if="index < etapasAtendimento.length - 1"
-                    class="progresso-linha"
+                    class="progresso-label"
                     :class="{
-                      'progresso-linha--concluida':
-                        indiceEtapaChamadoAtual > index
+                      'progresso-label--ativo':
+                        indiceEtapaChamadoAtual >= index
                     }"
-                  ></div>
-                </div>
-
-                <div
-                  class="progresso-label"
-                  :class="{
-                    'progresso-label--ativo':
-                      indiceEtapaChamadoAtual >= index
-                  }"
-                >
-                  {{ etapa.label }}
+                  >
+                    {{ etapa.label }}
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div class="atendimento-acoes">
               <q-btn
                 unelevated
                 no-caps
-                color="orange"
+                class="continuar-btn"
                 icon="play_arrow"
                 label="Continuar atendimento"
                 @click="continuarAtendimento"
               />
             </div>
-          </div>
+          </template>
 
           <div
             v-else
             class="estado-vazio atendimento-vazio"
           >
             <div class="estado-vazio-icone">
-              <q-icon name="check_circle" size="33px" />
+              <q-icon name="check_circle" size="30px" />
             </div>
-            <strong>Nenhum atendimento em andamento</strong>
-            <span>
-              Quando você aceitar um chamado, ele aparecerá aqui.
-            </span>
+
+            <div>
+              <strong>Nenhum atendimento em andamento</strong>
+              <span>
+                Quando você aceitar um chamado, ele aparecerá aqui.
+              </span>
+            </div>
+
             <q-btn
               outline
               no-caps
               color="orange"
               icon="pending_actions"
-              label="Ver chamados pendentes"
-              class="q-mt-md"
+              label="Ver pendentes"
               @click="irPendentes"
             />
           </div>
-        </div>
+        </article>
 
-        <div class="dashboard-card status-card">
-          <div class="card-header">
+        <article class="dashboard-card status-card">
+          <div class="card-header card-header--compacto">
             <div>
-              <div class="card-titulo">Meus atendimentos</div>
+              <div class="card-titulo">
+                Meus atendimentos
+              </div>
+
               <div class="card-subtitulo">
-                Distribuição por situação.
+                Distribuição por situação
               </div>
             </div>
+
             <div class="card-icone">
-              <q-icon name="donut_large" size="21px" />
+              <q-icon name="donut_large" size="19px" />
             </div>
           </div>
 
@@ -314,6 +383,7 @@
                 :data="dadosGraficoStatus"
                 :options="opcoesGraficoStatus"
               />
+
               <div class="doughnut-centro">
                 <strong>{{ totalMeusChamados }}</strong>
                 <span>chamados</span>
@@ -354,105 +424,22 @@
               </div>
             </div>
           </div>
-        </div>
-      </div>
+        </article>
+      </section>
 
-      <div class="dashboard-grid-secundario">
-        <div class="dashboard-card">
-          <div class="card-header">
-            <div>
-              <div class="card-titulo">Atendimentos finalizados</div>
-              <div class="card-subtitulo">
-                Evolução dos últimos 6 meses.
-              </div>
-            </div>
-            <div class="card-icone">
-              <q-icon name="show_chart" size="21px" />
-            </div>
-          </div>
-
-          <div class="grafico-linha">
-            <Line
-              :data="dadosGraficoMensal"
-              :options="opcoesGraficoMensal"
-            />
-          </div>
-        </div>
-
-        <div class="dashboard-card resumo-rapido-card">
-          <div class="card-header">
-            <div>
-              <div class="card-titulo">Situação atual</div>
-              <div class="card-subtitulo">
-                Sua fila de trabalho agora.
-              </div>
-            </div>
-            <div class="card-icone">
-              <q-icon name="query_stats" size="21px" />
-            </div>
-          </div>
-
-          <div class="resumo-lista">
-            <button
-              type="button"
-              class="resumo-item"
-              @click="irEmAndamento"
-            >
-              <div class="resumo-esquerda">
-                <span class="ponto ponto--aceito"></span>
-                <span>Aceitos</span>
-              </div>
-              <strong>{{ totalAceitos }}</strong>
-            </button>
-
-            <button
-              type="button"
-              class="resumo-item"
-              @click="irEmAndamento"
-            >
-              <div class="resumo-esquerda">
-                <span class="ponto ponto--rota"></span>
-                <span>Em deslocamento</span>
-              </div>
-              <strong>{{ totalEmRota }}</strong>
-            </button>
-
-            <button
-              type="button"
-              class="resumo-item"
-              @click="irEmAndamento"
-            >
-              <div class="resumo-esquerda">
-                <span class="ponto ponto--atendimento"></span>
-                <span>Em atendimento</span>
-              </div>
-              <strong>{{ totalAtendimento }}</strong>
-            </button>
-
-            <button
-              type="button"
-              class="resumo-item"
-              @click="irFinalizados"
-            >
-              <div class="resumo-esquerda">
-                <span class="ponto ponto--finalizado"></span>
-                <span>Finalizados</span>
-              </div>
-              <strong>{{ totalFinalizados }}</strong>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div class="dashboard-grid-listas">
-        <div class="dashboard-card lista-card">
+      <!-- ==================================================
+           PENDENTES + EVOLUÇÃO
+      =================================================== -->
+      <section class="dashboard-grid-secundario">
+        <article class="dashboard-card lista-card">
           <div class="card-header">
             <div>
               <div class="card-titulo">
                 Chamados aguardando atendimento
               </div>
+
               <div class="card-subtitulo">
-                Prioridades disponíveis para aceite.
+                Prioridades disponíveis para aceite
               </div>
             </div>
 
@@ -470,11 +457,9 @@
             v-if="pendentesDestaque.length === 0"
             class="estado-vazio estado-vazio--pequeno"
           >
-            <q-icon name="inbox" size="34px" color="grey-5" />
+            <q-icon name="inbox" size="30px" color="grey-5" />
             <strong>Nenhum chamado pendente</strong>
-            <span>
-              Não há novas solicitações aguardando aceite.
-            </span>
+            <span>Não há solicitações aguardando aceite.</span>
           </div>
 
           <div
@@ -494,6 +479,7 @@
                 <strong>
                   {{ item.problema || 'Solicitação de atendimento' }}
                 </strong>
+
                 <span>
                   {{ item.nome_propriedade || 'Propriedade não informada' }}
                   • {{ formatarData(item.data_abertura) }}
@@ -519,77 +505,132 @@
               </q-btn>
             </div>
           </div>
-        </div>
+        </article>
 
-        <div class="dashboard-card lista-card">
+        <article class="dashboard-card">
           <div class="card-header">
             <div>
-              <div class="card-titulo">Últimos atendimentos</div>
+              <div class="card-titulo">
+                Atendimentos finalizados
+              </div>
+
               <div class="card-subtitulo">
-                Chamados concluídos recentemente.
+                Evolução dos últimos 6 meses
               </div>
             </div>
 
-            <q-btn
-              flat
-              no-caps
-              color="orange"
-              label="Histórico"
-              icon-right="arrow_forward"
-              @click="irFinalizados"
+            <div class="card-icone">
+              <q-icon name="show_chart" size="19px" />
+            </div>
+          </div>
+
+          <div class="grafico-linha">
+            <Line
+              :data="dadosGraficoMensal"
+              :options="opcoesGraficoMensal"
+            />
+          </div>
+        </article>
+      </section>
+
+      <!-- ==================================================
+           ANÁLISE DO ATENDIMENTO
+      =================================================== -->
+      <section class="dashboard-grid-analitico">
+        <article class="dashboard-card">
+          <div class="card-header">
+            <div>
+              <div class="card-titulo">
+                Chamados por urgência
+              </div>
+
+              <div class="card-subtitulo">
+                Distribuição dos seus chamados por prioridade
+              </div>
+            </div>
+
+            <div class="card-icone">
+              <q-icon name="priority_high" size="19px" />
+            </div>
+          </div>
+
+          <div
+            v-if="totalChamadosComUrgencia > 0"
+            class="grafico-analitico"
+          >
+            <Bar
+              :data="dadosGraficoUrgencia"
+              :options="opcoesGraficoUrgencia"
             />
           </div>
 
           <div
-            v-if="ultimosFinalizados.length === 0"
-            class="estado-vazio estado-vazio--pequeno"
+            v-else
+            class="estado-vazio estado-vazio--grafico"
           >
-            <q-icon name="history" size="34px" color="grey-5" />
-            <strong>Nenhum atendimento finalizado</strong>
+            <q-icon
+              name="bar_chart"
+              size="30px"
+              color="grey-5"
+            />
+
+            <strong>
+              Ainda não há dados de urgência
+            </strong>
+
+            <span>
+              O gráfico será preenchido conforme os atendimentos forem registrados.
+            </span>
+          </div>
+        </article>
+
+        <article class="dashboard-card">
+          <div class="card-header">
+            <div>
+              <div class="card-titulo">
+                Propriedades mais atendidas
+              </div>
+
+              <div class="card-subtitulo">
+                Onde seus chamados estão mais concentrados
+              </div>
+            </div>
+
+            <div class="card-icone">
+              <q-icon name="agriculture" size="19px" />
+            </div>
+          </div>
+
+          <div
+            v-if="topPropriedades.length > 0"
+            class="grafico-analitico"
+          >
+            <Bar
+              :data="dadosGraficoPropriedades"
+              :options="opcoesGraficoPropriedades"
+            />
           </div>
 
           <div
             v-else
-            class="lista-finalizados"
+            class="estado-vazio estado-vazio--grafico"
           >
-            <button
-              v-for="item in ultimosFinalizados"
-              :key="item.id_chamado"
-              type="button"
-              class="finalizado-item"
-              @click="abrirChamado(item)"
-            >
-              <div class="finalizado-icone">
-                <q-icon name="check" size="17px" />
-              </div>
+            <q-icon
+              name="agriculture"
+              size="30px"
+              color="grey-5"
+            />
 
-              <div class="finalizado-conteudo">
-                <strong>
-                  {{ item.problema || 'Atendimento concluído' }}
-                </strong>
-                <span>
-                  {{ item.nome_propriedade || 'Propriedade não informada' }}
-                </span>
-              </div>
+            <strong>
+              Ainda não há propriedades para comparar
+            </strong>
 
-              <div class="finalizado-data">
-                {{
-                  formatarData(
-                    item.data_fechamento ||
-                    item.data_finalizacao ||
-                    item.data_abertura
-                  )
-                }}
-              </div>
-
-              <q-icon
-                name="chevron_right"
-                color="grey-5"
-              />
-            </button>
+            <span>
+              O ranking aparecerá conforme os chamados forem vinculados às propriedades.
+            </span>
           </div>
-        </div>
-      </div>
+        </article>
+      </section>
     </template>
   </q-page>
 </template>
@@ -610,12 +651,14 @@ import {
 } from 'quasar'
 
 import {
+  Bar,
   Doughnut,
   Line
 } from 'vue-chartjs'
 
 import {
   ArcElement,
+  BarElement,
   CategoryScale,
   Chart as ChartJS,
   Filler,
@@ -638,6 +681,7 @@ import chamadoFuncionarioService from
 
 ChartJS.register(
   ArcElement,
+  BarElement,
   CategoryScale,
   LinearScale,
   PointElement,
@@ -876,46 +920,6 @@ const pendentesDestaque = computed(() =>
     )
 )
 
-const ultimosFinalizados = computed(() =>
-  meusChamadosNormalizados.value
-    .filter(
-      item =>
-        [
-          'FINALIZADO',
-          'CONCLUIDO'
-        ].includes(
-          normalizarStatus(
-            item.status
-          )
-        )
-    )
-    .sort(
-      (a, b) => {
-        const dataA =
-          new Date(
-            a.data_fechamento ||
-            a.data_finalizacao ||
-            a.data_abertura ||
-            0
-          ).getTime()
-
-        const dataB =
-          new Date(
-            b.data_fechamento ||
-            b.data_finalizacao ||
-            b.data_abertura ||
-            0
-          ).getTime()
-
-        return dataB - dataA
-      }
-    )
-    .slice(
-      0,
-      5
-    )
-)
-
 const dadosGraficoStatus = computed(() => ({
   labels: [
     'Aceitos',
@@ -1053,6 +1057,288 @@ const finalizadosPorMes = computed(() => {
     }
   )
 })
+
+
+const totaisUrgencia = computed(() => {
+  const totais = {
+    BAIXA: 0,
+    MEDIA: 0,
+    ALTA: 0
+  }
+
+  meusChamadosNormalizados.value.forEach(
+    item => {
+      const valor =
+        String(
+          item.urgencia || ''
+        )
+          .trim()
+          .toUpperCase()
+          .normalize('NFD')
+          .replace(
+            /[\u0300-\u036f]/g,
+            ''
+          )
+
+      if (
+        Object.prototype.hasOwnProperty.call(
+          totais,
+          valor
+        )
+      ) {
+        totais[valor] += 1
+      }
+    }
+  )
+
+  return totais
+})
+
+const totalChamadosComUrgencia =
+  computed(() =>
+    totaisUrgencia.value.BAIXA +
+    totaisUrgencia.value.MEDIA +
+    totaisUrgencia.value.ALTA
+  )
+
+const dadosGraficoUrgencia =
+  computed(() => ({
+    labels: [
+      'Baixa',
+      'Média',
+      'Alta'
+    ],
+
+    datasets: [
+      {
+        data: [
+          totaisUrgencia.value.BAIXA,
+          totaisUrgencia.value.MEDIA,
+          totaisUrgencia.value.ALTA
+        ],
+
+        backgroundColor: [
+          '#3b82f6',
+          '#f59e0b',
+          '#ef4444'
+        ],
+
+        borderRadius: 8,
+        borderSkipped: false,
+        barThickness: 24
+      }
+    ]
+  }))
+
+const opcoesGraficoUrgencia =
+  computed(() => ({
+    responsive: true,
+    maintainAspectRatio: false,
+
+    plugins: {
+      legend: {
+        display: false
+      },
+
+      tooltip: {
+        callbacks: {
+          label(context) {
+            return ` ${context.raw} chamado(s)`
+          }
+        }
+      }
+    },
+
+    scales: {
+      x: {
+        beginAtZero: true,
+
+        ticks: {
+          precision: 0,
+
+          color:
+            $q.dark.isActive
+              ? '#98a2b3'
+              : '#667085'
+        },
+
+        grid: {
+          color:
+            $q.dark.isActive
+              ? 'rgba(255,255,255,0.06)'
+              : 'rgba(16,24,40,0.06)'
+        },
+
+        border: {
+          display: false
+        }
+      },
+
+      y: {
+        ticks: {
+          color:
+            $q.dark.isActive
+              ? '#cbd5e1'
+              : '#475467',
+
+          font: {
+            weight: 700
+          }
+        },
+
+        grid: {
+          display: false
+        },
+
+        border: {
+          display: false
+        }
+      }
+    }
+  }))
+
+const topPropriedades =
+  computed(() => {
+    const contagem = new Map()
+
+    meusChamadosNormalizados.value.forEach(
+      item => {
+        const nome =
+          String(
+            item.nome_propriedade || ''
+          ).trim()
+
+        if (!nome) {
+          return
+        }
+
+        contagem.set(
+          nome,
+          (contagem.get(nome) || 0) + 1
+        )
+      }
+    )
+
+    return Array.from(
+      contagem.entries()
+    )
+      .map(
+        ([nome, total]) => ({
+          nome,
+          total
+        })
+      )
+      .sort(
+        (a, b) =>
+          b.total - a.total
+      )
+      .slice(0, 5)
+  })
+
+const dadosGraficoPropriedades =
+  computed(() => ({
+    labels:
+      topPropriedades.value.map(
+        item => item.nome
+      ),
+
+    datasets: [
+      {
+        data:
+          topPropriedades.value.map(
+            item => item.total
+          ),
+
+        backgroundColor:
+          topPropriedades.value.map(
+            (_, index) => {
+              const coresGrafico = [
+                '#f97316',
+                '#fb923c',
+                '#fdba74',
+                '#fed7aa',
+                '#ffedd5'
+              ]
+
+              return coresGrafico[index]
+            }
+          ),
+
+        borderRadius: 8,
+        borderSkipped: false,
+        barThickness: 20
+      }
+    ]
+  }))
+
+const opcoesGraficoPropriedades =
+  computed(() => ({
+    responsive: true,
+    maintainAspectRatio: false,
+    indexAxis: 'y',
+
+    plugins: {
+      legend: {
+        display: false
+      },
+
+      tooltip: {
+        callbacks: {
+          label(context) {
+            return ` ${context.raw} chamado(s)`
+          }
+        }
+      }
+    },
+
+    scales: {
+      x: {
+        beginAtZero: true,
+
+        ticks: {
+          precision: 0,
+
+          color:
+            $q.dark.isActive
+              ? '#98a2b3'
+              : '#667085'
+        },
+
+        grid: {
+          color:
+            $q.dark.isActive
+              ? 'rgba(255,255,255,0.06)'
+              : 'rgba(16,24,40,0.06)'
+        },
+
+        border: {
+          display: false
+        }
+      },
+
+      y: {
+        ticks: {
+          color:
+            $q.dark.isActive
+              ? '#cbd5e1'
+              : '#475467',
+
+          font: {
+            size: 10,
+            weight: 700
+          }
+        },
+
+        grid: {
+          display: false
+        },
+
+        border: {
+          display: false
+        }
+      }
+    }
+  }))
 
 const dadosGraficoMensal = computed(() => ({
   labels:
@@ -1491,127 +1777,311 @@ onMounted(
 <style scoped>
 .dashboard-page {
   min-height: 100%;
-  padding: 30px;
+  padding: 14px 20px 24px;
   background: #f5f6f8;
 }
 
-.dashboard-header {
+/* ==================================================
+   HERO / CABEÇALHO DA DASHBOARD
+=================================================== */
+
+.dashboard-hero {
+  min-height: 82px;
+
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
-  margin-bottom: 24px;
+
+  gap: 18px;
+
+  margin-bottom: 12px;
+  padding: 13px 16px;
+
+  border: 1px solid #eaecf0;
+  border-radius: 16px;
+
+  background:
+    linear-gradient(
+      110deg,
+      #ffffff 0%,
+      #ffffff 62%,
+      #fff6ed 100%
+    );
+
+  box-shadow:
+    0 3px 12px
+    rgba(16, 24, 40, 0.035);
 }
 
-.saudacao {
-  color: #101828;
-  font-size: 25px;
+.dashboard-hero__identidade {
+  min-width: 0;
+
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+}
+
+.dashboard-hero__barra {
+  width: 4px;
+  height: 47px;
+
+  flex-shrink: 0;
+
+  border-radius: 999px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #ff9d1f,
+      #f97316
+    );
+}
+
+.dashboard-hero__label {
+  color: #f97316;
+
+  font-size: 10px;
   font-weight: 900;
+
+  letter-spacing: 1px;
+  text-transform: uppercase;
 }
 
-.descricao {
-  margin-top: 5px;
+.dashboard-hero__titulo {
+  margin-top: 2px;
+
+  color: #17233c;
+
+  font-size: 24px;
+  font-weight: 900;
+
+  line-height: 1.05;
+}
+
+.dashboard-hero__descricao {
+  margin-top: 4px;
+
   color: #667085;
+
   font-size: 11px;
 }
 
-.header-actions {
+.dashboard-hero__acoes {
   display: flex;
   align-items: center;
-  gap: 10px;
+
+  gap: 8px;
 }
 
 .data-card {
-  min-width: 175px;
+  min-width: 205px;
+
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
+
+  gap: 9px;
+
+  padding: 8px 11px;
+
   border: 1px solid #eaecf0;
   border-radius: 12px;
-  background: #ffffff;
+
+  background: rgba(255, 255, 255, 0.92);
 }
 
-.data-card > .q-icon {
+.data-card__icone {
+  width: 34px;
+  height: 34px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  border-radius: 10px;
+
   color: #f97316;
+
+  background: #fff1e6;
 }
 
 .data-card span {
   display: block;
+
   color: #98a2b3;
+
   font-size: 8px;
+  font-weight: 700;
 }
 
 .data-card strong {
   display: block;
+
   margin-top: 1px;
+
   color: #344054;
-  font-size: 9px;
+
+  font-size: 10px;
+  font-weight: 800;
+
   text-transform: capitalize;
 }
 
+.botao-atualizar {
+  width: 42px;
+  height: 42px;
+
+  color: #ffffff;
+
+  background:
+    linear-gradient(
+      135deg,
+      #ff9d1f,
+      #f97316
+    );
+
+  box-shadow:
+    0 5px 13px
+    rgba(249, 115, 22, 0.2);
+}
+
+/* ==================================================
+   CARREGAMENTO
+=================================================== */
+
 .carregamento-inicial {
-  min-height: 420px;
+  min-height: 360px;
+
   display: flex;
   flex-direction: column;
+
   align-items: center;
   justify-content: center;
-  gap: 12px;
+
+  gap: 10px;
+
   color: #98a2b3;
-  font-size: 10px;
+
+  font-size: 11px;
 }
+
+/* ==================================================
+   INDICADORES
+=================================================== */
 
 .indicadores-grid {
   display: grid;
+
   grid-template-columns:
     repeat(4, minmax(0, 1fr));
-  gap: 15px;
-  margin-bottom: 16px;
+
+  gap: 10px;
+
+  margin-bottom: 12px;
 }
 
 .indicador-card {
   appearance: none;
-  width: 100%;
-  padding: 18px;
+
+  position: relative;
+
+  min-width: 0;
+  min-height: 108px;
+
+  display: grid;
+
+  grid-template-columns:
+    42px
+    minmax(0, 1fr)
+    18px;
+
+  align-items: center;
+
+  gap: 11px;
+
+  padding: 13px 14px;
+
   border: 1px solid #eaecf0;
-  border-radius: 16px;
+  border-radius: 15px;
+
   color: inherit;
+
   background: #ffffff;
+
   box-shadow:
     0 3px 12px
     rgba(16, 24, 40, 0.035);
+
   font-family: inherit;
+
   text-align: left;
-}
 
-.indicador-card--clicavel {
   cursor: pointer;
+
   transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease,
-    border-color 0.2s ease;
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
 }
 
-.indicador-card--clicavel:hover {
-  transform: translateY(-3px);
+.indicador-card::before {
+  content: '';
+
+  position: absolute;
+
+  left: 0;
+  top: 16px;
+  bottom: 16px;
+
+  width: 3px;
+
+  border-radius: 0 999px 999px 0;
+
+  opacity: 0;
+
+  transition: opacity 0.18s ease;
+}
+
+.indicador-card--pendentes::before {
+  background: #f97316;
+}
+
+.indicador-card--andamento::before {
+  background: #2563eb;
+}
+
+.indicador-card--finalizados::before {
+  background: #16a34a;
+}
+
+.indicador-card--meus::before {
+  background: #7c3aed;
+}
+
+.indicador-card:hover {
+  transform: translateY(-2px);
+
   border-color: #fed7aa;
+
   box-shadow:
-    0 9px 24px
-    rgba(16, 24, 40, 0.08);
+    0 8px 22px
+    rgba(16, 24, 40, 0.075);
 }
 
-.indicador-topo {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+.indicador-card:hover::before {
+  opacity: 1;
 }
 
 .indicador-icone {
-  width: 43px;
-  height: 43px;
+  width: 42px;
+  height: 42px;
+
   display: flex;
   align-items: center;
   justify-content: center;
+
   border-radius: 12px;
 }
 
@@ -1635,179 +2105,264 @@ onMounted(
   background: #f3e8ff;
 }
 
-.indicador-tag {
-  padding: 5px 8px;
-  border-radius: 20px;
-  color: #667085;
-  background: #f2f4f7;
-  font-size: 8px;
-  font-weight: 700;
+.indicador-conteudo {
+  min-width: 0;
 }
 
 .indicador-numero {
-  margin-top: 15px;
   color: #101828;
-  font-size: 25px;
+
+  font-size: 26px;
   font-weight: 900;
+
+  line-height: 1;
 }
 
 .indicador-label {
-  margin-top: 1px;
+  margin-top: 4px;
+
   color: #344054;
-  font-size: 10px;
-  font-weight: 700;
+
+  font-size: 11px;
+  font-weight: 800;
 }
 
 .indicador-rodape {
-  margin-top: 6px;
+  overflow: hidden;
+
+  margin-top: 3px;
+
   color: #98a2b3;
+
   font-size: 8px;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
+
+.indicador-seta {
+  color: #c5c9d0;
+
+  transition:
+    color 0.18s ease,
+    transform 0.18s ease;
+}
+
+.indicador-card:hover .indicador-seta {
+  color: #f97316;
+  transform: translateX(2px);
+}
+
+/* ==================================================
+   CARDS GERAIS
+=================================================== */
 
 .dashboard-card {
   min-width: 0;
+
   border: 1px solid #eaecf0;
   border-radius: 16px;
+
   background: #ffffff;
+
   box-shadow:
     0 3px 12px
     rgba(16, 24, 40, 0.035);
 }
 
 .card-header {
+  min-height: 57px;
+
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 19px 20px 10px;
+
+  gap: 10px;
+
+  padding: 13px 16px 9px;
+}
+
+.card-header--compacto {
+  padding-bottom: 4px;
 }
 
 .card-titulo {
   color: #101828;
+
   font-size: 13px;
   font-weight: 900;
 }
 
 .card-subtitulo {
-  margin-top: 3px;
+  margin-top: 2px;
+
   color: #98a2b3;
+
   font-size: 8px;
+}
+
+.card-kicker {
+  color: #f97316;
+
+  font-size: 9px;
+  font-weight: 900;
+
+  letter-spacing: 0.5px;
+
+  text-transform: uppercase;
 }
 
 .card-icone {
-  width: 38px;
-  height: 38px;
+  width: 34px;
+  height: 34px;
+
   display: flex;
   align-items: center;
   justify-content: center;
+
   flex-shrink: 0;
+
   border-radius: 10px;
+
   color: #f97316;
+
   background: #fff1e6;
 }
 
+/* ==================================================
+   GRID PRINCIPAL
+=================================================== */
+
 .dashboard-grid-principal {
   display: grid;
-  grid-template-columns:
-    minmax(0, 1.45fr)
-    minmax(330px, 0.55fr);
-  gap: 16px;
-  margin-bottom: 16px;
-}
 
-.dashboard-grid-secundario {
-  display: grid;
   grid-template-columns:
-    minmax(0, 1.45fr)
-    minmax(300px, 0.55fr);
-  gap: 16px;
-  margin-bottom: 16px;
-}
+    minmax(0, 1.65fr)
+    minmax(320px, 0.55fr);
 
-.dashboard-grid-listas {
-  display: grid;
-  grid-template-columns:
-    repeat(2, minmax(0, 1fr));
-  gap: 16px;
+  gap: 12px;
+
+  margin-bottom: 12px;
 }
 
 .atendimento-card {
+  padding: 16px;
+
   border-color: #fed7aa;
 }
 
-.atendimento-atual {
-  padding: 10px 20px 20px;
-}
-
-.atendimento-topo {
+.atendimento-cabecalho {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 15px;
-}
 
-.chamado-numero {
-  color: #f97316;
-  font-size: 8px;
-  font-weight: 900;
-  letter-spacing: 0.4px;
+  gap: 12px;
 }
 
 .chamado-problema {
   margin-top: 4px;
+
   color: #101828;
-  font-size: 20px;
+
+  font-size: 23px;
   font-weight: 900;
+
+  line-height: 1.08;
 }
 
 .atendimento-info-grid {
   display: grid;
+
   grid-template-columns:
-    repeat(2, minmax(0, 1fr));
-  gap: 10px;
-  margin-top: 18px;
+    repeat(4, minmax(0, 1fr));
+
+  gap: 8px;
+
+  margin-top: 13px;
 }
 
 .info-item {
+  min-width: 0;
+
   display: flex;
   align-items: center;
-  gap: 9px;
-  padding: 11px;
+
+  gap: 8px;
+
+  padding: 9px 10px;
+
   border-radius: 11px;
-  background: #f9fafb;
+
+  background: #f8fafc;
 }
 
 .info-icone {
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
+
   display: flex;
   align-items: center;
   justify-content: center;
+
   flex-shrink: 0;
+
   border-radius: 9px;
+
   color: #f97316;
+
   background: #fff1e6;
+}
+
+.info-item > div:last-child {
+  min-width: 0;
 }
 
 .info-item span {
   display: block;
+
   color: #98a2b3;
+
   font-size: 7px;
+  font-weight: 700;
+
   text-transform: uppercase;
 }
 
 .info-item strong {
   display: block;
+
+  overflow: hidden;
+
   margin-top: 2px;
+
   color: #344054;
+
   font-size: 9px;
+  font-weight: 800;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.atendimento-rodape {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    auto;
+
+  align-items: end;
+
+  gap: 18px;
+
+  margin-top: 14px;
 }
 
 .progresso-atendimento {
   display: grid;
+
   grid-template-columns:
     repeat(4, minmax(0, 1fr));
-  margin-top: 20px;
 }
 
 .progresso-etapa {
@@ -1820,33 +2375,44 @@ onMounted(
 }
 
 .progresso-circulo {
-  width: 31px;
-  height: 31px;
+  width: 28px;
+  height: 28px;
+
   display: flex;
   align-items: center;
   justify-content: center;
+
   flex-shrink: 0;
+
   border: 2px solid #eaecf0;
   border-radius: 50%;
+
   color: #98a2b3;
+
   background: #ffffff;
 }
 
 .progresso-circulo--concluido {
   border-color: #f97316;
+
   color: #f97316;
+
   background: #fff7ed;
 }
 
 .progresso-circulo--atual {
   color: #ffffff;
+
   background: #f97316;
 }
 
 .progresso-linha {
   height: 2px;
+
   flex: 1;
-  margin: 0 6px;
+
+  margin: 0 5px;
+
   background: #eaecf0;
 }
 
@@ -1855,8 +2421,10 @@ onMounted(
 }
 
 .progresso-label {
-  margin-top: 7px;
+  margin-top: 5px;
+
   color: #98a2b3;
+
   font-size: 7px;
   font-weight: 700;
 }
@@ -1865,64 +2433,101 @@ onMounted(
   color: #475467;
 }
 
-.atendimento-acoes {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 20px;
+.continuar-btn {
+  min-height: 40px;
+
+  padding: 0 13px;
+
+  border-radius: 11px;
+
+  color: #ffffff;
+
+  background:
+    linear-gradient(
+      135deg,
+      #ff9d1f,
+      #f97316
+    );
+
+  font-size: 11px;
+  font-weight: 800;
+}
+
+/* ==================================================
+   GRÁFICO ROSCA
+=================================================== */
+
+.status-card {
+  overflow: hidden;
 }
 
 .doughnut-area {
-  min-height: 260px;
+  min-height: 205px;
+
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 24px;
-  padding: 7px 18px 20px;
+
+  gap: 17px;
+
+  padding: 2px 13px 13px;
 }
 
 .doughnut-wrapper {
   position: relative;
-  width: 175px;
-  height: 175px;
+
+  width: 145px;
+  height: 145px;
+
   flex-shrink: 0;
 }
 
 .doughnut-centro {
   position: absolute;
+
   inset: 0;
+
   display: flex;
   flex-direction: column;
+
   align-items: center;
   justify-content: center;
+
   pointer-events: none;
 }
 
 .doughnut-centro strong {
   color: #101828;
+
   font-size: 22px;
   font-weight: 900;
 }
 
 .doughnut-centro span {
   color: #98a2b3;
+
   font-size: 7px;
 }
 
 .legenda-status {
   display: grid;
-  gap: 12px;
+
+  gap: 9px;
 }
 
 .legenda-item {
   display: flex;
   align-items: center;
-  gap: 8px;
+
+  gap: 7px;
 }
 
 .ponto {
-  width: 9px;
-  height: 9px;
+  width: 8px;
+  height: 8px;
+
   flex-shrink: 0;
+
   border-radius: 50%;
 }
 
@@ -1944,62 +2549,81 @@ onMounted(
 
 .legenda-item strong {
   display: block;
+
   color: #344054;
+
   font-size: 10px;
 }
 
 .legenda-item span:not(.ponto) {
   display: block;
+
   color: #98a2b3;
+
   font-size: 7px;
 }
 
-.grafico-linha {
-  height: 255px;
-  padding: 8px 18px 18px;
+/* ==================================================
+   GRID SECUNDÁRIO
+=================================================== */
+
+.dashboard-grid-secundario {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1.05fr)
+    minmax(0, 0.95fr);
+
+  gap: 12px;
+
+  margin-bottom: 12px;
 }
 
-.resumo-lista {
+.grafico-linha {
+  height: 200px;
+
+  padding: 4px 15px 14px;
+}
+
+
+/* ==================================================
+   ANÁLISE / GRÁFICOS
+=================================================== */
+
+.dashboard-grid-analitico {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 12px;
+
+  margin-bottom: 12px;
+}
+
+.grafico-analitico {
+  height: 235px;
+
+  padding: 5px 16px 16px;
+}
+
+.estado-vazio--grafico {
+  min-height: 235px;
+
   display: flex;
   flex-direction: column;
-  padding: 4px 18px 18px;
-}
 
-.resumo-item {
-  appearance: none;
-  width: 100%;
-  display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 13px 0;
-  border: none;
-  border-bottom: 1px solid #f2f4f7;
-  color: #475467;
-  background: transparent;
-  cursor: pointer;
-  font-family: inherit;
-  font-size: 9px;
-  text-align: left;
+  justify-content: center;
+
+  padding: 20px;
+
+  gap: 5px;
 }
 
-.resumo-item:last-child {
-  border-bottom: none;
-}
-
-.resumo-item:hover {
-  color: #f97316;
-}
-
-.resumo-esquerda {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.resumo-item strong {
-  color: #101828;
-  font-size: 12px;
-}
+/* ==================================================
+   LISTAS
+=================================================== */
 
 .lista-card {
   overflow: hidden;
@@ -2012,14 +2636,19 @@ onMounted(
 
 .chamado-item {
   display: grid;
+
   grid-template-columns:
-    45px
+    43px
     minmax(0, 1fr)
-    70px
-    34px;
+    68px
+    32px;
+
   align-items: center;
-  gap: 9px;
-  padding: 12px 18px;
+
+  gap: 8px;
+
+  padding: 10px 15px;
+
   border-bottom: 1px solid #f2f4f7;
 }
 
@@ -2027,8 +2656,13 @@ onMounted(
   border-bottom: none;
 }
 
+.chamado-item:hover {
+  background: #fafafa;
+}
+
 .chamado-id {
   color: #f97316;
+
   font-size: 9px;
   font-weight: 900;
 }
@@ -2039,61 +2673,97 @@ onMounted(
 
 .chamado-conteudo strong {
   display: block;
+
   overflow: hidden;
+
   color: #344054;
+
   font-size: 9px;
+
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .chamado-conteudo span {
   display: block;
+
   overflow: hidden;
-  margin-top: 3px;
+
+  margin-top: 2px;
+
   color: #98a2b3;
+
   font-size: 7px;
+
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+.ultimos-card {
+  overflow: hidden;
+}
+
+.lista-finalizados--grade {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+}
+
 .finalizado-item {
   appearance: none;
-  width: 100%;
+
+  min-width: 0;
+
   display: grid;
+
   grid-template-columns:
-    34px
+    31px
     minmax(0, 1fr)
-    75px
-    20px;
+    67px
+    18px;
+
   align-items: center;
-  gap: 9px;
-  padding: 12px 18px;
+
+  gap: 8px;
+
+  padding: 10px 14px;
+
   border: none;
+  border-right: 1px solid #f2f4f7;
   border-bottom: 1px solid #f2f4f7;
+
   color: inherit;
+
   background: transparent;
-  cursor: pointer;
+
   font-family: inherit;
+
   text-align: left;
+
+  cursor: pointer;
 }
 
-.finalizado-item:last-child {
-  border-bottom: none;
+.finalizado-item:nth-child(2n) {
+  border-right: none;
 }
 
-.finalizado-item:hover,
-.chamado-item:hover {
+.finalizado-item:hover {
   background: #fafafa;
 }
 
 .finalizado-icone {
-  width: 32px;
-  height: 32px;
+  width: 29px;
+  height: 29px;
+
   display: flex;
   align-items: center;
   justify-content: center;
+
   border-radius: 9px;
+
   color: #059669;
+
   background: #d1fae5;
 }
 
@@ -2103,65 +2773,111 @@ onMounted(
 
 .finalizado-conteudo strong {
   display: block;
+
   overflow: hidden;
+
   color: #344054;
+
   font-size: 9px;
+
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .finalizado-conteudo span {
   display: block;
+
   overflow: hidden;
-  margin-top: 3px;
+
+  margin-top: 2px;
+
   color: #98a2b3;
+
   font-size: 7px;
+
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .finalizado-data {
   color: #667085;
+
   font-size: 7px;
 }
 
+/* ==================================================
+   ESTADO VAZIO
+=================================================== */
+
 .estado-vazio {
-  padding: 35px 18px;
   color: #98a2b3;
+
   text-align: center;
 }
 
+.atendimento-vazio {
+  min-height: 180px;
+
+  display: grid;
+
+  grid-template-columns:
+    50px
+    minmax(0, 1fr)
+    auto;
+
+  align-items: center;
+
+  gap: 15px;
+
+  padding: 18px;
+}
+
 .estado-vazio--pequeno {
-  min-height: 170px;
+  min-height: 145px;
+
   display: flex;
   flex-direction: column;
+
   align-items: center;
   justify-content: center;
+
+  padding: 22px 15px;
 }
 
 .estado-vazio-icone {
-  width: 56px;
-  height: 56px;
+  width: 48px;
+  height: 48px;
+
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 10px;
-  border-radius: 15px;
+
+  border-radius: 14px;
+
   color: #059669;
+
   background: #d1fae5;
 }
 
 .estado-vazio strong {
   display: block;
+
   color: #475467;
+
   font-size: 10px;
 }
 
 .estado-vazio span {
   display: block;
-  margin-top: 5px;
+
+  margin-top: 4px;
+
   font-size: 8px;
 }
+
+/* ==================================================
+   BADGES
+=================================================== */
 
 .status-pendente,
 .status-aceito,
@@ -2171,7 +2887,10 @@ onMounted(
 .urgencia-baixa,
 .urgencia-media,
 .urgencia-alta {
-  padding: 6px 9px;
+  padding: 5px 9px;
+
+  font-size: 9px;
+  font-weight: 700;
 }
 
 .status-pendente {
@@ -2214,111 +2933,125 @@ onMounted(
   background: #fee2e2;
 }
 
+/* ==================================================
+   DARK
+=================================================== */
+
 .dashboard-page--dark {
   background: #0d0f12;
 }
 
-.dashboard-page--dark
-.data-card,
-.dashboard-page--dark
-.indicador-card,
-.dashboard-page--dark
-.dashboard-card {
+.dashboard-page--dark .dashboard-hero {
   border-color: #292d33;
-  background: #15181d;
+
+  background:
+    linear-gradient(
+      110deg,
+      #15181d 0%,
+      #15181d 62%,
+      #211b17 100%
+    );
 }
 
-.dashboard-page--dark
-.atendimento-card {
-  border-color: #7c2d12;
-}
-
-.dashboard-page--dark
-.saudacao,
-.dashboard-page--dark
-.indicador-numero,
-.dashboard-page--dark
-.card-titulo,
-.dashboard-page--dark
-.chamado-problema,
-.dashboard-page--dark
-.doughnut-centro strong {
+.dashboard-page--dark .dashboard-hero__titulo,
+.dashboard-page--dark .indicador-numero,
+.dashboard-page--dark .card-titulo,
+.dashboard-page--dark .chamado-problema,
+.dashboard-page--dark .doughnut-centro strong {
   color: #f9fafb;
 }
 
-.dashboard-page--dark
-.data-card strong,
-.dashboard-page--dark
-.indicador-label,
-.dashboard-page--dark
-.info-item strong,
-.dashboard-page--dark
-.legenda-item strong,
-.dashboard-page--dark
-.resumo-item strong,
-.dashboard-page--dark
-.chamado-conteudo strong,
-.dashboard-page--dark
-.finalizado-conteudo strong,
-.dashboard-page--dark
-.estado-vazio strong {
-  color: #f2f4f7;
+.dashboard-page--dark .dashboard-hero__descricao {
+  color: #98a2b3;
 }
 
-.dashboard-page--dark
-.indicador-tag,
-.dashboard-page--dark
-.info-item {
-  background: #1b1e24;
-}
-
-.dashboard-page--dark
-.resumo-item,
-.dashboard-page--dark
-.lista-chamados,
-.dashboard-page--dark
-.lista-finalizados,
-.dashboard-page--dark
-.chamado-item,
-.dashboard-page--dark
-.finalizado-item {
+.dashboard-page--dark .data-card,
+.dashboard-page--dark .indicador-card,
+.dashboard-page--dark .dashboard-card {
   border-color: #292d33;
-}
 
-.dashboard-page--dark
-.finalizado-item:hover,
-.dashboard-page--dark
-.chamado-item:hover {
-  background: #1b1e24;
-}
-
-.dashboard-page--dark
-.progresso-circulo {
-  border-color: #3a3f47;
   background: #15181d;
 }
 
-.dashboard-page--dark
-.progresso-circulo--concluido {
+.dashboard-page--dark .data-card {
+  background: #191d23;
+}
+
+.dashboard-page--dark .data-card strong,
+.dashboard-page--dark .indicador-label,
+.dashboard-page--dark .info-item strong,
+.dashboard-page--dark .legenda-item strong,
+.dashboard-page--dark .chamado-conteudo strong,
+.dashboard-page--dark .finalizado-conteudo strong,
+.dashboard-page--dark .estado-vazio strong {
+  color: #f2f4f7;
+}
+
+.dashboard-page--dark .atendimento-card {
+  border-color: #7c2d12;
+}
+
+.dashboard-page--dark .info-item {
+  background: #1b1e24;
+}
+
+.dashboard-page--dark .lista-chamados,
+.dashboard-page--dark .lista-finalizados,
+.dashboard-page--dark .chamado-item,
+.dashboard-page--dark .finalizado-item {
+  border-color: #292d33;
+}
+
+.dashboard-page--dark .chamado-item:hover,
+.dashboard-page--dark .finalizado-item:hover {
+  background: #1b1e24;
+}
+
+.dashboard-page--dark .progresso-circulo {
+  border-color: #3a3f47;
+
+  background: #15181d;
+}
+
+.dashboard-page--dark .progresso-circulo--concluido {
   border-color: #f97316;
+
   color: #f97316;
+
   background: #292018;
 }
 
-.dashboard-page--dark
-.progresso-circulo--atual {
+.dashboard-page--dark .progresso-circulo--atual {
   color: #ffffff;
+
   background: #f97316;
 }
 
-.dashboard-page--dark
-.progresso-linha {
+.dashboard-page--dark .progresso-linha {
   background: #3a3f47;
 }
 
-.dashboard-page--dark
-.progresso-linha--concluida {
+.dashboard-page--dark .progresso-linha--concluida {
   background: #f97316;
+}
+
+/* ==================================================
+   RESPONSIVO
+=================================================== */
+
+@media (max-width: 1350px) {
+  .atendimento-info-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .atendimento-rodape {
+    grid-template-columns: 1fr;
+  }
+
+  .continuar-btn {
+    justify-self: end;
+  }
 }
 
 @media (max-width: 1200px) {
@@ -2329,22 +3062,55 @@ onMounted(
 
   .dashboard-grid-principal,
   .dashboard-grid-secundario,
-  .dashboard-grid-listas {
+  .dashboard-grid-analitico {
     grid-template-columns: 1fr;
+  }
+
+  .doughnut-area {
+    justify-content: flex-start;
+
+    padding-left: 20px;
+  }
+}
+
+@media (max-width: 1023px) {
+  .dashboard-page {
+    padding: 14px 14px 34px;
+  }
+
+  .dashboard-hero {
+    min-height: auto;
+
+    padding: 12px 13px;
+  }
+
+  .dashboard-hero__label {
+    display: none;
+  }
+
+  .dashboard-hero__titulo {
+    font-size: 20px;
+  }
+
+  .dashboard-hero__descricao {
+    display: none;
+  }
+
+  .data-card {
+    min-width: 0;
   }
 }
 
 @media (max-width: 700px) {
-  .dashboard-page {
-    padding: 22px 16px 40px;
-  }
-
-  .dashboard-header {
+  .dashboard-hero {
     align-items: flex-start;
+
     flex-direction: column;
+
+    gap: 10px;
   }
 
-  .header-actions {
+  .dashboard-hero__acoes {
     width: 100%;
   }
 
@@ -2356,31 +3122,77 @@ onMounted(
     grid-template-columns: 1fr;
   }
 
-  .atendimento-info-grid {
-    grid-template-columns: 1fr;
+  .indicador-card {
+    min-height: 94px;
   }
 
-  .doughnut-area {
+  .atendimento-cabecalho {
+    align-items: flex-start;
+
     flex-direction: column;
+  }
+
+  .atendimento-info-grid {
+    grid-template-columns: 1fr;
   }
 
   .progresso-atendimento {
     grid-template-columns:
       repeat(2, minmax(0, 1fr));
-    gap: 18px;
+
+    gap: 14px;
+  }
+
+  .doughnut-area {
+    align-items: center;
+
+    flex-direction: column;
+  }
+
+  .lista-finalizados--grade {
+    grid-template-columns: 1fr;
+  }
+
+  .finalizado-item {
+    border-right: none;
+  }
+
+  .atendimento-vazio {
+    grid-template-columns: 1fr;
+
+    text-align: center;
   }
 }
 
 @media (max-width: 500px) {
-  .saudacao {
-    font-size: 22px;
+  .dashboard-page {
+    padding:
+      12px
+      12px
+      28px;
+  }
+
+  .dashboard-hero__barra {
+    display: none;
+  }
+
+  .dashboard-hero__titulo {
+    font-size: 18px;
+  }
+
+  .data-card strong {
+    font-size: 9px;
+  }
+
+  .chamado-problema {
+    font-size: 20px;
   }
 
   .chamado-item {
     grid-template-columns:
       38px
       minmax(0, 1fr)
-      32px;
+      30px;
   }
 
   .chamado-item .q-badge {
@@ -2389,9 +3201,9 @@ onMounted(
 
   .finalizado-item {
     grid-template-columns:
-      32px
+      30px
       minmax(0, 1fr)
-      20px;
+      18px;
   }
 
   .finalizado-data {

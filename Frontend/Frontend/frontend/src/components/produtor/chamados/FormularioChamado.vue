@@ -6,703 +6,859 @@
         $q.dark.isActive
     }"
   >
-    <!-- =====================================================
-         CABEÇALHO
-    ====================================================== -->
-
-    <div class="card-topo">
-      <div>
-        <div class="card-titulo">
-          {{
-            modoComercial
-              ? 'Solicitar orçamento'
-              : 'Abrir chamado'
-          }}
-        </div>
-
-        <div class="card-subtitulo">
-          {{
-            modoComercial
-              ? 'Informe rapidamente o que você precisa.'
-              : 'Conte o que está acontecendo e envie sua solicitação.'
-          }}
-        </div>
-      </div>
-
-      <div class="tipo-icone">
-        <q-icon
-          :name="
-            modoComercial
-              ? 'request_quote'
-              : 'support_agent'
-          "
-          size="26px"
-        />
-      </div>
-    </div>
-
     <q-form
-      class="q-mt-lg"
+      class="formulario-form"
       @submit.prevent="enviarChamado"
     >
       <!-- ===================================================
-           TIPO DA SOLICITAÇÃO
+           DADOS PRINCIPAIS
       ==================================================== -->
 
-      <div class="campo-grupo">
-        <div class="campo-label">
-          Tipo da solicitação
-        </div>
-
-        <div class="tipo-solicitacao">
-          <button
-            type="button"
-            class="tipo-card"
-            :class="{
-              selecionado:
-                form.tipo_chamado ===
-                'ASSISTENCIA'
-            }"
-            @click="
-              selecionarTipo(
-                'ASSISTENCIA'
-              )
-            "
-          >
-            <div class="tipo-card-icone">
-              <q-icon
-                name="engineering"
-                size="23px"
-              />
+      <section class="secao-formulario">
+        <div class="secao-cabecalho">
+          <div>
+            <div class="secao-titulo">
+              Dados da solicitação
             </div>
 
-            <div>
-              <div class="tipo-card-titulo">
-                Assistência técnica
-              </div>
-
-              <div class="tipo-card-texto">
-                Preciso de atendimento técnico.
-              </div>
+            <div class="secao-subtitulo">
+              Preencha somente as informações necessárias para abrir o chamado.
             </div>
-          </button>
+          </div>
 
-          <button
-            type="button"
-            class="tipo-card"
-            :class="{
-              selecionado:
-                form.tipo_chamado ===
-                'VENDEDOR'
-            }"
-            @click="
-              selecionarTipo(
-                'VENDEDOR'
-              )
-            "
-          >
-            <div class="tipo-card-icone">
-              <q-icon
-                name="request_quote"
-                size="23px"
-              />
-            </div>
-
-            <div>
-              <div class="tipo-card-titulo">
-                Solicitar orçamento
-              </div>
-
-              <div class="tipo-card-texto">
-                Quero falar com o setor comercial.
-              </div>
-            </div>
-          </button>
-        </div>
-      </div>
-
-      <!-- ===================================================
-           DESCRIÇÃO
-      ==================================================== -->
-
-      <div class="campo-grupo">
-        <div class="campo-label">
-          {{
-            modoComercial
-              ? 'O que você deseja orçar?'
-              : 'O que está acontecendo?'
-          }}
-        </div>
-
-        <q-input
-          v-model="form.solicitacao"
-          outlined
-          type="textarea"
-          autogrow
-          maxlength="1000"
-          counter
-          :disable="enviando"
-          :placeholder="
-            modoComercial
-              ? 'Ex.: Preciso de orçamento para novos ventiladores...'
-              : 'Ex.: Os ventiladores pararam de funcionar...'
-          "
-        />
-      </div>
-
-      <!-- ===================================================
-           FOTOS
-      ==================================================== -->
-
-      <div class="campo-grupo">
-        <div class="campo-label">
-          Fotos ou vídeos
-
-          <span class="opcional">
-            Opcional
-          </span>
-        </div>
-
-        <q-file
-          v-model="arquivos"
-          outlined
-          multiple
-          clearable
-          accept="image/*,video/*"
-          :max-files="5"
-          :max-file-size="31457280"
-          :disable="enviando"
-          label="Adicionar fotos ou vídeos"
-          @rejected="arquivosRejeitados"
-        >
-          <template #prepend>
+          <div class="secao-indicador">
             <q-icon
-              name="add_photo_alternate"
-              color="orange"
+              :name="
+                modoComercial
+                  ? 'request_quote'
+                  : 'support_agent'
+              "
+              size="20px"
             />
-          </template>
-        </q-file>
 
-        <div class="anexos-ajuda">
-          Até 5 arquivos.
+            <span>
+              {{
+                modoComercial
+                  ? 'Comercial'
+                  : 'Assistência'
+              }}
+            </span>
+          </div>
         </div>
+
+        <!-- TIPO -->
+
+        <div class="campo-grupo campo-grupo--compacto">
+          <div class="campo-label">
+            Tipo da solicitação
+          </div>
+
+          <div class="tipo-solicitacao">
+            <button
+              type="button"
+              class="tipo-card"
+              :class="{
+                selecionado:
+                  form.tipo_chamado ===
+                  'ASSISTENCIA'
+              }"
+              @click="
+                selecionarTipo(
+                  'ASSISTENCIA'
+                )
+              "
+            >
+              <div class="tipo-card-icone">
+                <q-icon
+                  name="engineering"
+                  size="20px"
+                />
+              </div>
+
+              <div class="tipo-card-conteudo">
+                <div class="tipo-card-titulo">
+                  Assistência técnica
+                </div>
+
+                <div class="tipo-card-texto">
+                  Atendimento técnico na propriedade
+                </div>
+              </div>
+
+              <q-icon
+                v-if="
+                  form.tipo_chamado ===
+                  'ASSISTENCIA'
+                "
+                name="check_circle"
+                class="tipo-check"
+                size="19px"
+              />
+            </button>
+
+            <button
+              type="button"
+              class="tipo-card"
+              :class="{
+                selecionado:
+                  form.tipo_chamado ===
+                  'VENDEDOR'
+              }"
+              @click="
+                selecionarTipo(
+                  'VENDEDOR'
+                )
+              "
+            >
+              <div class="tipo-card-icone">
+                <q-icon
+                  name="request_quote"
+                  size="20px"
+                />
+              </div>
+
+              <div class="tipo-card-conteudo">
+                <div class="tipo-card-titulo">
+                  Solicitar orçamento
+                </div>
+
+                <div class="tipo-card-texto">
+                  Falar com o setor comercial
+                </div>
+              </div>
+
+              <q-icon
+                v-if="
+                  form.tipo_chamado ===
+                  'VENDEDOR'
+                "
+                name="check_circle"
+                class="tipo-check"
+                size="19px"
+              />
+            </button>
+          </div>
+        </div>
+
+        <!-- DESCRIÇÃO -->
+
+        <div class="campo-grupo campo-grupo--compacto">
+          <div class="campo-label-linha">
+            <div class="campo-label">
+              {{
+                modoComercial
+                  ? 'O que você deseja orçar?'
+                  : 'O que está acontecendo?'
+              }}
+            </div>
+
+            <span class="campo-dica">
+              Seja direto para agilizar o atendimento
+            </span>
+          </div>
+
+          <q-input
+            v-model="form.solicitacao"
+            outlined
+            type="textarea"
+            rows="3"
+            maxlength="1000"
+            counter
+            :disable="enviando"
+            class="descricao-input"
+            :placeholder="
+              modoComercial
+                ? 'Ex.: Preciso de orçamento para novos ventiladores...'
+                : 'Ex.: Os ventiladores pararam de funcionar...'
+            "
+          />
+        </div>
+
+        <!-- URGÊNCIA + ANEXOS -->
+
+        <div class="linha-dupla">
+          <div class="campo-grupo campo-grupo--sem-margem">
+            <div class="campo-label">
+              {{
+                modoComercial
+                  ? 'Prioridade'
+                  : 'Urgência'
+              }}
+            </div>
+
+            <div class="urgencias">
+              <button
+                v-for="opcao in opcoesUrgencia"
+                :key="opcao.value"
+                type="button"
+                class="urgencia"
+                :class="[
+                  `urgencia--${opcao.value.toLowerCase()}`,
+                  {
+                    selecionada:
+                      form.urgencia ===
+                      opcao.value
+                  }
+                ]"
+                @click="
+                  form.urgencia =
+                    opcao.value
+                "
+              >
+                <q-icon
+                  :name="
+                    opcao.value === 'ALTA'
+                      ? 'priority_high'
+                      : opcao.value === 'MEDIA'
+                        ? 'warning_amber'
+                        : 'low_priority'
+                  "
+                  size="16px"
+                />
+
+                {{ opcao.label }}
+              </button>
+            </div>
+          </div>
+
+          <div class="campo-grupo campo-grupo--sem-margem">
+            <div class="campo-label-linha">
+              <div class="campo-label">
+                Fotos ou vídeos
+              </div>
+
+              <span class="opcional">
+                Opcional
+              </span>
+            </div>
+
+            <q-file
+              v-model="arquivos"
+              outlined
+              dense
+              multiple
+              clearable
+              accept="image/*,video/*"
+              :max-files="5"
+              :max-file-size="31457280"
+              :disable="enviando"
+              class="arquivo-input"
+              label="Adicionar arquivos"
+              @rejected="arquivosRejeitados"
+            >
+              <template #prepend>
+                <q-icon
+                  name="add_photo_alternate"
+                  color="orange"
+                  size="20px"
+                />
+              </template>
+
+              <template #append>
+                <span class="arquivo-limite">
+                  até 5
+                </span>
+              </template>
+            </q-file>
+          </div>
+        </div>
+
+        <!-- ARQUIVOS SELECIONADOS -->
 
         <div
           v-if="arquivosSelecionados.length"
           class="arquivos-selecionados"
         >
-          <div
-            v-for="(
-              arquivo,
-              index
-            ) in arquivosSelecionados"
-            :key="
-              `${arquivo.name}-${index}`
-            "
-            class="arquivo-item"
-          >
-            <q-icon
-              :name="
-                arquivo.type?.startsWith(
-                  'video/'
-                )
-                  ? 'videocam'
-                  : 'image'
+          <div class="arquivos-selecionados__titulo">
+            {{ arquivosSelecionados.length }}
+            {{
+              arquivosSelecionados.length === 1
+                ? 'arquivo selecionado'
+                : 'arquivos selecionados'
+            }}
+          </div>
+
+          <div class="arquivos-grid">
+            <div
+              v-for="(
+                arquivo,
+                index
+              ) in arquivosSelecionados"
+              :key="
+                `${arquivo.name}-${index}`
               "
-              color="orange"
-              size="22px"
-            />
-
-            <div class="arquivo-dados">
-              <div class="arquivo-nome">
-                {{ arquivo.name }}
-              </div>
-
-              <div class="arquivo-tamanho">
-                {{
-                  formatarTamanhoArquivo(
-                    arquivo.size
+              class="arquivo-item"
+            >
+              <q-icon
+                :name="
+                  arquivo.type?.startsWith(
+                    'video/'
                   )
-                }}
-              </div>
-            </div>
+                    ? 'videocam'
+                    : 'image'
+                "
+                color="orange"
+                size="19px"
+              />
 
-            <q-btn
-              flat
-              round
-              dense
-              icon="close"
-              @click.stop="
-                removerArquivo(index)
-              "
-            />
+              <div class="arquivo-dados">
+                <div class="arquivo-nome">
+                  {{ arquivo.name }}
+                </div>
+
+                <div class="arquivo-tamanho">
+                  {{
+                    formatarTamanhoArquivo(
+                      arquivo.size
+                    )
+                  }}
+                </div>
+              </div>
+
+              <q-btn
+                flat
+                round
+                dense
+                size="sm"
+                icon="close"
+                @click.stop="
+                  removerArquivo(index)
+                "
+              />
+            </div>
           </div>
         </div>
-      </div>
+      </section>
 
       <!-- ===================================================
-           URGÊNCIA
+           LOCAL DO ATENDIMENTO
       ==================================================== -->
 
-      <div class="campo-grupo">
-        <div class="campo-label">
-          {{
-            modoComercial
-              ? 'Prioridade'
-              : 'Urgência'
-          }}
-        </div>
-
-        <div class="urgencias">
-          <button
-            v-for="opcao in opcoesUrgencia"
-            :key="opcao.value"
-            type="button"
-            class="urgencia"
-            :class="[
-              `urgencia--${opcao.value.toLowerCase()}`,
-              {
-                selecionada:
-                  form.urgencia ===
-                  opcao.value
-              }
-            ]"
-            @click="
-              form.urgencia =
-                opcao.value
-            "
-          >
-            {{ opcao.label }}
-          </button>
-        </div>
-      </div>
-
-      <!-- ===================================================
-     LOCALIZAÇÃO
-==================================================== -->
-
-<div class="campo-grupo">
-  <div class="localizacao-card">
-    <!-- CARREGANDO -->
-
-    <div
-      v-if="carregandoPropriedade"
-      class="carregando-localizacao"
-    >
-      <q-spinner
-        color="orange"
-        size="28px"
-      />
-
-      <span>
-        Carregando localização...
-      </span>
-    </div>
-
-    <template v-else-if="propriedade">
-      <!-- ESCOLHA DA LOCALIZAÇÃO -->
-
-      <div class="localizacao-opcoes">
-        <button
-          type="button"
-          class="localizacao-opcao"
-          :class="{
-            'localizacao-opcao--ativa':
-              modoLocalizacao ===
-              'CADASTRO'
-          }"
-          :disabled="enviando"
-          @click="
-            selecionarModoLocalizacao(
-              'CADASTRO'
-            )
-          "
-        >
-          <div class="opcao-radio">
-            <div
-              v-if="
-                modoLocalizacao ===
-                'CADASTRO'
-              "
-              class="opcao-radio-centro"
-            ></div>
-          </div>
-
+      <section class="secao-formulario secao-localizacao">
+        <div class="secao-cabecalho">
           <div>
-            <strong>
-              Usar endereço cadastrado
-            </strong>
+            <div class="secao-titulo">
+              Local do atendimento
+            </div>
 
-            <span>
-              {{
-                enderecoPropriedade ||
-                'Utilizar o endereço cadastrado no perfil.'
-              }}
-            </span>
-          </div>
-        </button>
-
-        <button
-          type="button"
-          class="localizacao-opcao"
-          :class="{
-            'localizacao-opcao--ativa':
-              modoLocalizacao ===
-              'OUTRO'
-          }"
-          :disabled="enviando"
-          @click="
-            selecionarModoLocalizacao(
-              'OUTRO'
-            )
-          "
-        >
-          <div class="opcao-radio">
-            <div
-              v-if="
-                modoLocalizacao ===
-                'OUTRO'
-              "
-              class="opcao-radio-centro"
-            ></div>
+            <div class="secao-subtitulo">
+              O endereço cadastrado já vem selecionado para agilizar a abertura.
+            </div>
           </div>
 
-          <div>
-            <strong>
-              Informar outro local
-            </strong>
-
-            <span>
-              Pesquise um endereço ou utilize sua localização atual.
-            </span>
-          </div>
-        </button>
-      </div>
-
-      <!-- ===============================================
-           ENDEREÇO CADASTRADO
-      ================================================ -->
-
-      <div
-        v-if="
-          modoLocalizacao ===
-          'CADASTRO'
-        "
-        class="localizacao-conteudo"
-      >
-        <MapaLocalizacao
-          v-if="
-            possuiCoordenadasCadastro
-          "
-          :key="
-            `cadastro-${propriedade.latitude}-${propriedade.longitude}`
-          "
-          :latitude="
-            propriedade.latitude
-          "
-          :longitude="
-            propriedade.longitude
-          "
-          nome-local="Endereço cadastrado"
-          :endereco="
-            enderecoPropriedade
-          "
-          titulo="Localização cadastrada"
-          subtitulo="Localização registrada no perfil."
-        />
-
-        <div
-          v-else
-          class="sem-coordenadas"
-        >
-          <q-icon
-            name="location_on"
-            size="22px"
-          />
-
-          <div>
-            <strong>
-              {{ enderecoPropriedade || 'Endereço cadastrado' }}
-            </strong>
-
-            <span>
-              O endereço será enviado junto com o chamado.
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <!-- ===============================================
-           OUTRO LOCAL
-      ================================================ -->
-
-      <div
-        v-else
-        class="localizacao-conteudo"
-      >
-        <div class="busca-localizacao-topo">
-          <q-input
-            v-model="termoLocalizacao"
-            outlined
-            clearable
-            class="busca-localizacao-input"
-            label="Pesquisar endereço ou local"
-            placeholder="Ex.: Linha Taipas, Pinhalzinho - SC"
-            :disable="
-              enviando ||
-              usandoLocalizacaoAtual
-            "
-            @keyup.enter="buscarLocalizacao"
-          >
-            <template #prepend>
-              <q-icon
-                name="search"
-                size="20px"
-              />
-            </template>
-          </q-input>
-
-          <q-btn
-            unelevated
-            no-caps
-            color="orange"
-            icon="search"
-            label="Pesquisar"
-            :loading="buscandoLocalizacao"
-            :disable="
-              enviando ||
-              usandoLocalizacaoAtual
-            "
-            @click="buscarLocalizacao"
-          />
-
-          <q-btn
-            outline
-            no-caps
-            color="orange"
-            icon="my_location"
-            label="Usar minha localização atual"
-            :loading="usandoLocalizacaoAtual"
-            :disable="
-              enviando ||
-              buscandoLocalizacao
-            "
-            @click="usarLocalizacaoAtual"
-          />
-        </div>
-
-        <div class="localizacao-ajuda">
-          <q-icon
-            name="info_outline"
-            size="17px"
-          />
-
-          <span>
-            A localização escolhida será utilizada apenas neste chamado e não alterará o cadastro da propriedade.
-          </span>
-        </div>
-
-        <!-- RESULTADOS -->
-
-        <div
-          v-if="
-            resultadosLocalizacao.length
-          "
-          class="resultados-localizacao"
-        >
-          <div class="resultados-titulo">
-            Locais encontrados
-          </div>
-
-          <button
-            v-for="(
-              resultado,
-              index
-            ) in resultadosLocalizacao"
-            :key="
-              `${resultado.place_id}-${index}`
-            "
-            type="button"
-            class="resultado-localizacao"
-            @click="
-              selecionarResultado(
-                resultado
-              )
-            "
-          >
+          <div class="secao-indicador secao-indicador--local">
             <q-icon
               name="location_on"
               size="20px"
             />
 
-            <div>
-              <strong>
-                {{
-                  nomeResultado(
-                    resultado
-                  )
-                }}
-              </strong>
-
-              <span>
-                {{
-                  resultado.display_name
-                }}
-              </span>
-            </div>
-
-            <q-icon
-              name="chevron_right"
-              size="20px"
-            />
-          </button>
+            <span>
+              {{
+                modoLocalizacao === 'CADASTRO'
+                  ? 'Endereço cadastrado'
+                  : 'Outro local'
+              }}
+            </span>
+          </div>
         </div>
 
-        <!-- LOCAL ESCOLHIDO -->
-
         <div
-          v-if="
-            possuiLocalAlternativo
-          "
-          class="local-alternativo-selecionado"
+          v-if="carregandoPropriedade"
+          class="carregando-localizacao"
         >
-          <div class="local-selecionado">
-            <q-icon
-              :name="
-                origemLocalizacao ===
-                'ATUAL'
-                  ? 'my_location'
-                  : 'location_on'
-              "
-              size="20px"
-            />
-
-            <div>
-              <span>
-                {{
-                  origemLocalizacao ===
-                  'ATUAL'
-                    ? 'Sua localização atual'
-                    : 'Local pesquisado'
-                }}
-              </span>
-
-              <strong>
-                {{
-                  localSelecionado.endereco ||
-                  'Localização selecionada'
-                }}
-              </strong>
-            </div>
-
-            <q-btn
-              flat
-              round
-              dense
-              icon="close"
-              @click="
-                limparLocalAlternativo
-              "
-            />
-          </div>
-
-          <MapaLocalizacao
-            :key="
-              chaveMapaAlternativo
-            "
-            :latitude="
-              localSelecionado.latitude
-            "
-            :longitude="
-              localSelecionado.longitude
-            "
-            nome-local="Local selecionado"
-            :endereco="
-              localSelecionado.endereco
-            "
-            titulo="Local selecionado"
-            subtitulo="Este será o endereço enviado junto com o chamado."
+          <q-spinner
+            color="orange"
+            size="27px"
           />
-        </div>
-
-        <div
-          v-else-if="
-            !buscandoLocalizacao &&
-            !usandoLocalizacaoAtual
-          "
-          class="aguardando-local"
-        >
-          <div class="aguardando-local-icone">
-            <q-icon
-              name="map"
-              size="30px"
-            />
-          </div>
-
-          <strong>
-            Nenhum local selecionado
-          </strong>
 
           <span>
-            Pesquise um endereço ou utilize sua localização atual.
+            Carregando localização...
           </span>
         </div>
-      </div>
-    </template>
 
-    <div
-      v-else
-      class="sem-propriedade"
-    >
-      <q-icon
-        name="warning_amber"
-        size="28px"
-      />
+        <template v-else-if="propriedade">
+          <!-- ESCOLHA -->
 
-      <div>
-        <strong>
-          Propriedade não encontrada
-        </strong>
+          <div class="localizacao-opcoes">
+            <button
+              type="button"
+              class="localizacao-opcao"
+              :class="{
+                'localizacao-opcao--ativa':
+                  modoLocalizacao ===
+                  'CADASTRO'
+              }"
+              :disabled="enviando"
+              @click="
+                selecionarModoLocalizacao(
+                  'CADASTRO'
+                )
+              "
+            >
+              <div class="opcao-radio">
+                <div
+                  v-if="
+                    modoLocalizacao ===
+                    'CADASTRO'
+                  "
+                  class="opcao-radio-centro"
+                ></div>
+              </div>
 
-        <span>
-          Verifique o cadastro da propriedade antes de abrir o chamado.
-        </span>
-      </div>
-    </div>
-  </div>
-</div>
+              <div class="localizacao-opcao__conteudo">
+                <strong>
+                  Usar endereço cadastrado
+                </strong>
+
+                <span>
+                  {{
+                    enderecoPropriedade ||
+                    'Endereço cadastrado no perfil'
+                  }}
+                </span>
+              </div>
+
+              <q-icon
+                name="home"
+                size="19px"
+                class="localizacao-opcao__icone"
+              />
+            </button>
+
+            <button
+              type="button"
+              class="localizacao-opcao"
+              :class="{
+                'localizacao-opcao--ativa':
+                  modoLocalizacao ===
+                  'OUTRO'
+              }"
+              :disabled="enviando"
+              @click="
+                selecionarModoLocalizacao(
+                  'OUTRO'
+                )
+              "
+            >
+              <div class="opcao-radio">
+                <div
+                  v-if="
+                    modoLocalizacao ===
+                    'OUTRO'
+                  "
+                  class="opcao-radio-centro"
+                ></div>
+              </div>
+
+              <div class="localizacao-opcao__conteudo">
+                <strong>
+                  Informar outro local
+                </strong>
+
+                <span>
+                  Pesquise um endereço ou use sua localização atual
+                </span>
+              </div>
+
+              <q-icon
+                name="edit_location_alt"
+                size="19px"
+                class="localizacao-opcao__icone"
+              />
+            </button>
+          </div>
+
+          <!-- ENDEREÇO CADASTRADO -->
+
+          <div
+            v-if="
+              modoLocalizacao ===
+              'CADASTRO'
+            "
+            class="localizacao-conteudo"
+          >
+            <div class="local-resumo">
+              <div class="local-resumo__icone">
+                <q-icon
+                  name="location_on"
+                  size="20px"
+                />
+              </div>
+
+              <div class="local-resumo__dados">
+                <span>
+                  Local selecionado
+                </span>
+
+                <strong>
+                  {{
+                    enderecoPropriedade ||
+                    'Endereço cadastrado'
+                  }}
+                </strong>
+              </div>
+
+              <q-btn
+                v-if="possuiCoordenadasCadastro"
+                flat
+                no-caps
+                dense
+                class="botao-mapa"
+                :icon="
+                  mostrarMapaCadastro
+                    ? 'expand_less'
+                    : 'map'
+                "
+                :label="
+                  mostrarMapaCadastro
+                    ? 'Ocultar mapa'
+                    : 'Ver mapa'
+                "
+                @click="
+                  mostrarMapaCadastro =
+                    !mostrarMapaCadastro
+                "
+              />
+            </div>
+
+            <q-slide-transition>
+              <div
+                v-if="
+                  mostrarMapaCadastro &&
+                  possuiCoordenadasCadastro
+                "
+                class="mapa-recolhivel"
+              >
+                <MapaLocalizacao
+                  :key="
+                    `cadastro-${propriedade.latitude}-${propriedade.longitude}`
+                  "
+                  :latitude="
+                    propriedade.latitude
+                  "
+                  :longitude="
+                    propriedade.longitude
+                  "
+                  nome-local="Endereço cadastrado"
+                  :endereco="
+                    enderecoPropriedade
+                  "
+                  titulo="Localização cadastrada"
+                  subtitulo="Localização registrada no perfil."
+                />
+              </div>
+            </q-slide-transition>
+
+            <div
+              v-if="
+                !possuiCoordenadasCadastro
+              "
+              class="sem-coordenadas"
+            >
+              <q-icon
+                name="info_outline"
+                size="18px"
+              />
+
+              <span>
+                O endereço cadastrado será enviado junto com o chamado.
+              </span>
+            </div>
+          </div>
+
+          <!-- OUTRO LOCAL -->
+
+          <div
+            v-else
+            class="localizacao-conteudo"
+          >
+            <div class="busca-localizacao-topo">
+              <q-input
+                v-model="termoLocalizacao"
+                outlined
+                dense
+                clearable
+                class="busca-localizacao-input"
+                placeholder="Pesquisar endereço ou local"
+                :disable="
+                  enviando ||
+                  usandoLocalizacaoAtual
+                "
+                @keyup.enter="buscarLocalizacao"
+              >
+                <template #prepend>
+                  <q-icon
+                    name="search"
+                    size="19px"
+                  />
+                </template>
+              </q-input>
+
+              <q-btn
+                unelevated
+                no-caps
+                class="botao-pesquisar"
+                icon="search"
+                label="Pesquisar"
+                :loading="buscandoLocalizacao"
+                :disable="
+                  enviando ||
+                  usandoLocalizacaoAtual
+                "
+                @click="buscarLocalizacao"
+              />
+
+              <q-btn
+                outline
+                no-caps
+                class="botao-local-atual"
+                icon="my_location"
+                label="Usar localização atual"
+                :loading="usandoLocalizacaoAtual"
+                :disable="
+                  enviando ||
+                  buscandoLocalizacao
+                "
+                @click="usarLocalizacaoAtual"
+              />
+            </div>
+
+            <div
+              v-if="
+                resultadosLocalizacao.length
+              "
+              class="resultados-localizacao"
+            >
+              <button
+                v-for="(
+                  resultado,
+                  index
+                ) in resultadosLocalizacao"
+                :key="
+                  `${resultado.place_id}-${index}`
+                "
+                type="button"
+                class="resultado-localizacao"
+                @click="
+                  selecionarResultado(
+                    resultado
+                  )
+                "
+              >
+                <q-icon
+                  name="location_on"
+                  size="18px"
+                />
+
+                <div>
+                  <strong>
+                    {{
+                      nomeResultado(
+                        resultado
+                      )
+                    }}
+                  </strong>
+
+                  <span>
+                    {{
+                      resultado.display_name
+                    }}
+                  </span>
+                </div>
+
+                <q-icon
+                  name="chevron_right"
+                  size="19px"
+                />
+              </button>
+            </div>
+
+            <div
+              v-if="
+                possuiLocalAlternativo
+              "
+              class="local-alternativo-selecionado"
+            >
+              <div class="local-resumo">
+                <div class="local-resumo__icone">
+                  <q-icon
+                    :name="
+                      origemLocalizacao ===
+                      'ATUAL'
+                        ? 'my_location'
+                        : 'location_on'
+                    "
+                    size="20px"
+                  />
+                </div>
+
+                <div class="local-resumo__dados">
+                  <span>
+                    {{
+                      origemLocalizacao ===
+                      'ATUAL'
+                        ? 'Sua localização atual'
+                        : 'Local pesquisado'
+                    }}
+                  </span>
+
+                  <strong>
+                    {{
+                      localSelecionado.endereco ||
+                      'Localização selecionada'
+                    }}
+                  </strong>
+                </div>
+
+                <q-btn
+                  flat
+                  no-caps
+                  dense
+                  class="botao-mapa"
+                  :icon="
+                    mostrarMapaAlternativo
+                      ? 'expand_less'
+                      : 'map'
+                  "
+                  :label="
+                    mostrarMapaAlternativo
+                      ? 'Ocultar mapa'
+                      : 'Ver mapa'
+                  "
+                  @click="
+                    mostrarMapaAlternativo =
+                      !mostrarMapaAlternativo
+                  "
+                />
+
+                <q-btn
+                  flat
+                  round
+                  dense
+                  icon="close"
+                  @click="
+                    limparLocalAlternativo
+                  "
+                />
+              </div>
+
+              <q-slide-transition>
+                <div
+                  v-if="
+                    mostrarMapaAlternativo
+                  "
+                  class="mapa-recolhivel"
+                >
+                  <MapaLocalizacao
+                    :key="
+                      chaveMapaAlternativo
+                    "
+                    :latitude="
+                      localSelecionado.latitude
+                    "
+                    :longitude="
+                      localSelecionado.longitude
+                    "
+                    nome-local="Local selecionado"
+                    :endereco="
+                      localSelecionado.endereco
+                    "
+                    titulo="Local selecionado"
+                    subtitulo="Este será o endereço enviado junto com o chamado."
+                  />
+                </div>
+              </q-slide-transition>
+            </div>
+
+            <div
+              v-else-if="
+                !buscandoLocalizacao &&
+                !usandoLocalizacaoAtual &&
+                !resultadosLocalizacao.length
+              "
+              class="localizacao-dica"
+            >
+              <q-icon
+                name="info_outline"
+                size="17px"
+              />
+
+              <span>
+                O local informado aqui será usado somente neste chamado e não altera seu cadastro.
+              </span>
+            </div>
+          </div>
+        </template>
+
+        <div
+          v-else
+          class="sem-propriedade"
+        >
+          <q-icon
+            name="warning_amber"
+            size="24px"
+          />
+
+          <div>
+            <strong>
+              Propriedade não encontrada
+            </strong>
+
+            <span>
+              Verifique o cadastro da propriedade antes de abrir o chamado.
+            </span>
+          </div>
+        </div>
+      </section>
 
       <!-- ===================================================
            AÇÕES
       ==================================================== -->
 
       <div class="acoes">
-        <q-btn
-          flat
-          no-caps
-          label="Cancelar"
-          color="grey-7"
-          :disable="enviando"
-          @click="cancelar"
-        />
+        <div class="acoes-resumo">
+          <q-icon
+            name="info_outline"
+            size="17px"
+          />
 
-        <q-btn
-          unelevated
-          no-caps
-          color="orange"
-          :icon="
-            modoComercial
-              ? 'request_quote'
-              : 'send'
-          "
-          :label="
-            modoComercial
-              ? 'Enviar solicitação'
-              : 'Abrir chamado'
-          "
-          type="submit"
-          :loading="enviando"
-        />
+          <span>
+            {{
+              modoComercial
+                ? 'Revise os dados e envie a solicitação.'
+                : 'Revise os dados e abra o chamado.'
+            }}
+          </span>
+        </div>
+
+        <div class="acoes-botoes">
+          <q-btn
+            flat
+            no-caps
+            label="Cancelar"
+            color="grey-7"
+            :disable="enviando"
+            @click="cancelar"
+          />
+
+          <q-btn
+            unelevated
+            no-caps
+            class="botao-enviar"
+            :icon="
+              modoComercial
+                ? 'request_quote'
+                : 'send'
+            "
+            :label="
+              modoComercial
+                ? 'Enviar solicitação'
+                : 'Abrir chamado'
+            "
+            type="submit"
+            :loading="enviando"
+          />
+        </div>
       </div>
     </q-form>
   </div>
@@ -780,6 +936,12 @@ const buscandoLocalizacao =
   ref(false)
 
 const usandoLocalizacaoAtual =
+  ref(false)
+
+const mostrarMapaCadastro =
+  ref(false)
+
+const mostrarMapaAlternativo =
   ref(false)
 
 const resultadosLocalizacao =
@@ -1051,13 +1213,20 @@ function selecionarModoLocalizacao(
     modo ===
     'CADASTRO'
   ) {
+    mostrarMapaAlternativo.value =
+      false
     origemLocalizacao.value =
       'CADASTRO'
 
     limparLocalAlternativo(
       false
     )
+
+    return
   }
+
+  mostrarMapaCadastro.value =
+    false
 }
 
 /* =====================================================
@@ -1209,6 +1378,9 @@ function selecionarResultado(
   origemLocalizacao.value =
     'PESQUISA'
 
+  mostrarMapaAlternativo.value =
+    false
+
   resultadosLocalizacao.value =
     []
 
@@ -1268,6 +1440,9 @@ function usarLocalizacaoAtual() {
 
         origemLocalizacao.value =
           'ATUAL'
+
+        mostrarMapaAlternativo.value =
+          false
 
         resultadosLocalizacao.value =
           []
@@ -1409,6 +1584,9 @@ function limparLocalAlternativo(
 
   localSelecionado.endereco =
     ''
+
+  mostrarMapaAlternativo.value =
+    false
 
   termoLocalizacao.value =
     ''
@@ -1906,231 +2084,398 @@ onMounted(
 </script>
 
 <style scoped>
-/* =====================================================
-   CARD PRINCIPAL
-===================================================== */
-
 .formulario-card {
-  padding: 26px;
   border: 1px solid #eaecf0;
-  border-radius: 22px;
+  border-radius: 18px;
+
   background: #ffffff;
 
   box-shadow:
-    0 3px 10px
-    rgba(16, 24, 40, 0.05);
+    0 3px 12px
+    rgba(16, 24, 40, 0.035);
 }
 
-.card-topo {
-  display: flex;
-  justify-content: space-between;
-  gap: 20px;
-}
-
-.card-titulo {
-  color: #101828;
-  font-size: 21px;
-  font-weight: 800;
-}
-
-.card-subtitulo {
-  margin-top: 4px;
-  color: #667085;
-  font-size: 12px;
-}
-
-.tipo-icone {
-  width: 46px;
-  height: 46px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  flex-shrink: 0;
-
-  border-radius: 13px;
-
-  color: #f97316;
-  background: #fff1e6;
-}
-
-.campo-grupo {
-  margin-bottom: 22px;
-}
-
-.campo-label {
-  margin-bottom: 8px;
-
-  color: #344054;
-
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.opcional {
-  margin-left: 5px;
-  color: #98a2b3;
-  font-size: 10px;
-  font-weight: 500;
+.formulario-form {
+  display: grid;
+  gap: 12px;
 }
 
 /* =====================================================
-   TIPOS
+   SEÇÕES
+===================================================== */
+
+.secao-formulario {
+  padding: 16px;
+
+  border-bottom: 1px solid #eef0f3;
+}
+
+.secao-formulario:last-of-type {
+  border-bottom: none;
+}
+
+.secao-cabecalho {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 14px;
+
+  margin-bottom: 13px;
+}
+
+.secao-titulo {
+  color: #101828;
+
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.secao-subtitulo {
+  margin-top: 2px;
+
+  color: #98a2b3;
+
+  font-size: 8px;
+}
+
+.secao-indicador {
+  display: flex;
+  align-items: center;
+
+  gap: 6px;
+
+  padding: 6px 9px;
+
+  border-radius: 9px;
+
+  color: #f97316;
+
+  background: #fff1e6;
+
+  font-size: 8px;
+  font-weight: 800;
+}
+
+.secao-indicador--local {
+  color: #475467;
+  background: #f2f4f7;
+}
+
+/* =====================================================
+   CAMPOS
+===================================================== */
+
+.campo-grupo {
+  margin-bottom: 14px;
+}
+
+.campo-grupo--compacto {
+  margin-bottom: 13px;
+}
+
+.campo-grupo--sem-margem {
+  margin-bottom: 0;
+}
+
+.campo-label-linha {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 10px;
+
+  margin-bottom: 6px;
+}
+
+.campo-label {
+  margin-bottom: 6px;
+
+  color: #344054;
+
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.campo-label-linha .campo-label {
+  margin-bottom: 0;
+}
+
+.campo-dica,
+.opcional {
+  color: #98a2b3;
+
+  font-size: 8px;
+}
+
+.descricao-input :deep(.q-field__control) {
+  min-height: 80px;
+
+  border-radius: 11px;
+}
+
+.descricao-input :deep(textarea) {
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+/* =====================================================
+   TIPO DA SOLICITAÇÃO
 ===================================================== */
 
 .tipo-solicitacao {
   display: grid;
 
   grid-template-columns:
-    repeat(
-      2,
-      minmax(0, 1fr)
-    );
+    repeat(2, minmax(0, 1fr));
 
-  gap: 12px;
+  gap: 8px;
 }
 
 .tipo-card {
-  display: flex;
+  appearance: none;
+
+  min-width: 0;
+  min-height: 58px;
+
+  display: grid;
+
+  grid-template-columns:
+    34px
+    minmax(0, 1fr)
+    20px;
+
   align-items: center;
 
-  gap: 12px;
+  gap: 9px;
 
-  padding: 15px;
+  padding: 9px 10px;
 
-  border: 2px solid #eaecf0;
-  border-radius: 14px;
+  border: 1px solid #d0d5dd;
+  border-radius: 11px;
 
   color: inherit;
+
   background: transparent;
 
-  cursor: pointer;
+  font-family: inherit;
   text-align: left;
+
+  cursor: pointer;
+
+  transition:
+    border-color 0.18s ease,
+    background 0.18s ease,
+    transform 0.18s ease;
+}
+
+.tipo-card:hover {
+  transform: translateY(-1px);
+
+  border-color: #fdba74;
 }
 
 .tipo-card.selecionado {
   border-color: #f97316;
+
   background: #fff7ed;
 }
 
 .tipo-card-icone {
-  width: 42px;
-  height: 42px;
+  width: 34px;
+  height: 34px;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
-  flex-shrink: 0;
-
-  border-radius: 11px;
+  border-radius: 9px;
 
   color: #667085;
+
   background: #f2f4f7;
 }
 
 .tipo-card.selecionado
 .tipo-card-icone {
   color: #f97316;
+
   background: #ffedd5;
+}
+
+.tipo-card-conteudo {
+  min-width: 0;
 }
 
 .tipo-card-titulo {
   color: #344054;
-  font-size: 13px;
+
+  font-size: 10px;
   font-weight: 800;
 }
 
 .tipo-card-texto {
+  overflow: hidden;
+
   margin-top: 2px;
+
   color: #98a2b3;
-  font-size: 10px;
+
+  font-size: 7px;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tipo-check {
+  color: #f97316;
 }
 
 /* =====================================================
-   URGÊNCIA
+   URGÊNCIA + ANEXOS
 ===================================================== */
 
+.linha-dupla {
+  display: grid;
+
+  grid-template-columns:
+    minmax(300px, 0.75fr)
+    minmax(360px, 1.25fr);
+
+  gap: 14px;
+
+  align-items: end;
+}
+
 .urgencias {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+
+  gap: 7px;
 }
 
 .urgencia {
-  min-width: 90px;
+  min-height: 40px;
 
-  padding: 10px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 5px;
+
+  padding: 7px 9px;
 
   border: 1px solid #d0d5dd;
   border-radius: 10px;
 
   color: #475467;
+
   background: transparent;
 
+  font-family: inherit;
+
+  font-size: 9px;
+  font-weight: 800;
+
   cursor: pointer;
-  font-weight: 700;
 }
 
 .urgencia--baixa.selecionada {
   border-color: #1570ef;
+
   color: #1570ef;
+
   background: #eff8ff;
 }
 
 .urgencia--media.selecionada {
   border-color: #f97316;
+
   color: #c2410c;
+
   background: #fff7ed;
 }
 
 .urgencia--alta.selecionada {
   border-color: #d92d20;
+
   color: #b42318;
+
   background: #fef3f2;
 }
 
-/* =====================================================
-   ANEXOS
-===================================================== */
+.arquivo-input :deep(.q-field__control) {
+  min-height: 40px;
+  height: 40px;
 
-.anexos-ajuda {
-  margin-top: 6px;
-  color: #98a2b3;
+  border-radius: 10px;
+}
+
+.arquivo-input :deep(.q-field__native),
+.arquivo-input :deep(.q-field__input) {
   font-size: 10px;
 }
 
-.arquivos-selecionados {
-  margin-top: 12px;
+.arquivo-limite {
+  color: #98a2b3;
 
-  padding: 12px;
+  font-size: 7px;
+  font-weight: 700;
+}
+
+/* =====================================================
+   ARQUIVOS
+===================================================== */
+
+.arquivos-selecionados {
+  margin-top: 11px;
+  padding: 10px;
 
   border: 1px solid #eaecf0;
-  border-radius: 12px;
+  border-radius: 11px;
 
   background: #f9fafb;
 }
 
+.arquivos-selecionados__titulo {
+  margin-bottom: 7px;
+
+  color: #667085;
+
+  font-size: 8px;
+  font-weight: 800;
+}
+
+.arquivos-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 6px;
+}
+
 .arquivo-item {
+  min-width: 0;
+
   display: flex;
   align-items: center;
 
-  gap: 10px;
+  gap: 7px;
 
-  padding: 8px 0;
+  padding: 7px 8px;
 
-  border-bottom:
-    1px solid #eaecf0;
-}
+  border: 1px solid #eef0f3;
+  border-radius: 9px;
 
-.arquivo-item:last-child {
-  border-bottom: none;
+  background: #ffffff;
 }
 
 .arquivo-dados {
-  flex: 1;
   min-width: 0;
+  flex: 1;
 }
 
 .arquivo-nome {
@@ -2138,7 +2483,7 @@ onMounted(
 
   color: #344054;
 
-  font-size: 11px;
+  font-size: 8px;
   font-weight: 700;
 
   text-overflow: ellipsis;
@@ -2146,179 +2491,66 @@ onMounted(
 }
 
 .arquivo-tamanho {
+  margin-top: 1px;
+
   color: #98a2b3;
-  font-size: 9px;
+
+  font-size: 7px;
 }
 
 /* =====================================================
    LOCALIZAÇÃO
 ===================================================== */
 
-.localizacao-card {
-  overflow: hidden;
-
-  border: 1px solid #eaecf0;
-  border-radius: 18px;
-
-  background: #ffffff;
+.secao-localizacao {
+  padding-top: 15px;
 }
-
-.localizacao-cabecalho {
-  padding: 18px 20px;
-
-  border-bottom:
-    1px solid #f2f4f7;
-}
-
-.localizacao-titulo-area {
-  display: flex;
-  align-items: center;
-
-  gap: 10px;
-}
-
-.localizacao-icone {
-  width: 40px;
-  height: 40px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  flex-shrink: 0;
-
-  border-radius: 11px;
-
-  color: #f97316;
-  background: #fff1e6;
-}
-
-.localizacao-titulo {
-  color: #101828;
-
-  font-size: 14px;
-  font-weight: 800;
-}
-
-.localizacao-subtitulo {
-  margin-top: 2px;
-
-  color: #98a2b3;
-
-  font-size: 10px;
-}
-
-/* PROPRIEDADE */
-
-.propriedade-resumo {
-  display: flex;
-  align-items: center;
-
-  gap: 11px;
-
-  margin:
-    18px 20px 0;
-
-  padding: 13px;
-
-  border-radius: 12px;
-
-  background: #f9fafb;
-}
-
-.propriedade-resumo-icone {
-  width: 39px;
-  height: 39px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  flex-shrink: 0;
-
-  border-radius: 10px;
-
-  color: #f97316;
-  background: #fff1e6;
-}
-
-.propriedade-resumo-dados {
-  min-width: 0;
-}
-
-.propriedade-resumo-dados span,
-.local-selecionado span {
-  display: block;
-
-  color: #98a2b3;
-
-  font-size: 8px;
-
-  text-transform: uppercase;
-}
-
-.propriedade-resumo-dados strong,
-.local-selecionado strong {
-  display: block;
-
-  margin-top: 2px;
-
-  color: #344054;
-
-  font-size: 11px;
-  font-weight: 800;
-}
-
-.propriedade-resumo-dados small,
-.local-selecionado small {
-  display: block;
-
-  margin-top: 2px;
-
-  color: #667085;
-
-  font-size: 9px;
-}
-
-/* OPÇÕES */
 
 .localizacao-opcoes {
   display: grid;
 
   grid-template-columns:
-    repeat(
-      2,
-      minmax(0, 1fr)
-    );
+    repeat(2, minmax(0, 1fr));
 
-  gap: 10px;
+  gap: 8px;
 
-  margin:
-    14px 20px;
+  margin-bottom: 10px;
 }
 
 .localizacao-opcao {
-  display: flex;
-  align-items: flex-start;
+  appearance: none;
 
-  gap: 10px;
+  min-width: 0;
+  min-height: 56px;
 
-  min-height: 76px;
+  display: grid;
 
-  padding: 13px;
+  grid-template-columns:
+    18px
+    minmax(0, 1fr)
+    20px;
 
-  border:
-    1px solid #d0d5dd;
+  align-items: center;
 
-  border-radius: 12px;
+  gap: 8px;
+
+  padding: 9px 10px;
+
+  border: 1px solid #d0d5dd;
+  border-radius: 11px;
 
   color: inherit;
 
   background: transparent;
 
+  font-family: inherit;
+  text-align: left;
+
   cursor: pointer;
 
-  text-align: left;
+  transition:
+    border-color 0.18s ease,
+    background 0.18s ease;
 }
 
 .localizacao-opcao:hover {
@@ -2327,20 +2559,17 @@ onMounted(
 
 .localizacao-opcao--ativa {
   border-color: #f97316;
+
   background: #fff7ed;
 }
 
 .opcao-radio {
-  width: 18px;
-  height: 18px;
+  width: 17px;
+  height: 17px;
 
   display: flex;
   align-items: center;
   justify-content: center;
-
-  flex-shrink: 0;
-
-  margin-top: 2px;
 
   border: 2px solid #d0d5dd;
   border-radius: 50%;
@@ -2352,12 +2581,16 @@ onMounted(
 }
 
 .opcao-radio-centro {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
 
   border-radius: 50%;
 
   background: #f97316;
+}
+
+.localizacao-opcao__conteudo {
+  min-width: 0;
 }
 
 .localizacao-opcao strong {
@@ -2365,89 +2598,116 @@ onMounted(
 
   color: #344054;
 
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 800;
 }
 
 .localizacao-opcao span {
   display: block;
 
-  margin-top: 3px;
+  overflow: hidden;
+
+  margin-top: 2px;
 
   color: #98a2b3;
 
-  font-size: 8px;
+  font-size: 7px;
 
-  line-height: 1.45;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-/* CONTEÚDO */
+.localizacao-opcao__icone {
+  color: #98a2b3;
+}
+
+.localizacao-opcao--ativa
+.localizacao-opcao__icone {
+  color: #f97316;
+}
 
 .localizacao-conteudo {
-  padding:
-    0 20px 20px;
+  margin-top: 2px;
 }
 
-.local-selecionado {
+/* RESUMO LOCAL */
+
+.local-resumo {
   display: flex;
   align-items: center;
 
-  gap: 10px;
+  gap: 9px;
 
-  margin-bottom: 12px;
+  padding: 9px 10px;
 
-  padding: 12px;
-
+  border: 1px solid #eaecf0;
   border-radius: 11px;
+
+  background: #f9fafb;
+}
+
+.local-resumo__icone {
+  width: 33px;
+  height: 33px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  border-radius: 9px;
 
   color: #f97316;
 
-  background: #fff7ed;
+  background: #fff1e6;
 }
 
-.local-selecionado > div {
+.local-resumo__dados {
+  min-width: 0;
   flex: 1;
 }
 
-.local-selecionado strong {
-  color: #344054;
-}
-
-.sem-coordenadas {
-  display: flex;
-  align-items: flex-start;
-
-  gap: 10px;
-
-  padding: 14px;
-
-  border-radius: 11px;
-
-  color: #b54708;
-
-  background: #fffaeb;
-}
-
-.sem-coordenadas strong,
-.sem-coordenadas span {
+.local-resumo__dados span {
   display: block;
+
+  color: #98a2b3;
+
+  font-size: 6px;
+
+  text-transform: uppercase;
 }
 
-.sem-coordenadas strong {
-  color: #93370d;
+.local-resumo__dados strong {
+  display: block;
 
-  font-size: 10px;
-}
+  overflow: hidden;
 
-.sem-coordenadas span {
-  margin-top: 3px;
+  margin-top: 2px;
+
+  color: #344054;
 
   font-size: 9px;
+  font-weight: 800;
 
-  line-height: 1.5;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-/* BUSCA */
+.botao-mapa {
+  flex-shrink: 0;
+
+  color: #f97316;
+
+  font-size: 8px;
+  font-weight: 800;
+}
+
+.mapa-recolhivel {
+  margin-top: 9px;
+}
+
+/* BUSCA OUTRO LOCAL */
 
 .busca-localizacao-topo {
   display: grid;
@@ -2459,22 +2719,55 @@ onMounted(
 
   align-items: center;
 
-  gap: 8px;
+  gap: 7px;
 }
 
-.busca-localizacao-input {
-  width: 100%;
+.busca-localizacao-input :deep(.q-field__control) {
+  min-height: 40px;
+  height: 40px;
+
+  border-radius: 10px;
 }
 
-.localizacao-ajuda {
+.busca-localizacao-input :deep(.q-field__native),
+.busca-localizacao-input :deep(.q-field__input) {
+  font-size: 10px;
+}
+
+.botao-pesquisar,
+.botao-local-atual {
+  min-height: 40px;
+
+  border-radius: 10px;
+
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.botao-pesquisar {
+  color: #ffffff;
+
+  background:
+    linear-gradient(
+      135deg,
+      #ff9d1f,
+      #f97316
+    );
+}
+
+.botao-local-atual {
+  color: #f97316;
+}
+
+.localizacao-dica,
+.sem-coordenadas {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
 
   gap: 7px;
 
-  margin-top: 10px;
-
-  padding: 9px 11px;
+  margin-top: 8px;
+  padding: 8px 10px;
 
   border-radius: 9px;
 
@@ -2482,68 +2775,51 @@ onMounted(
 
   background: #f9fafb;
 
-  font-size: 8px;
-
-  line-height: 1.5;
+  font-size: 7px;
 }
-
-/* RESULTADOS */
 
 .resultados-localizacao {
-  margin-top: 13px;
-
   overflow: hidden;
 
-  border:
-    1px solid #eaecf0;
+  margin-top: 8px;
 
-  border-radius: 11px;
-}
-
-.resultados-titulo {
-  padding:
-    10px 12px;
-
-  color: #667085;
-
-  background: #f9fafb;
-
-  font-size: 8px;
-
-  font-weight: 800;
-
-  text-transform: uppercase;
+  border: 1px solid #eaecf0;
+  border-radius: 10px;
 }
 
 .resultado-localizacao {
+  appearance: none;
+
   width: 100%;
 
   display: grid;
 
   grid-template-columns:
-    24px
+    22px
     minmax(0, 1fr)
-    20px;
+    18px;
 
   align-items: center;
 
-  gap: 8px;
+  gap: 7px;
 
-  padding:
-    11px 12px;
+  padding: 9px 10px;
 
   border: none;
-
-  border-top:
-    1px solid #f2f4f7;
+  border-bottom: 1px solid #f2f4f7;
 
   color: #667085;
 
   background: #ffffff;
 
-  cursor: pointer;
-
+  font-family: inherit;
   text-align: left;
+
+  cursor: pointer;
+}
+
+.resultado-localizacao:last-child {
+  border-bottom: none;
 }
 
 .resultado-localizacao:hover {
@@ -2557,10 +2833,9 @@ onMounted(
 
   color: #344054;
 
-  font-size: 9px;
+  font-size: 8px;
 
   text-overflow: ellipsis;
-
   white-space: nowrap;
 }
 
@@ -2573,95 +2848,41 @@ onMounted(
 
   color: #98a2b3;
 
-  font-size: 8px;
+  font-size: 7px;
 
   text-overflow: ellipsis;
-
   white-space: nowrap;
 }
 
-/* SELEÇÃO ALTERNATIVA */
-
 .local-alternativo-selecionado {
-  margin-top: 13px;
+  margin-top: 8px;
 }
 
-.aguardando-local {
-  min-height: 150px;
-
-  display: flex;
-  flex-direction: column;
-
-  align-items: center;
-  justify-content: center;
-
-  margin-top: 13px;
-
-  padding: 20px;
-
-  border-radius: 12px;
-
-  color: #98a2b3;
-
-  background: #f9fafb;
-
-  text-align: center;
-}
-
-.aguardando-local-icone {
-  width: 52px;
-  height: 52px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  margin-bottom: 8px;
-
-  border-radius: 14px;
-
-  color: #f97316;
-
-  background: #fff1e6;
-}
-
-.aguardando-local strong {
-  color: #475467;
-
-  font-size: 10px;
-}
-
-.aguardando-local span {
-  margin-top: 4px;
-
-  font-size: 8px;
-}
-
-/* CARREGAMENTO */
+/* ESTADOS */
 
 .carregando-localizacao {
-  min-height: 150px;
+  min-height: 80px;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
-  gap: 10px;
+  gap: 9px;
 
   color: #667085;
+
+  font-size: 9px;
 }
 
 .sem-propriedade {
   display: flex;
   align-items: flex-start;
 
-  gap: 10px;
+  gap: 9px;
 
-  margin: 18px 20px;
+  padding: 11px;
 
-  padding: 14px;
-
-  border-radius: 11px;
+  border-radius: 10px;
 
   color: #b42318;
 
@@ -2674,12 +2895,13 @@ onMounted(
 }
 
 .sem-propriedade strong {
-  font-size: 10px;
+  font-size: 9px;
 }
 
 .sem-propriedade span {
-  margin-top: 3px;
-  font-size: 9px;
+  margin-top: 2px;
+
+  font-size: 8px;
 }
 
 /* =====================================================
@@ -2687,14 +2909,68 @@ onMounted(
 ===================================================== */
 
 .acoes {
+  position: sticky;
+  bottom: 0;
+  z-index: 15;
+
   display: flex;
+  align-items: center;
+  justify-content: space-between;
 
-  justify-content:
-    flex-end;
+  gap: 12px;
 
-  gap: 10px;
+  padding: 11px 16px;
 
-  margin-top: 25px;
+  border-top: 1px solid #eaecf0;
+  border-radius: 0 0 18px 18px;
+
+  background:
+    rgba(255, 255, 255, 0.96);
+
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.acoes-resumo {
+  display: flex;
+  align-items: center;
+
+  gap: 6px;
+
+  color: #98a2b3;
+
+  font-size: 8px;
+}
+
+.acoes-botoes {
+  display: flex;
+  align-items: center;
+
+  gap: 7px;
+}
+
+.botao-enviar {
+  min-height: 39px;
+
+  padding: 0 14px;
+
+  border-radius: 10px;
+
+  color: #ffffff;
+
+  background:
+    linear-gradient(
+      135deg,
+      #ff9d1f,
+      #f97316
+    );
+
+  font-size: 10px;
+  font-weight: 800;
+
+  box-shadow:
+    0 4px 12px
+    rgba(249, 115, 22, 0.18);
 }
 
 /* =====================================================
@@ -2703,11 +2979,19 @@ onMounted(
 
 .formulario-card--dark {
   border-color: #2b2f36;
+
   background: #16191f;
 }
 
 .formulario-card--dark
-.card-titulo,
+.secao-formulario,
+.formulario-card--dark
+.acoes {
+  border-color: #2b2f36;
+}
+
+.formulario-card--dark
+.secao-titulo,
 .formulario-card--dark
 .campo-label,
 .formulario-card--dark
@@ -2715,22 +2999,20 @@ onMounted(
 .formulario-card--dark
 .arquivo-nome,
 .formulario-card--dark
-.localizacao-titulo,
-.formulario-card--dark
-.propriedade-resumo-dados strong,
-.formulario-card--dark
 .localizacao-opcao strong,
 .formulario-card--dark
-.local-selecionado strong,
+.local-resumo__dados strong,
 .formulario-card--dark
 .resultado-localizacao strong {
   color: #f9fafb;
 }
 
 .formulario-card--dark
-.card-subtitulo,
+.secao-subtitulo,
 .formulario-card--dark
-.tipo-card-texto {
+.tipo-card-texto,
+.formulario-card--dark
+.campo-dica {
   color: #98a2b3;
 }
 
@@ -2739,59 +3021,40 @@ onMounted(
 .formulario-card--dark
 .localizacao-opcao,
 .formulario-card--dark
-.localizacao-card,
+.local-resumo,
 .formulario-card--dark
 .resultados-localizacao {
   border-color: #353a43;
 }
 
 .formulario-card--dark
-.localizacao-card {
-  background: #16191f;
-}
-
-.formulario-card--dark
 .tipo-card.selecionado,
 .formulario-card--dark
-.localizacao-opcao--ativa,
-.formulario-card--dark
-.local-selecionado {
+.localizacao-opcao--ativa {
   border-color: #f97316;
+
   background: #292018;
 }
 
 .formulario-card--dark
-.tipo-card-icone {
-  background: #22262d;
-}
-
+.tipo-card-icone,
 .formulario-card--dark
-.arquivos-selecionados,
+.local-resumo,
 .formulario-card--dark
-.propriedade-resumo,
+.localizacao-dica,
 .formulario-card--dark
-.localizacao-ajuda,
+.sem-coordenadas,
 .formulario-card--dark
-.aguardando-local {
-  border-color: #2b2f36;
+.arquivos-selecionados {
   background: #1b1f25;
 }
 
 .formulario-card--dark
 .arquivo-item,
 .formulario-card--dark
-.localizacao-cabecalho {
-  border-color: #2b2f36;
-}
-
-.formulario-card--dark
-.resultados-titulo {
-  background: #1b1f25;
-}
-
-.formulario-card--dark
 .resultado-localizacao {
   border-color: #2b2f36;
+
   background: #16191f;
 }
 
@@ -2800,18 +3063,25 @@ onMounted(
   background: #292018;
 }
 
+.formulario-card--dark
+.acoes {
+  background:
+    rgba(22, 25, 31, 0.96);
+}
+
 /* =====================================================
    TABLET
 ===================================================== */
 
-@media (max-width: 900px) {
-  .formulario-card {
-    padding: 22px;
+@media (max-width: 950px) {
+  .linha-dupla {
+    grid-template-columns: 1fr;
   }
 
   .busca-localizacao-topo {
     grid-template-columns:
-      1fr 1fr;
+      1fr
+      1fr;
   }
 
   .busca-localizacao-input {
@@ -2824,60 +3094,43 @@ onMounted(
    CELULAR
 ===================================================== */
 
-@media (max-width: 600px) {
+@media (max-width: 650px) {
   .formulario-card {
-    padding: 17px;
+    border-radius: 15px;
+  }
 
-    border-radius: 18px;
+  .secao-formulario {
+    padding: 13px;
+  }
+
+  .secao-cabecalho {
+    align-items: flex-start;
+  }
+
+  .secao-indicador {
+    display: none;
   }
 
   .tipo-solicitacao,
   .localizacao-opcoes {
-    grid-template-columns:
-      1fr;
+    grid-template-columns: 1fr;
   }
 
-  .card-titulo {
-    font-size: 18px;
+  .tipo-card {
+    min-height: 54px;
   }
 
-  .tipo-icone {
-    width: 40px;
-    height: 40px;
+  .campo-dica {
+    display: none;
   }
 
   .urgencias {
-    display: grid;
-
     grid-template-columns:
-      repeat(
-        3,
-        minmax(0, 1fr)
-      );
+      repeat(3, minmax(0, 1fr));
   }
 
-  .urgencia {
-    min-width: 0;
-    width: 100%;
-
-    padding:
-      10px 4px;
-  }
-
-  .localizacao-cabecalho,
-  .localizacao-conteudo {
-    padding-left: 14px;
-    padding-right: 14px;
-  }
-
-  .propriedade-resumo {
-    margin-left: 14px;
-    margin-right: 14px;
-  }
-
-  .localizacao-opcoes {
-    margin-left: 14px;
-    margin-right: 14px;
+  .arquivos-grid {
+    grid-template-columns: 1fr;
   }
 
   .busca-localizacao-topo {
@@ -2890,13 +3143,36 @@ onMounted(
     width: 100%;
   }
 
-  .acoes {
-    flex-direction:
-      column-reverse;
+  .local-resumo {
+    align-items: flex-start;
+    flex-wrap: wrap;
   }
 
-  .acoes .q-btn {
+  .local-resumo__dados {
+    min-width: calc(100% - 50px);
+  }
+
+  .botao-mapa {
+    margin-left: 42px;
+  }
+
+  .acoes {
+    align-items: stretch;
+    flex-direction: column;
+
+    padding: 10px 13px;
+  }
+
+  .acoes-resumo {
+    display: none;
+  }
+
+  .acoes-botoes {
     width: 100%;
+  }
+
+  .acoes-botoes .q-btn {
+    flex: 1;
   }
 }
 </style>
