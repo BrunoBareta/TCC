@@ -28,7 +28,7 @@
       <div class="dashboard-hero__acoes">
         <div class="data-card">
           <div class="data-card__icone">
-            <q-icon name="calendar_month" size="19px" />
+            <q-icon name="calendar_today" size="19px" />
           </div>
 
           <div>
@@ -76,13 +76,19 @@
     </div>
 
     <template v-else>
-      <!-- ==================================================
-           INDICADORES
-      =================================================== -->
-      <section class="indicadores-grid">
+      <!-- RESUMO PRINCIPAL: ATALHOS COMPACTOS PARA O TÉCNICO -->
+      <div class="secao-cabecalho">
+        <div>
+          <div class="secao-sobretitulo">ACOMPANHAMENTO</div>
+          <h2>Visão geral</h2>
+        </div>
+        <span class="secao-ajuda">Toque para consultar</span>
+      </div>
+      <section class="indicadores-grid" aria-label="Resumo dos chamados">
         <button
           type="button"
           class="indicador-card indicador-card--pendentes"
+          aria-label="Ver chamados pendentes"
           @click="irPendentes"
         >
           <div class="indicador-icone indicador-icone--laranja">
@@ -113,6 +119,7 @@
         <button
           type="button"
           class="indicador-card indicador-card--andamento"
+          aria-label="Ver chamados em andamento"
           @click="irEmAndamento"
         >
           <div class="indicador-icone indicador-icone--azul">
@@ -143,6 +150,7 @@
         <button
           type="button"
           class="indicador-card indicador-card--finalizados"
+          aria-label="Ver chamados finalizados"
           @click="irFinalizados"
         >
           <div class="indicador-icone indicador-icone--verde">
@@ -173,6 +181,7 @@
         <button
           type="button"
           class="indicador-card indicador-card--meus"
+          aria-label="Ver meus chamados"
           @click="irMeusChamados"
         >
           <div class="indicador-icone indicador-icone--roxo">
@@ -201,9 +210,13 @@
         </button>
       </section>
 
-      <!-- ==================================================
-           ATENDIMENTO + DISTRIBUIÇÃO
-      =================================================== -->
+      <!-- ATENDIMENTO EM DESTAQUE + DISTRIBUIÇÃO -->
+      <div class="secao-cabecalho secao-cabecalho--espacada">
+        <div>
+          <div class="secao-sobretitulo">PRIORIDADES</div>
+          <h2>Seu atendimento</h2>
+        </div>
+      </div>
       <section class="dashboard-grid-principal">
         <article class="dashboard-card atendimento-card">
           <template v-if="chamadoAtual">
@@ -427,9 +440,13 @@
         </article>
       </section>
 
-      <!-- ==================================================
-           PENDENTES + EVOLUÇÃO
-      =================================================== -->
+      <!-- CHAMADOS DISPONÍVEIS E RESULTADOS -->
+      <div class="secao-cabecalho secao-cabecalho--espacada">
+        <div>
+          <div class="secao-sobretitulo">ORGANIZAÇÃO</div>
+          <h2>Fila e resultados</h2>
+        </div>
+      </div>
       <section class="dashboard-grid-secundario">
         <article class="dashboard-card lista-card">
           <div class="card-header">
@@ -533,9 +550,13 @@
         </article>
       </section>
 
-      <!-- ==================================================
-           ANÁLISE DO ATENDIMENTO
-      =================================================== -->
+      <!-- INDICADORES DE DESEMPENHO -->
+      <div class="secao-cabecalho secao-cabecalho--espacada">
+        <div>
+          <div class="secao-sobretitulo">ESTATÍSTICAS</div>
+          <h2>Seus resultados</h2>
+        </div>
+      </div>
       <section class="dashboard-grid-analitico">
         <article class="dashboard-card">
           <div class="card-header">
@@ -3209,5 +3230,407 @@ onMounted(
   .finalizado-data {
     display: none;
   }
+}
+
+
+/* ===========================================================
+   NOVO VISUAL - DASHBOARD DO TÉCNICO
+   MESMO PADRÃO DO PAINEL DO PRODUTOR, SEM ALTERAR A LÓGICA
+=========================================================== */
+
+.secao-cabecalho {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 2px 12px;
+}
+
+.secao-cabecalho--espacada {
+  margin-top: 22px;
+}
+
+.secao-sobretitulo {
+  color: #ef791f;
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: 0.9px;
+}
+
+.secao-cabecalho h2 {
+  margin: 3px 0 0;
+  color: #17233c;
+  font-size: 19px;
+  font-weight: 850;
+  line-height: 1.2;
+}
+
+.secao-ajuda {
+  color: #98a2b3;
+  font-size: 11px;
+}
+
+.dashboard-page--dark .secao-cabecalho h2 {
+  color: #f9fafb;
+}
+
+.indicador-card:focus-visible {
+  outline: 3px solid #f8a460;
+  outline-offset: 3px;
+}
+
+/* Em telas menores, os elementos deixam de parecer blocos de site
+   e adotam a disposição de cards de um aplicativo. */
+@media (max-width: 700px) {
+  .dashboard-page {
+    padding: 16px 14px calc(140px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .dashboard-hero {
+    min-height: auto;
+    align-items: stretch;
+    flex-direction: column;
+    gap: 11px;
+    margin-bottom: 20px;
+    padding: 0 2px;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .dashboard-page--dark .dashboard-hero {
+    border: none;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .dashboard-hero__identidade { gap: 0; }
+  .dashboard-hero__barra { display: none; }
+
+  .dashboard-hero__label {
+    display: block;
+    font-size: 10px;
+    letter-spacing: 0.9px;
+  }
+
+  .dashboard-hero__titulo {
+    margin-top: 3px;
+    font-size: 25px;
+    line-height: 1.25;
+  }
+
+  .dashboard-hero__descricao {
+    display: block;
+    margin-top: 3px;
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+  .dashboard-hero__acoes {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    gap: 10px;
+  }
+
+  .data-card,
+  .dashboard-page--dark .data-card {
+    min-width: 0;
+    flex: 1;
+    gap: 10px;
+    padding: 0;
+    border: none;
+    background: transparent;
+  }
+
+  .data-card__icone {
+    width: 35px;
+    height: 35px;
+    border-radius: 11px;
+  }
+
+  .data-card span { font-size: 10px; }
+  .data-card strong { font-size: 11px; line-height: 1.35; }
+  .botao-atualizar { width: 39px; height: 39px; }
+
+  .secao-cabecalho {
+    margin-bottom: 11px;
+  }
+
+  .secao-cabecalho--espacada {
+    margin-top: 24px;
+  }
+
+  .secao-cabecalho h2 { font-size: 19px; }
+  .secao-ajuda { display: none; }
+
+  .indicadores-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+
+  .indicador-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    min-width: 0;
+    min-height: 152px;
+    padding: 15px 14px 13px;
+    border-radius: 18px;
+    gap: 0;
+  }
+
+  .indicador-card::before {
+    top: 18px;
+    bottom: 18px;
+  }
+
+  .indicador-icone {
+    width: 39px;
+    height: 39px;
+    border-radius: 12px;
+    flex-shrink: 0;
+  }
+
+  .indicador-conteudo {
+    width: 100%;
+    margin-top: 11px;
+  }
+
+  .indicador-numero {
+    font-size: 29px;
+    line-height: 1;
+  }
+
+  .indicador-label {
+    margin-top: 5px;
+    font-size: 12px;
+    line-height: 1.2;
+  }
+
+  .indicador-rodape {
+    margin-top: 5px;
+    overflow: visible;
+    white-space: normal;
+    font-size: 10px;
+    line-height: 1.25;
+    text-overflow: clip;
+  }
+
+  .indicador-seta {
+    position: absolute;
+    top: 18px;
+    right: 14px;
+    font-size: 16px !important;
+  }
+
+  .dashboard-grid-principal,
+  .dashboard-grid-secundario,
+  .dashboard-grid-analitico {
+    grid-template-columns: 1fr;
+    gap: 11px;
+    margin-bottom: 11px;
+  }
+
+  .dashboard-card { border-radius: 18px; }
+
+  /* Chamado em atendimento: status, dados e progresso mais legíveis. */
+  .atendimento-card {
+    padding: 16px;
+    border-color: #fed7aa;
+    background: linear-gradient(165deg, #fffaf6 0%, #fff 38%);
+  }
+
+  .dashboard-page--dark .atendimento-card {
+    border-color: #7c2d12;
+    background: linear-gradient(165deg, #211b17 0%, #15181d 38%);
+  }
+
+  .atendimento-cabecalho {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .card-kicker {
+    font-size: 10px;
+    line-height: 1.4;
+  }
+
+  .chamado-problema {
+    margin-top: 5px;
+    font-size: 20px;
+    line-height: 1.22;
+    overflow-wrap: anywhere;
+  }
+
+  .atendimento-cabecalho .q-badge {
+    font-size: 10px;
+    padding: 6px 10px;
+  }
+
+  .atendimento-info-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 14px;
+  }
+
+  .info-item {
+    min-width: 0;
+    min-height: 65px;
+    padding: 8px 9px;
+    gap: 7px;
+    border-radius: 12px;
+  }
+
+  .info-icone {
+    width: 30px;
+    height: 30px;
+    border-radius: 9px;
+  }
+
+  .info-item span { font-size: 9px; }
+
+  .info-item strong {
+    margin-top: 3px;
+    overflow: visible;
+    font-size: 11px;
+    line-height: 1.25;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    text-overflow: clip;
+  }
+
+  .atendimento-rodape {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-top: 18px;
+  }
+
+  .progresso-atendimento {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0;
+  }
+
+  .progresso-circulo {
+    width: 27px;
+    height: 27px;
+  }
+
+  .progresso-linha { margin: 0 4px; }
+
+  .progresso-label {
+    margin-top: 6px;
+    font-size: 9px;
+    line-height: 1.2;
+  }
+
+  .continuar-btn {
+    justify-self: stretch;
+    width: 100%;
+    min-height: 45px;
+    border-radius: 12px;
+    font-size: 12px;
+  }
+
+  .atendimento-vazio {
+    min-height: 210px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    text-align: center;
+  }
+
+  .atendimento-vazio .q-btn { max-width: 100%; }
+
+  .card-header {
+    min-height: auto;
+    padding: 16px 16px 11px;
+    gap: 9px;
+  }
+
+  .card-header > div:first-child { min-width: 0; }
+  .card-titulo { font-size: 15px; line-height: 1.3; }
+  .card-subtitulo { margin-top: 3px; font-size: 11px; line-height: 1.35; }
+  .card-icone { width: 35px; height: 35px; }
+
+  .doughnut-area {
+    min-height: 190px;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    padding: 10px 12px 18px;
+  }
+
+  .doughnut-wrapper {
+    width: 138px;
+    height: 138px;
+  }
+
+  .doughnut-centro strong { font-size: 23px; }
+  .doughnut-centro span { font-size: 10px; }
+  .legenda-status { gap: 11px; }
+  .legenda-item { gap: 7px; }
+  .legenda-item strong { font-size: 12px; }
+  .legenda-item span:not(.ponto) { font-size: 10px; line-height: 1.25; }
+
+  /* Lista de pendentes com urgência ainda visível no celular. */
+  .lista-card .card-header { align-items: flex-start; }
+  .lista-card .card-header .q-btn {
+    flex-shrink: 0;
+    padding: 0 3px;
+    min-height: 32px;
+    font-size: 11px;
+  }
+
+  .chamado-item {
+    grid-template-columns: 35px minmax(0, 1fr) auto 28px;
+    gap: 6px;
+    padding: 12px 10px;
+  }
+
+  .chamado-id { font-size: 11px; }
+  .chamado-conteudo strong { font-size: 12px; }
+  .chamado-conteudo span { margin-top: 3px; font-size: 10px; }
+  .chamado-item .q-badge {
+    display: inline-flex;
+    padding: 5px 7px;
+    font-size: 9px;
+    white-space: nowrap;
+  }
+
+  .chamado-item .q-btn { min-width: 28px; width: 28px; }
+
+  .grafico-linha { height: 210px; padding: 4px 10px 14px; }
+  .grafico-analitico { height: 220px; padding: 4px 10px 15px; }
+  .estado-vazio--grafico { min-height: 175px; }
+  .estado-vazio strong { font-size: 12px; }
+  .estado-vazio span { font-size: 11px; line-height: 1.4; }
+}
+
+@media (max-width: 380px) {
+  .dashboard-page { padding-right: 11px; padding-left: 11px; }
+  .indicador-card { padding: 13px 11px; }
+  .indicador-label { font-size: 11px; }
+  .indicador-rodape { font-size: 9px; }
+  .atendimento-card { padding: 13px; }
+  .info-item { padding: 8px 7px; gap: 6px; }
+  .info-icone { width: 28px; height: 28px; }
+  .info-item strong { font-size: 10px; }
+  .doughnut-area { gap: 9px; padding-right: 9px; padding-left: 9px; }
+  .doughnut-wrapper { width: 118px; height: 118px; }
+  .chamado-item { grid-template-columns: 28px minmax(0, 1fr) auto 26px; gap: 5px; }
+  .chamado-item .q-badge { padding: 4px 5px; font-size: 8px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .indicador-card,
+  .indicador-seta { transition: none; }
 }
 </style>

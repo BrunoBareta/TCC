@@ -364,16 +364,16 @@ const chamadosFiltrados = computed(() => {
     )
 
   const statusSelecionado =
-    String(
-      props.status || ''
-    ).toUpperCase()
+    normalizarStatus(
+      props.status
+    )
 
   return chamados.value.filter(
     (chamado) => {
       const statusChamado =
-        String(
-          chamado.status || ''
-        ).toUpperCase()
+        normalizarStatus(
+          chamado.status
+        )
 
       let correspondeStatus =
         true
@@ -382,11 +382,14 @@ const chamadosFiltrados = computed(() => {
         statusSelecionado ===
         'EM_ANDAMENTO'
       ) {
+        // Agrupa os status de chamados em andamento,
+        // sem alterar o status original de cada chamado.
         correspondeStatus = [
           'ACEITO',
           'EM_ROTA',
           'EM_ATENDIMENTO',
-          'AGUARDANDO_CONFIRMACAO'
+          'AGUARDANDO_CONFIRMACAO',
+          'EM_ANDAMENTO'
         ].includes(
           statusChamado
         )
@@ -489,6 +492,15 @@ const textoResultado =
 /* ==================================================
    TEXTO
 =================================================== */
+
+function normalizarStatus(valor) {
+  return String(valor ?? '')
+    .trim()
+    .toUpperCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[\s-]+/g, '_')
+}
 
 function normalizarTexto(
   valor

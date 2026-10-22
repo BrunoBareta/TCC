@@ -198,15 +198,17 @@ function limparFiltros() {
 
 /* ==================================================
    MOBILE
+   Campos em linhas separadas para exibir o status
+   completo, sem cortar o texto no celular.
 =================================================== */
 
 @media (max-width: 700px) {
   .filtros-container {
-    display: grid;
+    display: flex;
 
-    grid-template-columns:
-      minmax(0, 1fr)
-      135px;
+    flex-direction: column;
+
+    align-items: stretch;
 
     gap: 9px;
 
@@ -221,29 +223,13 @@ function limparFiltros() {
   }
 
   .botao-limpar {
-    grid-column:
-      1 / -1;
-
-    justify-self:
-      flex-start;
+    align-self: flex-start;
 
     min-height: 32px;
 
     margin-top: -3px;
 
     font-size: 12px;
-  }
-}
-
-/* CELULAR PEQUENO */
-
-@media (max-width: 390px) {
-  .filtros-container {
-    grid-template-columns:
-      minmax(0, 1fr)
-      120px;
-
-    gap: 7px;
   }
 }
 </style>

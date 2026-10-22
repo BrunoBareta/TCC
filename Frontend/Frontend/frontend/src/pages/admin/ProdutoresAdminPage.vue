@@ -381,6 +381,8 @@
                   round
                   dense
                   icon="more_vert"
+                  :loading="idProdutorEmAtualizacao === produtor.id_usuario"
+                  :disable="idProdutorEmAtualizacao !== null"
                 >
                   <q-menu>
                     <q-list
@@ -457,6 +459,28 @@
 
                         <q-item-section>
                           Desativar produtor
+                        </q-item-section>
+                      </q-item>
+
+                      <q-item
+                        v-else
+                        clickable
+                        v-close-popup
+                        class="text-positive"
+                        @click="
+                          confirmarAtivacao(
+                            produtor
+                          )
+                        "
+                      >
+                        <q-item-section avatar>
+                          <q-icon
+                            name="person_add"
+                          />
+                        </q-item-section>
+
+                        <q-item-section>
+                          Ativar produtor
                         </q-item-section>
                       </q-item>
                     </q-list>
@@ -925,6 +949,66 @@
       </q-card>
     </q-dialog>
 
+    <!-- Confirmação sem dependência do plugin Dialog do Quasar -->
+    <q-dialog v-model="dialogConfirmacaoStatus" persistent>
+      <q-card
+        v-if="produtorParaStatus"
+        class="detalhes-dialog"
+        :class="{ 'detalhes-dialog--dark': $q.dark.isActive }"
+      >
+        <q-card-section class="dialog-topo">
+          <div class="detalhes-avatar">
+            <q-icon
+              :name="novoStatusProdutor ? 'person_add' : 'person_off'"
+              size="24px"
+            />
+          </div>
+          <div>
+            <div class="dialog-titulo">
+              {{ novoStatusProdutor ? 'Ativar produtor' : 'Desativar produtor' }}
+            </div>
+            <div class="dialog-subtitulo">
+              Confirme a alteração do cadastro.
+            </div>
+          </div>
+          <q-space />
+          <q-btn
+            flat round dense icon="close"
+            :disable="idProdutorEmAtualizacao !== null"
+            @click="fecharConfirmacaoStatusProdutor"
+          />
+        </q-card-section>
+        <q-separator />
+        <q-card-section class="q-pa-lg">
+          Deseja realmente
+          {{ novoStatusProdutor ? 'ativar' : 'desativar' }}
+          <strong>{{ produtorParaStatus.nome }}</strong>?
+          <p class="q-mt-sm q-mb-none"
+            :class="$q.dark.isActive ? 'text-grey-4' : 'text-grey-7'">
+            {{ novoStatusProdutor
+              ? 'O produtor voltará a ficar disponível para os atendimentos.'
+              : 'O produtor deixará de estar disponível para novos atendimentos.' }}
+            Os dados e o histórico serão preservados.
+          </p>
+        </q-card-section>
+        <q-separator />
+        <q-card-actions class="dialog-acoes">
+          <q-btn
+            flat no-caps label="Cancelar"
+            :disable="idProdutorEmAtualizacao !== null"
+            @click="fecharConfirmacaoStatusProdutor"
+          />
+          <q-btn
+            unelevated no-caps
+            :color="novoStatusProdutor ? 'positive' : 'negative'"
+            :label="novoStatusProdutor ? 'Ativar' : 'Desativar'"
+            :loading="idProdutorEmAtualizacao !== null"
+            @click="salvarAlteracaoStatusProdutor"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
   </q-page>
 </template>
 
@@ -974,6 +1058,12 @@ const produtorSelecionado =
 
 const propriedadeSelecionada =
   ref(null)
+
+const idProdutorEmAtualizacao =
+  ref(null)
+const dialogConfirmacaoStatus = ref(false)
+const produtorParaStatus = ref(null)
+const novoStatusProdutor = ref(false)
 
 /* =========================
    PRODUTORES
@@ -1218,80 +1308,113 @@ function abrirPropriedadeDoDialog() {
 }
 
 /* =========================
-   DESATIVAR
+   ATIVAR / DESATIVAR
 ========================= */
 
 function confirmarDesativacao(
   produtor
 ) {
-  $q.dialog({
-    title:
-      'Desativar produtor',
-
-    message:
-      `Deseja realmente desativar ${produtor.nome}?`,
-
-    cancel: {
-      flat: true,
-
-      label:
-        'Cancelar'
-    },
-
-    ok: {
-      unelevated: true,
-
-      color:
-        'negative',
-
-      label:
-        'Desativar'
-    },
-
-    persistent:
-      true
-  }).onOk(
-    async () => {
-      await desativarProdutor(
-        produtor
-      )
-    }
+  confirmarAlteracaoStatus(
+    produtor,
+    false
   )
 }
 
-async function desativarProdutor(
+function confirmarAtivacao(
   produtor
 ) {
+  confirmarAlteracaoStatus(
+    produtor,
+    true
+  )
+}
+
+function confirmarAlteracaoStatus(
+  produtor,
+  ativar
+) {
+  if (idProdutorEmAtualizacao.value !== null) return
+  produtorParaStatus.value = produtor
+  novoStatusProdutor.value = ativar
+  dialogConfirmacaoStatus.value = true
+}
+
+function fecharConfirmacaoStatusProdutor() {
+  if (idProdutorEmAtualizacao.value !== null) return
+  dialogConfirmacaoStatus.value = false
+  produtorParaStatus.value = null
+}
+
+async function salvarAlteracaoStatusProdutor() {
+  const produtor = produtorParaStatus.value
+  if (!produtor) return
+  const sucesso = await alterarStatusProdutor(
+    produtor,
+    novoStatusProdutor.value
+  )
+  if (sucesso) {
+    dialogConfirmacaoStatus.value = false
+    produtorParaStatus.value = null
+  }
+}
+
+async function alterarStatusProdutor(
+  produtor,
+  ativar
+) {
+  if (idProdutorEmAtualizacao.value !== null) {
+    return
+  }
+
+  idProdutorEmAtualizacao.value =
+    produtor.id_usuario
+
   try {
-    await usuarioService
-      .desativar(
-        produtor.id_usuario
+    // O endpoint PUT já atualiza o campo "ativo"
+    // sem excluir o produtor ou seus registros.
+    const usuarioAtualizado =
+      await usuarioService.atualizar(
+        produtor.id_usuario,
+        { ativo: ativar }
       )
 
-    $q.notify({
-      type: 'positive',
-
-      message:
-        'Produtor desativado com sucesso.'
-    })
+    if (usuarioAtualizado?.ativo !== ativar) {
+      throw new Error(
+        'O servidor não confirmou a alteração do status.'
+      )
+    }
 
     await carregarDados()
+
+    const mensagem = ativar
+      ? 'Produtor ativado com sucesso.'
+      : 'Produtor desativado com sucesso.'
+    if (typeof $q.notify === 'function') {
+      $q.notify({ type: 'positive', message: mensagem })
+    } else {
+      window.alert(mensagem)
+    }
+    return true
   } catch (error) {
     console.error(
-      'Erro ao desativar produtor:',
+      'Erro ao alterar status do produtor:',
       error
     )
 
-    $q.notify({
-      type: 'negative',
-
-      message:
-        error.response?.data
-          ?.message ||
-        error.response?.data
-          ?.erro ||
-        'Não foi possível desativar o produtor.'
-    })
+    const mensagem =
+      error.response?.data?.message ||
+      error.response?.data?.erro ||
+      error.message ||
+      'Não foi possível alterar o status do produtor.'
+    if (typeof $q.notify === 'function') {
+      $q.notify({ type: 'negative', message: mensagem })
+    } else {
+      window.alert(mensagem)
+    }
+    return false
+  } finally {
+    idProdutorEmAtualizacao.value =
+      null
   }
 }
 
