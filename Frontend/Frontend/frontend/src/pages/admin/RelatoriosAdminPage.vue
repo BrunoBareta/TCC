@@ -310,12 +310,18 @@
               }}
             </strong>
 
-            <span>
+            <span class="descricao-desktop-curta">
               {{
                 descricaoCurta(
                   chamado.descricao
                 )
               }}
+            </span>
+            <span
+              v-if="chamado.descricao && chamado.descricao !== chamado.problema"
+              class="descricao-mobile-completa"
+            >
+              {{ chamado.descricao }}
             </span>
           </div>
 
@@ -3742,6 +3748,182 @@ onMounted(
     width: 100%;
     justify-content: flex-end;
   }
+}
+
+
+
+.descricao-mobile-completa { display: none !important; }
+
+/* =========================================================
+   RESPONSIVIDADE FINAL - RELATÓRIOS ADMINISTRATIVOS
+   Exibe todos os campos em cards sem rolagem horizontal.
+========================================================= */
+.relatorios-admin-page,
+.relatorios-admin-page .filtros-card,
+.relatorios-admin-page .chamados-card {
+  min-width: 0;
+  max-width: 100%;
+}
+
+@media (max-width: 850px) {
+  .relatorios-admin-page {
+    padding: 12px 12px 120px;
+    overflow-x: clip;
+  }
+
+  .filtros-card { padding: 14px; margin-bottom: 12px; }
+  .filtros-principais {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9px;
+  }
+  .filtros-principais > * { min-width: 0; width: 100%; }
+  .filtros-principais > :nth-child(1) { grid-column: 1 / -1; }
+  .filtros-principais > :nth-child(4) { grid-column: 1 / -1; }
+  .filtros-principais > :nth-child(5) {
+    grid-column: 1 / -1;
+    border: 1px solid #fed7aa;
+    width: 100%;
+  }
+  .filtros-principais > :nth-child(6) { grid-column: 1 / -1; }
+  .filtros-principais > :nth-child(6):last-child { grid-column: 1 / -1; }
+  .filtros-principais :deep(.q-field__control) {
+    min-width: 0;
+    min-height: 44px;
+  }
+  .filtros-principais :deep(.q-field__label),
+  .filtros-principais :deep(.q-field__native),
+  .filtros-principais :deep(.q-field__input) { font-size: 12px; }
+  .filtros-avancados { grid-template-columns: 1fr; }
+
+  .chamados-card { overflow: visible; }
+  .chamados-topo {
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 17px 15px 12px;
+  }
+  .secao-titulo { font-size: 16px; }
+  .secao-subtitulo { font-size: 12px; }
+  .chamados-acoes {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: stretch;
+  }
+  .chamados-acoes .q-btn { flex: 1 1 auto; min-height: 42px; }
+  .selecao-geral {
+    min-height: 44px;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    padding: 7px 14px;
+    gap: 4px 10px;
+    font-size: 11px;
+  }
+  .selecao-geral :deep(.q-checkbox__label) { font-size: 12px; }
+  .lista-cabecalho { display: none; }
+  .lista-chamados { display: grid; gap: 10px; padding: 12px; }
+
+  .chamado-item {
+    min-width: 0;
+    display: grid;
+    grid-template-columns: 36px minmax(0, 1fr) auto;
+    grid-template-areas:
+      "selecao numero status"
+      "solicitacao solicitacao solicitacao"
+      "produtor produtor produtor"
+      "tecnico tecnico tecnico"
+      "urgencia urgencia data";
+    align-items: center;
+    gap: 9px 8px;
+    min-height: 0;
+    margin: 0;
+    padding: 14px;
+    border: 1px solid #eaecf0;
+    border-radius: 14px;
+    background: #ffffff;
+  }
+  .chamado-item > div { min-width: 0; max-width: 100%; display: block; }
+  .chamado-item > div:nth-child(1) { grid-area: selecao; }
+  .chamado-item > div:nth-child(2) { grid-area: numero; }
+  .chamado-item > div:nth-child(3) { grid-area: solicitacao; }
+  .chamado-item > div:nth-child(4) { grid-area: produtor; }
+  .chamado-item > div:nth-child(5) { grid-area: tecnico; }
+  .chamado-item > div:nth-child(6) { grid-area: urgencia; }
+  .chamado-item > div:nth-child(7) { grid-area: status; justify-self: end; }
+  .chamado-item > div:nth-child(8) { grid-area: data; text-align: right; }
+  .chamado-item :deep(.q-checkbox) { margin-left: -8px; }
+  .chamado-id { font-size: 13px; }
+  .chamado-solicitacao strong {
+    font-size: 14px;
+    color: #24324a;
+    white-space: normal;
+    overflow: visible;
+    overflow-wrap: anywhere;
+    text-overflow: clip;
+    line-height: 1.35;
+  }
+  .chamado-solicitacao .descricao-desktop-curta { display: none; }
+  .chamado-solicitacao .descricao-mobile-completa { display: block !important; }
+  .chamado-solicitacao span {
+    display: block;
+    font-size: 12px;
+    margin-top: 3px;
+    white-space: normal;
+    overflow: visible;
+    overflow-wrap: anywhere;
+    text-overflow: clip;
+    line-height: 1.4;
+  }
+  .chamado-produtor {
+    padding-top: 9px;
+    border-top: 1px solid #f2f4f7;
+  }
+  .chamado-produtor::before,
+  .chamado-tecnico::before {
+    content: 'Produtor / propriedade';
+    display: block;
+    margin-bottom: 3px;
+    color: #98a2b3;
+    font-size: 10px;
+    font-weight: 700;
+  }
+  .chamado-tecnico::before { content: 'Técnico'; }
+  .chamado-produtor strong {
+    font-size: 12px;
+    overflow: visible;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  .chamado-produtor span {
+    font-size: 11px;
+    overflow: visible;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  .chamado-tecnico { font-size: 12px; overflow-wrap: anywhere; }
+  .chamado-data { font-size: 11px; }
+  .chamado-item :deep(.q-badge) { font-size: 11px; padding: 6px 9px; }
+
+  .relatorios-admin-page--dark .chamado-item {
+    border-color: #2b2f36;
+    background: #16191f;
+  }
+  .relatorios-admin-page--dark .chamado-produtor { border-color: #2b2f36; }
+  .relatorios-admin-page--dark .chamado-solicitacao strong { color: #f9fafb; }
+}
+
+@media (max-width: 390px) {
+  .relatorios-admin-page { padding-inline: 9px; }
+  .lista-chamados { padding: 9px; }
+  .chamado-item { padding: 12px; }
+  .chamados-topo { padding-inline: 12px; }
+  .chamado-item :deep(.q-badge) { font-size: 10px; }
 }
 
 </style>

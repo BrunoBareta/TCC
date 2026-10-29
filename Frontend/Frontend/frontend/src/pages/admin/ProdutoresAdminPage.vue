@@ -1,497 +1,159 @@
 <template>
-  <q-page
-    class="produtores-page"
-    :class="{
-      'produtores-page--dark': $q.dark.isActive
-    }"
-  >
-    <!-- =========================
-         CABEÇALHO
-    ========================== -->
-
-    <!-- =========================
-         RESUMO
-    ========================== -->
-
-    <div class="resumo-grid">
-
-      <!-- TOTAL -->
-
-      <div class="resumo-card">
-        <div
-          class="resumo-icone
-                 resumo-icone--laranja"
+  <q-page class="produtores-page" :class="{ 'produtores-page--dark': $q.dark.isActive }">
+    <!-- Busca e ações no início da página, tanto no desktop quanto no celular -->
+    <div class="barra-pesquisa-card">
+      <div class="lista-acoes">
+        <q-input
+          v-model="pesquisa" outlined dense clearable
+          placeholder="Buscar produtor..." class="pesquisa-input"
         >
-          <q-icon
-            name="agriculture"
-            size="26px"
-          />
-        </div>
+          <template #prepend><q-icon name="search" size="19px" /></template>
+        </q-input>
+        <q-btn flat round icon="refresh" class="botao-atualizar-lista"
+          :loading="carregando" @click="carregarDados">
+          <q-tooltip>Atualizar produtores</q-tooltip>
+        </q-btn>
 
-        <div>
-          <div class="resumo-numero">
-            {{ produtores.length }}
-          </div>
-
-          <div class="resumo-label">
-            Produtores cadastrados
-          </div>
-        </div>
       </div>
-
-      <!-- ATIVOS -->
-
-      <div class="resumo-card">
-        <div
-          class="resumo-icone
-                 resumo-icone--verde"
-        >
-          <q-icon
-            name="check_circle"
-            size="26px"
-          />
-        </div>
-
-        <div>
-          <div class="resumo-numero">
-            {{ totalAtivos }}
-          </div>
-
-          <div class="resumo-label">
-            Produtores ativos
-          </div>
-        </div>
-      </div>
-
-      <!-- COM PROPRIEDADE -->
-
-      <div class="resumo-card">
-        <div
-          class="resumo-icone
-                 resumo-icone--azul"
-        >
-          <q-icon
-            name="location_on"
-            size="26px"
-          />
-        </div>
-
-        <div>
-          <div class="resumo-numero">
-            {{ totalComPropriedade }}
-          </div>
-
-          <div class="resumo-label">
-            Com propriedade cadastrada
-          </div>
-        </div>
-      </div>
-
-      <!-- INATIVOS -->
-
-      <div class="resumo-card">
-        <div
-          class="resumo-icone
-                 resumo-icone--cinza"
-        >
-          <q-icon
-            name="person_off"
-            size="26px"
-          />
-        </div>
-
-        <div>
-          <div class="resumo-numero">
-            {{ totalInativos }}
-          </div>
-
-          <div class="resumo-label">
-            Produtores inativos
-          </div>
-        </div>
-      </div>
-
     </div>
 
-    <!-- =========================
-         LISTAGEM
-    ========================== -->
+    <!-- Indicadores compactos -->
+    <div class="resumo-grid resumo-grid--produtores">
+      <div class="resumo-card">
+        <div class="resumo-icone resumo-icone--laranja">
+          <q-icon name="agriculture" size="25px" />
+        </div>
+        <div>
+          <div class="resumo-numero">{{ produtores.length }}</div>
+          <div class="resumo-label">Produtores cadastrados</div>
+        </div>
+      </div>
+      <div class="resumo-card">
+        <div class="resumo-icone resumo-icone--verde">
+          <q-icon name="check_circle" size="25px" />
+        </div>
+        <div>
+          <div class="resumo-numero">{{ totalAtivos }}</div>
+          <div class="resumo-label">Produtores ativos</div>
+        </div>
+      </div>
+      <div class="resumo-card">
+        <div class="resumo-icone resumo-icone--azul">
+          <q-icon name="location_on" size="25px" />
+        </div>
+        <div>
+          <div class="resumo-numero">{{ totalComPropriedade }}</div>
+          <div class="resumo-label">Com propriedade cadastrada</div>
+        </div>
+      </div>
+      <div class="resumo-card">
+        <div class="resumo-icone resumo-icone--cinza">
+          <q-icon name="person_off" size="25px" />
+        </div>
+        <div>
+          <div class="resumo-numero">{{ totalInativos }}</div>
+          <div class="resumo-label">Produtores inativos</div>
+        </div>
+      </div>
+    </div>
 
+    <!-- Uma coluna com o nome e as ações: sem rolagem horizontal -->
     <div class="lista-card">
-
       <div class="lista-cabecalho">
         <div>
-          <div class="lista-titulo">
-            Produtores cadastrados
-          </div>
-
-          <div class="lista-subtitulo">
-            Dados dos produtores e propriedades vinculadas.
-          </div>
+          <div class="lista-titulo">Produtores cadastrados</div>
+          <div class="lista-subtitulo">Dados dos produtores e propriedades vinculadas.</div>
         </div>
+      </div>
 
-        <div class="lista-acoes">
-          <q-input
-            v-model="pesquisa"
-            outlined
-            dense
-            clearable
-            placeholder="Buscar produtor..."
-            class="pesquisa-input"
-          >
-            <template #prepend>
-              <q-icon
-                name="search"
-                size="19px"
-              />
-            </template>
-          </q-input>
+      <div v-if="carregando && !carregadoUmaVez" class="carregando">
+        <q-spinner color="orange" size="42px" />
+        <span>Carregando produtores...</span>
+      </div>
+      <div v-else-if="produtoresFiltrados.length === 0" class="vazio">
+        <div class="vazio-icone"><q-icon name="agriculture" size="32px" /></div>
+        <strong>Nenhum produtor encontrado</strong>
+        <span v-if="pesquisa">Nenhum produtor corresponde à sua busca.</span>
+        <span v-else>Ainda não existem produtores cadastrados.</span>
 
-          <q-btn
-            flat
-            round
-            icon="refresh"
-            class="botao-atualizar-lista"
-            :loading="carregando"
-            @click="carregarDados"
-          >
-            <q-tooltip>
-              Atualizar produtores
-            </q-tooltip>
+      </div>
+      <div v-else class="usuarios-lista">
+        <div v-for="produtor in produtoresFiltrados" :key="produtor.id_usuario" class="usuario-linha">
+          <div class="usuario-identificacao">
+            <div class="produtor-avatar">{{ iniciais(produtor.nome) }}</div>
+            <span class="usuario-nome">{{ produtor.nome }}</span>
+          </div>
+          <q-btn flat round dense icon="more_vert" class="usuario-acao"
+            aria-label="Ver informações e ações de produtor" :loading="idProdutorEmAtualizacao === produtor.id_usuario" :disable="idProdutorEmAtualizacao !== null">
+            <q-tooltip>Informações e ações</q-tooltip>
+            <q-menu anchor="bottom right" self="top right" :offset="[0, 6]"
+              content-style="max-height: 68vh; overflow-y: auto;">
+              <q-list style="width: 290px; max-width: calc(100vw - 30px)" class="q-py-xs">
+                <q-item-label header class="text-weight-bold">Dados do produtor</q-item-label>
+                <q-item class="q-py-xs">
+                  <q-item-section>
+                    <q-item-label caption>E-mail</q-item-label>
+                    <q-item-label class="text-weight-medium" style="overflow-wrap: anywhere">{{ produtor.email || '-' }}</q-item-label>
+                  </q-item-section>
+                </q-item>
+                <q-item class="q-py-xs">
+                  <q-item-section>
+                    <q-item-label caption>Telefone</q-item-label>
+                    <q-item-label class="text-weight-medium" style="overflow-wrap: anywhere">{{ produtor.telefone || '-' }}</q-item-label>
+                  </q-item-section>
+                </q-item>
+                <q-item class="q-py-xs">
+                  <q-item-section>
+                    <q-item-label caption>CPF / CNPJ</q-item-label>
+                    <q-item-label class="text-weight-medium" style="overflow-wrap: anywhere">{{ produtor.cpf_cnpj || 'Não informado' }}</q-item-label>
+                  </q-item-section>
+                </q-item>
+                <q-item class="q-py-xs">
+                  <q-item-section>
+                    <q-item-label caption>Propriedade</q-item-label>
+                    <q-item-label class="text-weight-medium" style="overflow-wrap: anywhere">{{ propriedadeDoProdutor(produtor.id_usuario)?.nome_propriedade || 'Não cadastrada' }}</q-item-label>
+                  </q-item-section>
+                </q-item>
+                <q-item class="q-py-xs">
+                  <q-item-section>
+                    <q-item-label caption>Cidade / Estado</q-item-label>
+                    <q-item-label class="text-weight-medium" style="overflow-wrap: anywhere">{{ cidadeProdutor(produtor.id_usuario) }}</q-item-label>
+                  </q-item-section>
+                </q-item>
+                <q-item class="q-py-xs">
+                  <q-item-section>
+                    <q-item-label caption>Situação</q-item-label>
+                    <q-item-label class="text-weight-medium" style="overflow-wrap: anywhere">{{ produtor.ativo === false ? 'Inativo' : 'Ativo' }}</q-item-label>
+                  </q-item-section>
+                </q-item>
+                <q-item class="q-py-xs">
+                  <q-item-section>
+                    <q-item-label caption>Cadastrado em</q-item-label>
+                    <q-item-label class="text-weight-medium" style="overflow-wrap: anywhere">{{ formatarData(produtor.data_cadastro) }}</q-item-label>
+                  </q-item-section>
+                </q-item>
+                <q-separator class="q-my-xs" />
+                <q-item clickable v-close-popup @click="visualizarProdutor(produtor)">
+                  <q-item-section avatar><q-icon name="visibility" /></q-item-section>
+                  <q-item-section>Ver informações</q-item-section>
+                </q-item>
+                <q-item v-if="propriedadeDoProdutor(produtor.id_usuario)" clickable v-close-popup @click="visualizarPropriedade(produtor)">
+                  <q-item-section avatar><q-icon name="home_work" /></q-item-section>
+                  <q-item-section>Ver propriedade</q-item-section>
+                </q-item>
+                <q-item v-if="produtor.ativo !== false" clickable v-close-popup class="text-negative" @click="confirmarDesativacao(produtor)">
+                  <q-item-section avatar><q-icon name="person_off" /></q-item-section>
+                  <q-item-section>Desativar produtor</q-item-section>
+                </q-item>
+                <q-item v-else clickable v-close-popup class="text-positive" @click="confirmarAtivacao(produtor)">
+                  <q-item-section avatar><q-icon name="person_add" /></q-item-section>
+                  <q-item-section>Ativar produtor</q-item-section>
+                </q-item>
+              </q-list>
+            </q-menu>
           </q-btn>
         </div>
       </div>
-
-      <!-- =========================
-           CARREGANDO
-      ========================== -->
-
-      <div
-        v-if="
-          carregando &&
-          !carregadoUmaVez
-        "
-        class="carregando"
-      >
-        <q-spinner
-          color="orange"
-          size="42px"
-        />
-
-        <span>
-          Carregando produtores...
-        </span>
-      </div>
-
-      <!-- =========================
-           VAZIO
-      ========================== -->
-
-      <div
-        v-else-if="
-          produtoresFiltrados.length === 0
-        "
-        class="vazio"
-      >
-        <div class="vazio-icone">
-          <q-icon
-            name="agriculture"
-            size="32px"
-          />
-        </div>
-
-        <strong>
-          Nenhum produtor encontrado
-        </strong>
-
-        <span v-if="pesquisa">
-          Nenhum produtor corresponde à busca realizada.
-        </span>
-
-        <span v-else>
-          Ainda não existem produtores cadastrados.
-        </span>
-      </div>
-
-      <!-- =========================
-           TABELA
-      ========================== -->
-
-      <div
-        v-else
-        class="tabela-container"
-      >
-        <table class="produtores-tabela">
-          <thead>
-            <tr>
-              <th>
-                Produtor
-              </th>
-
-              <th>
-                Telefone
-              </th>
-
-              <th>
-                Propriedade
-              </th>
-
-              <th>
-                Cidade
-              </th>
-
-              <th>
-                Status
-              </th>
-
-              <th>
-                Cadastro
-              </th>
-
-              <th class="acao-coluna">
-                Ações
-              </th>
-            </tr>
-          </thead>
-
-          <tbody>
-            <tr
-              v-for="
-                produtor in
-                produtoresFiltrados
-              "
-              :key="
-                produtor.id_usuario
-              "
-            >
-              <!-- PRODUTOR -->
-
-              <td>
-                <div class="produtor-identificacao">
-                  <div class="produtor-avatar">
-                    {{
-                      iniciais(
-                        produtor.nome
-                      )
-                    }}
-                  </div>
-
-                  <div class="produtor-info">
-                    <strong>
-                      {{
-                        produtor.nome
-                      }}
-                    </strong>
-
-                    <span>
-                      {{
-                        produtor.email ||
-                        '-'
-                      }}
-                    </span>
-                  </div>
-                </div>
-              </td>
-
-              <!-- TELEFONE -->
-
-              <td>
-                {{
-                  produtor.telefone ||
-                  '-'
-                }}
-              </td>
-
-              <!-- PROPRIEDADE -->
-
-              <td>
-                <div
-                  v-if="
-                    propriedadeDoProdutor(
-                      produtor.id_usuario
-                    )
-                  "
-                  class="propriedade-info"
-                >
-                  <q-icon
-                    name="home_work"
-                    size="17px"
-                  />
-
-                  <span>
-                    {{
-                      propriedadeDoProdutor(
-                        produtor.id_usuario
-                      ).nome_propriedade
-                    }}
-                  </span>
-                </div>
-
-                <span
-                  v-else
-                  class="sem-propriedade"
-                >
-                  Não cadastrada
-                </span>
-              </td>
-
-              <!-- CIDADE -->
-
-              <td>
-                {{
-                  cidadeProdutor(
-                    produtor.id_usuario
-                  )
-                }}
-              </td>
-
-              <!-- STATUS -->
-
-              <td>
-                <q-badge
-                  rounded
-                  :color="
-                    produtor.ativo === false
-                      ? 'grey'
-                      : 'positive'
-                  "
-                  :label="
-                    produtor.ativo === false
-                      ? 'Inativo'
-                      : 'Ativo'
-                  "
-                />
-              </td>
-
-              <!-- CADASTRO -->
-
-              <td>
-                {{
-                  formatarData(
-                    produtor.data_cadastro
-                  )
-                }}
-              </td>
-
-              <!-- AÇÕES -->
-
-              <td class="acao-coluna">
-                <q-btn
-                  flat
-                  round
-                  dense
-                  icon="more_vert"
-                  :loading="idProdutorEmAtualizacao === produtor.id_usuario"
-                  :disable="idProdutorEmAtualizacao !== null"
-                >
-                  <q-menu>
-                    <q-list
-                      style="
-                        min-width: 190px
-                      "
-                    >
-                      <q-item
-                        clickable
-                        v-close-popup
-                        @click="
-                          visualizarProdutor(
-                            produtor
-                          )
-                        "
-                      >
-                        <q-item-section avatar>
-                          <q-icon
-                            name="visibility"
-                          />
-                        </q-item-section>
-
-                        <q-item-section>
-                          Ver informações
-                        </q-item-section>
-                      </q-item>
-
-                      <q-item
-                        v-if="
-                          propriedadeDoProdutor(
-                            produtor.id_usuario
-                          )
-                        "
-                        clickable
-                        v-close-popup
-                        @click="
-                          visualizarPropriedade(
-                            produtor
-                          )
-                        "
-                      >
-                        <q-item-section avatar>
-                          <q-icon
-                            name="home_work"
-                          />
-                        </q-item-section>
-
-                        <q-item-section>
-                          Ver propriedade
-                        </q-item-section>
-                      </q-item>
-
-                      <q-separator />
-
-                      <q-item
-                        v-if="
-                          produtor.ativo !==
-                          false
-                        "
-                        clickable
-                        v-close-popup
-                        class="text-negative"
-                        @click="
-                          confirmarDesativacao(
-                            produtor
-                          )
-                        "
-                      >
-                        <q-item-section avatar>
-                          <q-icon
-                            name="person_off"
-                          />
-                        </q-item-section>
-
-                        <q-item-section>
-                          Desativar produtor
-                        </q-item-section>
-                      </q-item>
-
-                      <q-item
-                        v-else
-                        clickable
-                        v-close-popup
-                        class="text-positive"
-                        @click="
-                          confirmarAtivacao(
-                            produtor
-                          )
-                        "
-                      >
-                        <q-item-section avatar>
-                          <q-icon
-                            name="person_add"
-                          />
-                        </q-item-section>
-
-                        <q-item-section>
-                          Ativar produtor
-                        </q-item-section>
-                      </q-item>
-                    </q-list>
-                  </q-menu>
-                </q-btn>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
     </div>
 
     <!-- =========================
@@ -1008,7 +670,6 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
-
   </q-page>
 </template>
 
@@ -2711,6 +2372,204 @@ tr:hover {
   .botao-atualizar-lista {
     border: 1px solid #fed7aa;
     border-radius: 10px;
+  }
+}
+
+
+/* =========================================================
+   PADRÃO COMPARTILHADO: ADMIN / TÉCNICOS E PRODUTORES
+   Busca em primeiro lugar, indicadores compactos e lista sem
+   rolagem horizontal em qualquer tamanho de tela.
+========================================================= */
+.barra-pesquisa-card {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  margin-bottom: 12px;
+  border: 1px solid #eaecf0;
+  border-radius: 16px;
+  background: #ffffff;
+}
+.barra-pesquisa-card .filtros,
+.barra-pesquisa-card .lista-acoes {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  width: 100%;
+  gap: 8px;
+}
+.barra-pesquisa-card .pesquisa-input {
+  flex: 1 1 200px;
+  min-width: 0;
+  max-width: 520px;
+  width: auto;
+}
+.barra-pesquisa-card .novo-btn--lista {
+  margin-left: auto;
+}
+.barra-pesquisa-card .botao-atualizar-lista {
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
+  border: 1px solid #fed7aa;
+  border-radius: 10px;
+}
+.resumo-grid {
+  margin-bottom: 12px;
+  gap: 10px;
+}
+.resumo-card {
+  min-width: 0;
+  min-height: 90px;
+  padding: 14px;
+}
+.resumo-card > div:last-child {
+  min-width: 0;
+}
+.resumo-label {
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+.lista-cabecalho {
+  padding: 14px 17px;
+}
+.usuarios-lista {
+  width: 100%;
+  min-width: 0;
+}
+.usuario-linha {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px 18px;
+  border-bottom: 1px solid #eaecf0;
+  min-width: 0;
+}
+.usuario-linha:last-child {
+  border-bottom: 0;
+}
+.usuario-linha:hover {
+  background: #fffaf5;
+}
+.usuario-identificacao {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.usuario-nome {
+  min-width: 0;
+  color: #24324a;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+.usuario-acao {
+  flex-shrink: 0;
+  color: #475467;
+}
+.resumo-grid--tecnicos {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.resumo-grid--produtores {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.tecnicos-page--dark .barra-pesquisa-card,
+.produtores-page--dark .barra-pesquisa-card {
+  border-color: #292d33;
+  background: #15181d;
+}
+.tecnicos-page--dark .usuario-linha,
+.produtores-page--dark .usuario-linha {
+  border-color: #292d33;
+}
+.tecnicos-page--dark .usuario-linha:hover,
+.produtores-page--dark .usuario-linha:hover {
+  background: #1b1e24;
+}
+.tecnicos-page--dark .usuario-nome,
+.produtores-page--dark .usuario-nome {
+  color: #f2f4f7;
+}
+.tecnicos-page--dark .usuario-acao,
+.produtores-page--dark .usuario-acao {
+  color: #d0d5dd;
+}
+@media (max-width: 800px) {
+  .resumo-grid--tecnicos,
+  .resumo-grid--produtores {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 600px) {
+  .barra-pesquisa-card {
+    padding: 12px;
+  }
+  .barra-pesquisa-card .filtros,
+  .barra-pesquisa-card .lista-acoes {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .barra-pesquisa-card .pesquisa-input {
+    flex: 1 1 calc(100% - 52px);
+    width: auto;
+    max-width: none;
+  }
+  .barra-pesquisa-card .botao-atualizar-lista {
+    flex: 0 0 44px;
+    width: 44px;
+    height: 40px;
+  }
+  .barra-pesquisa-card .novo-btn--lista {
+    width: 100%;
+    flex: 1 1 100%;
+    margin-left: 0;
+  }
+  .resumo-grid--tecnicos,
+  .resumo-grid--produtores {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9px;
+  }
+  .resumo-grid--tecnicos .resumo-card:last-child {
+    grid-column: 1 / -1;
+  }
+  .resumo-card {
+    min-height: 90px;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 7px;
+    padding: 12px;
+  }
+  .resumo-icone {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+  }
+  .resumo-icone .q-icon {
+    font-size: 20px !important;
+  }
+  .resumo-numero {
+    font-size: 23px;
+  }
+  .resumo-label {
+    margin-top: 2px;
+    font-size: 10px;
+  }
+  .lista-cabecalho {
+    padding: 14px;
+  }
+  .usuario-linha {
+    padding: 12px 13px;
+  }
+  .usuario-identificacao {
+    gap: 10px;
+  }
+  .usuario-nome {
+    font-size: 13px;
   }
 }
 

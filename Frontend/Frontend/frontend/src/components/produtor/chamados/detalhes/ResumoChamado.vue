@@ -63,25 +63,6 @@
       <div class="resumo-item">
         <div class="item-icone">
           <q-icon
-            name="agriculture"
-            size="21px"
-          />
-        </div>
-
-        <div>
-          <div class="item-label">
-            Cultura
-          </div>
-
-          <div class="item-valor">
-            {{ formatarTexto(chamado.tipo_cultura) }}
-          </div>
-        </div>
-      </div>
-
-      <div class="resumo-item">
-        <div class="item-icone">
-          <q-icon
             name="support_agent"
             size="21px"
           />
@@ -212,7 +193,7 @@ function classeStatus(status) {
   display: grid;
 
   grid-template-columns:
-    repeat(4, minmax(0, 1fr));
+    repeat(3, minmax(0, 1fr));
 
   gap: 10px;
 }

@@ -1,46 +1,30 @@
 <template>
   <div class="informacoes-card">
     <div class="card-titulo">
-      Informações da solicitação
+      Resposta do técnico
     </div>
 
-    <div class="informacao-grid">
-      <div class="informacao-bloco">
-        <div class="informacao-label">
-          Descrição do problema
-        </div>
-
-        <div class="informacao-texto">
-          {{ chamado.descricao || 'Nenhuma descrição informada.' }}
-        </div>
+    <div class="informacao-bloco">
+      <div
+        v-if="chamado.resposta_tecnico"
+        class="informacao-texto resposta-tecnico"
+      >
+        {{ chamado.resposta_tecnico }}
       </div>
 
-      <div class="informacao-bloco">
-        <div class="informacao-label">
-          Resposta do técnico
-        </div>
+      <div
+        v-else
+        class="sem-resposta"
+      >
+        <q-icon
+          name="hourglass_empty"
+          size="21px"
+          color="orange"
+        />
 
-        <div
-          v-if="chamado.resposta_tecnico"
-          class="informacao-texto resposta-tecnico"
-        >
-          {{ chamado.resposta_tecnico }}
-        </div>
-
-        <div
-          v-else
-          class="sem-resposta"
-        >
-          <q-icon
-            name="hourglass_empty"
-            size="21px"
-            color="orange"
-          />
-
-          <span>
-            O técnico ainda não enviou uma resposta.
-          </span>
-        </div>
+        <span>
+          O técnico ainda não enviou uma resposta.
+        </span>
       </div>
     </div>
   </div>
@@ -80,28 +64,12 @@ defineProps({
   font-weight: 900;
 }
 
-.informacao-grid {
-  display: grid;
-  gap: 12px;
-}
-
 .informacao-bloco {
   padding: 14px;
 
   border-radius: 12px;
 
   background: #f8fafc;
-}
-
-.informacao-label {
-  margin-bottom: 6px;
-
-  color: #98a2b3;
-
-  font-size: 11px;
-  font-weight: 800;
-
-  text-transform: uppercase;
 }
 
 .informacao-texto {

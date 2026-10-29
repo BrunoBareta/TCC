@@ -2396,10 +2396,27 @@ onMounted(
   }
 }
 
+/* Layout compacto do painel administrativo no celular. */
 @media (max-width: 700px) {
+  .dashboard-page {
+    padding: 12px 12px calc(135px + env(safe-area-inset-bottom, 0px));
+  }
+
   .dashboard-hero {
-    align-items: flex-start;
+    min-height: 0;
+    align-items: stretch;
     flex-direction: column;
+    gap: 10px;
+    padding: 12px;
+    margin-bottom: 10px;
+  }
+
+  .dashboard-hero__identidade {
+    gap: 9px;
+  }
+
+  .dashboard-hero__barra {
+    height: 35px;
   }
 
   .dashboard-hero__label,
@@ -2408,34 +2425,185 @@ onMounted(
   }
 
   .dashboard-hero__titulo {
-    font-size: 20px;
+    font-size: 19px;
+    line-height: 1.2;
   }
 
   .dashboard-hero__acoes {
     width: 100%;
+    gap: 8px;
   }
 
   .data-card {
     flex: 1;
     min-width: 0;
+    padding: 7px 9px;
   }
 
+  .data-card strong {
+    font-size: 11px;
+    overflow-wrap: anywhere;
+  }
+
+  .botao-atualizar {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+  }
+
+  /* Mantém dois indicadores por linha, sem rolagem horizontal. */
   .indicadores-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9px;
+    margin-bottom: 10px;
   }
 
   .indicador-card {
-    min-height: 90px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 8px;
+    min-width: 0;
+    min-height: 114px;
+    padding: 12px;
+    border-radius: 14px;
+  }
+
+  .indicador-icone {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+  }
+
+  .indicador-icone :deep(.q-icon) {
+    font-size: 20px !important;
+  }
+
+  .indicador-conteudo {
+    width: 100%;
+  }
+
+  .indicador-conteudo strong {
+    font-size: 25px;
+  }
+
+  .indicador-conteudo span {
+    margin-top: 4px;
+    font-size: 11px;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+  }
+
+  .indicador-conteudo small,
+  .indicador-seta {
+    display: none;
+  }
+
+  .alerta-operacional {
+    grid-template-columns: 34px minmax(0, 1fr) 18px;
+    min-height: 62px;
+    gap: 9px;
+    padding: 10px;
+    margin-bottom: 10px;
   }
 
   .alerta-operacional__texto strong,
   .alerta-operacional__texto span {
     display: block;
     margin-left: 0;
+    font-size: 10px;
+    line-height: 1.45;
+  }
+
+  .graficos-grid {
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .grafico-card {
+    border-radius: 14px;
+  }
+
+  .grafico-cabecalho {
+    padding: 12px 12px 7px;
+    min-height: 0;
+  }
+
+  .grafico-titulo {
+    font-size: 13px;
+  }
+
+  .grafico-subtitulo {
+    font-size: 10px;
+    line-height: 1.35;
+  }
+
+  .grafico-area {
+    height: 218px;
+    padding: 5px 8px 12px;
+  }
+
+  .grafico-area--linha {
+    height: 230px;
+  }
+
+  .grafico-area--produtores {
+    height: 250px;
+  }
+
+  /* Rosca e legenda na mesma linha para reduzir a altura. */
+  .doughnut-area {
+    flex-direction: row;
+    min-height: 185px;
+    justify-content: center;
+    gap: 12px;
+    padding: 8px 12px 16px;
+  }
+
+  .doughnut-wrapper {
+    width: 138px;
+    height: 138px;
+  }
+
+  .doughnut-centro strong {
+    font-size: 23px;
+  }
+
+  .doughnut-centro span {
+    font-size: 9px;
+  }
+
+  .legenda-status {
+    min-width: 0;
+    gap: 8px;
+  }
+
+  .legenda-item strong {
+    font-size: 12px;
+  }
+
+  .legenda-item span:not(.ponto) {
+    font-size: 10px;
+    line-height: 1.2;
+  }
+}
+
+@media (max-width: 360px) {
+  .indicador-card {
+    padding: 10px;
   }
 
   .doughnut-area {
-    flex-direction: column;
+    gap: 8px;
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  .doughnut-wrapper {
+    width: 112px;
+    height: 112px;
   }
 }
 </style>

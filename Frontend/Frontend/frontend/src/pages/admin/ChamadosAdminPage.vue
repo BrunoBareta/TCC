@@ -9,6 +9,62 @@
          RESUMO
     ====================================================== -->
 
+    <!-- Pesquisa e filtros aparecem antes dos indicadores em todos os dispositivos -->
+    <section class="filtros-card" aria-label="Pesquisa e filtros de chamados">
+        <div class="filtros">
+          <q-input
+            v-model="pesquisa"
+            outlined
+            dense
+            clearable
+            placeholder="Buscar chamado..."
+            class="pesquisa-input"
+          >
+            <template #prepend>
+              <q-icon
+                name="search"
+                size="19px"
+              />
+            </template>
+          </q-input>
+
+          <q-select
+            v-model="filtroStatus"
+            outlined
+            dense
+            emit-value
+            map-options
+            :options="opcoesStatus"
+            label="Status"
+            class="filtro-select"
+          />
+
+          <q-select
+            v-model="filtroUrgencia"
+            outlined
+            dense
+            emit-value
+            map-options
+            :options="opcoesUrgencia"
+            label="Urgência"
+            class="filtro-select"
+          />
+
+          <q-btn
+            flat
+            round
+            icon="refresh"
+            class="botao-atualizar-lista"
+            :loading="carregando"
+            @click="carregarChamados"
+          >
+            <q-tooltip>
+              Atualizar chamados
+            </q-tooltip>
+          </q-btn>
+        </div>
+    </section>
+
     <div class="resumo-grid">
       <div class="resumo-card">
         <div class="resumo-icone resumo-icone--laranja">
@@ -122,58 +178,6 @@
           </div>
         </div>
 
-        <div class="filtros">
-          <q-input
-            v-model="pesquisa"
-            outlined
-            dense
-            clearable
-            placeholder="Buscar chamado..."
-            class="pesquisa-input"
-          >
-            <template #prepend>
-              <q-icon
-                name="search"
-                size="19px"
-              />
-            </template>
-          </q-input>
-
-          <q-select
-            v-model="filtroStatus"
-            outlined
-            dense
-            emit-value
-            map-options
-            :options="opcoesStatus"
-            label="Status"
-            class="filtro-select"
-          />
-
-          <q-select
-            v-model="filtroUrgencia"
-            outlined
-            dense
-            emit-value
-            map-options
-            :options="opcoesUrgencia"
-            label="Urgência"
-            class="filtro-select"
-          />
-
-          <q-btn
-            flat
-            round
-            icon="refresh"
-            class="botao-atualizar-lista"
-            :loading="carregando"
-            @click="carregarChamados"
-          >
-            <q-tooltip>
-              Atualizar chamados
-            </q-tooltip>
-          </q-btn>
-        </div>
       </div>
 
       <div class="resultado-info">
@@ -239,10 +243,8 @@
 
       <!-- TABELA -->
 
-      <div
-        v-else
-        class="tabela-container"
-      >
+      <template v-else>
+      <div class="tabela-container">
         <table class="chamados-tabela">
           <colgroup>
             <col class="col-chamado" />
@@ -371,6 +373,81 @@
           </tbody>
         </table>
       </div>
+
+      <!-- Visualização em cards: sem tabelas ou rolagem horizontal no celular -->
+      <div class="chamados-mobile-lista">
+        <article
+          v-for="chamado in chamadosFiltrados"
+          :key="`mobile-${chamado.id_chamado}`"
+          class="chamado-mobile-card"
+        >
+          <div class="chamado-mobile-topo">
+            <strong class="chamado-id">Chamado #{{ chamado.id_chamado }}</strong>
+            <q-space />
+            <q-badge
+              rounded
+              :color="corStatus(chamado.status)"
+              :label="formatarStatus(chamado.status)"
+            />
+            <q-btn flat round dense icon="more_vert" aria-label="Ações do chamado">
+              <q-menu>
+                <q-list style="min-width: 195px">
+                  <q-item clickable v-close-popup @click="abrirDetalhes(chamado)">
+                    <q-item-section avatar>
+                      <q-icon name="visibility" color="orange" />
+                    </q-item-section>
+                    <q-item-section>Ver acompanhamento</q-item-section>
+                  </q-item>
+                </q-list>
+              </q-menu>
+            </q-btn>
+          </div>
+
+          <div class="chamado-mobile-titulo">{{ tituloChamado(chamado) }}</div>
+          <div
+            v-if="descricaoCompleta(chamado) !== tituloChamado(chamado)"
+            class="chamado-mobile-descricao"
+          >
+            {{ descricaoCompleta(chamado) }}
+          </div>
+
+          <div class="chamado-mobile-dados">
+            <div>
+              <span>Produtor</span>
+              <strong>{{ nomeProdutor(chamado) }}</strong>
+            </div>
+            <div>
+              <span>Propriedade</span>
+              <strong>{{ nomePropriedade(chamado) }}</strong>
+            </div>
+            <div>
+              <span>Técnico</span>
+              <strong>{{ nomeTecnico(chamado) }}</strong>
+            </div>
+            <div>
+              <span>Data de abertura</span>
+              <strong>{{ formatarData(dataChamado(chamado)) }}</strong>
+            </div>
+          </div>
+
+          <div class="chamado-mobile-rodape">
+            <q-badge
+              rounded
+              :color="corUrgencia(chamado.urgencia)"
+              :label="`Urgência: ${formatarUrgencia(chamado.urgencia)}`"
+            />
+            <q-btn
+              flat
+              no-caps
+              color="orange"
+              icon-right="arrow_forward"
+              label="Acompanhar"
+              @click="abrirDetalhes(chamado)"
+            />
+          </div>
+        </article>
+      </div>
+      </template>
     </div>
 
     <!-- =====================================================
@@ -4417,6 +4494,157 @@ onMounted(
     border: 1px solid #fed7aa;
     border-radius: 10px;
   }
+}
+
+
+
+/* =========================================================
+   PADRONIZAÇÃO RESPONSIVA - CHAMADOS ADMINISTRATIVOS
+   Filtros -> Indicadores -> Lista; sem arrastar tabelas no celular.
+========================================================= */
+.chamados-admin-page,
+.chamados-admin-page .filtros-card,
+.chamados-admin-page .lista-card {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.filtros-card {
+  margin-bottom: 12px;
+  padding: 14px 16px;
+  border: 1px solid #eaecf0;
+  border-radius: 16px;
+  background: #fff;
+}
+.filtros-card .filtros {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 9px;
+  flex-wrap: wrap;
+  width: 100%;
+}
+.filtros-card .pesquisa-input { flex: 1 1 260px; min-width: 0; width: auto; }
+.filtros-card .filtro-select { flex: 0 1 165px; min-width: 0; width: 165px; }
+.filtros-card .botao-atualizar-lista { width: 40px; flex-shrink: 0; }
+.chamados-mobile-lista { display: none; }
+.chamados-admin-page--dark .filtros-card {
+  border-color: #292d33;
+  background: #15181d;
+}
+
+@media (max-width: 850px) {
+  .chamados-admin-page { padding: 12px 12px 120px; overflow-x: clip; }
+  .filtros-card { padding: 12px; }
+  .filtros-card .filtros {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0,1fr));
+    align-items: stretch;
+    gap: 9px;
+  }
+  .filtros-card .filtros > * { min-width: 0; width: 100%; }
+  .filtros-card .pesquisa-input { grid-column: 1 / -1; }
+  .filtros-card .filtro-select { width: 100%; }
+  .filtros-card .botao-atualizar-lista {
+    grid-column: 1 / -1;
+    border: 1px solid #fed7aa;
+    border-radius: 10px;
+    width: 100%;
+    height: 40px;
+  }
+  .resumo-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; }
+  .resumo-card { min-width: 0; min-height: 90px; padding: 13px 12px; gap: 9px; }
+  .resumo-icone { width: 37px; height: 37px; border-radius: 11px; }
+  .resumo-icone :deep(.q-icon) { font-size: 22px !important; }
+  .resumo-numero { font-size: 23px; }
+  .resumo-label { font-size: 11px; line-height: 1.3; }
+  .resumo-card:last-child { grid-column: 1 / -1; }
+  .lista-card { padding: 0; overflow: visible; }
+  .lista-cabecalho { flex-direction: row; align-items: center; padding: 16px 14px 12px; }
+  .lista-titulo { font-size: 15px; }
+  .lista-subtitulo { font-size: 11px; }
+  .resultado-info { flex-wrap: wrap; padding: 10px 14px; font-size: 11px; }
+  .tabela-container { display: none !important; }
+  .chamados-mobile-lista { display: grid; gap: 10px; padding: 12px; }
+  .chamado-mobile-card {
+    min-width: 0;
+    padding: 13px;
+    border: 1px solid #eaecf0;
+    border-radius: 14px;
+    background: #fff;
+  }
+  .chamado-mobile-topo { display: flex; align-items: center; gap: 8px; }
+  .chamado-mobile-topo .chamado-id { font-size: 13px; }
+  .chamado-mobile-topo :deep(.q-badge) { font-size: 10px; padding: 5px 8px; }
+  .chamado-mobile-titulo {
+    margin-top: 7px;
+    color: #24324a;
+    font-size: 14px;
+    font-weight: 800;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+  }
+  .chamado-mobile-descricao {
+    margin-top: 4px;
+    color: #667085;
+    font-size: 12px;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+  }
+  .chamado-mobile-dados {
+    display: grid;
+    grid-template-columns: repeat(2,minmax(0,1fr));
+    gap: 11px;
+    margin-top: 12px;
+    padding-top: 11px;
+    border-top: 1px solid #f2f4f7;
+  }
+  .chamado-mobile-dados > div { min-width: 0; }
+  .chamado-mobile-dados span {
+    display: block;
+    color: #98a2b3;
+    font-size: 10px;
+    font-weight: 700;
+  }
+  .chamado-mobile-dados strong {
+    display: block;
+    margin-top: 3px;
+    color: #344054;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+  }
+  .chamado-mobile-rodape {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 12px;
+    padding-top: 9px;
+    border-top: 1px solid #f2f4f7;
+  }
+  .chamado-mobile-rodape :deep(.q-badge) { padding: 5px 8px; font-size: 10px; }
+  .chamado-mobile-rodape :deep(.q-btn) { font-size: 12px; }
+
+  .chamados-admin-page--dark .chamado-mobile-card {
+    border-color: #292d33;
+    background: #15181d;
+  }
+  .chamados-admin-page--dark .chamado-mobile-titulo,
+  .chamados-admin-page--dark .chamado-mobile-dados strong { color: #f2f4f7; }
+  .chamados-admin-page--dark .chamado-mobile-dados,
+  .chamados-admin-page--dark .chamado-mobile-rodape { border-color: #292d33; }
+}
+
+@media (max-width: 380px) {
+  .chamados-admin-page { padding-inline: 9px; }
+  .resumo-card { padding: 10px; }
+  .resumo-icone { width: 32px; height: 32px; }
+  .resumo-label { font-size: 10px; }
+  .chamados-mobile-lista { padding: 9px; }
+  .chamado-mobile-card { padding: 11px; }
 }
 
 </style>
